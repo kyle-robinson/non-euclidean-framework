@@ -21,6 +21,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 {
 	m_pSwapChain = std::make_shared<Bind::SwapChain>( m_pContext.GetAddressOf(), m_pDevice.GetAddressOf(), hWnd, m_viewWidth, m_viewHeight );
     m_pBackBuffer = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_pSwapChain->GetSwapChain() );
+    m_pCubeBuffer = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pDepthStencil = std::make_shared<Bind::DepthStencil>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
 	m_pViewport = std::make_shared<Bind::Viewport>( m_pContext.Get(), m_viewWidth, m_viewHeight );
@@ -33,6 +34,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 	m_pSamplerStates.emplace( Bind::Sampler::Type::BILINEAR, std::make_shared<Bind::Sampler>( m_pDevice.Get(), Bind::Sampler::Type::BILINEAR ) );
 	m_pSamplerStates.emplace( Bind::Sampler::Type::POINT, std::make_shared<Bind::Sampler>( m_pDevice.Get(), Bind::Sampler::Type::POINT ) );
 
+	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 }
 
@@ -99,19 +101,14 @@ bool Graphics::InitializeRTT()
 	return true;
 }
 
-void Graphics::BeginFrame()
+void Graphics::UpdateRenderStateSkysphere()
 {
-	// Clear render target/depth stencil
-    m_pRenderTarget->BindAsTexture( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
-    m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
-
-    // Set render state for skysphere
-    m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
+	// Set render state for skysphere
     m_pRasterizerStates[Bind::Rasterizer::Type::SKYSPHERE]->Bind( m_pContext.Get() );
-	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderOBJ );    
+	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderOBJ );
 }
 
-void Graphics::UpdateRenderState()
+void Graphics::UpdateRenderStateCube()
 {
 	// Set render state
     m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
@@ -134,6 +131,7 @@ void Graphics::EndFrame()
 {
 	// Unbind render target
 	m_pRenderTarget->BindAsNull( m_pContext.Get() );
+	m_pCubeBuffer->BindAsNull( m_pContext.Get() );
 	m_pBackBuffer->BindAsNull( m_pContext.Get() );
 
 	// Present frame

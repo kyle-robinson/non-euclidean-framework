@@ -15,8 +15,8 @@ class Graphics
 {
 public:
 	bool Initialize( HWND hWnd, UINT width, UINT height );
-	void BeginFrame();
-	void UpdateRenderState();
+	void UpdateRenderStateSkysphere();
+	void UpdateRenderStateCube();
 	void RenderSceneToTexture();
 	void EndFrame();
 
@@ -24,7 +24,12 @@ public:
 	inline UINT GetHeight() const noexcept { return m_viewHeight; }
 	inline ID3D11Device* GetDevice() const noexcept { return m_pDevice.Get(); }
 	inline ID3D11DeviceContext* GetContext() const noexcept { return m_pContext.Get(); }
+
+	inline Bind::DepthStencil* GetDepthStencil() const noexcept { return &*m_pDepthStencil; }
 	inline Bind::RenderTarget* GetRenderTarget() const noexcept { return &*m_pRenderTarget; }
+	inline Bind::RenderTarget* GetBackBuffer() const noexcept { return &*m_pBackBuffer; }
+	inline Bind::RenderTarget* GetCubeBuffer() const noexcept { return &*m_pCubeBuffer; }
+	inline float* GetClearColor() noexcept { return m_clearColor; }
 
 private:
 	void InitializeDirectX( HWND hWnd );
@@ -52,6 +57,7 @@ private:
 
 	std::shared_ptr<Bind::Viewport> m_pViewport;
 	std::shared_ptr<Bind::RenderTarget> m_pBackBuffer;
+	std::shared_ptr<Bind::RenderTarget> m_pCubeBuffer;
 	std::shared_ptr<Bind::RenderTarget> m_pRenderTarget;
 	std::shared_ptr<Bind::DepthStencil> m_pDepthStencil;
 	std::unordered_map<Bind::Sampler::Type, std::shared_ptr<Bind::Sampler>> m_pSamplerStates;

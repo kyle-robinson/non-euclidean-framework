@@ -82,13 +82,14 @@ void Application::Update()
 
 void Application::Render()
 {
-    // Setup graphics
-    graphics.BeginFrame();
+#pragma region RTT_CUBE
+    // Render RTT cube
+    graphics.GetCubeBuffer()->BindAsTexture( graphics.GetContext(), graphics.GetDepthStencil(), graphics.GetClearColor() );
+    graphics.GetDepthStencil()->ClearDepthStencil( graphics.GetContext() );
 
-    // Render skyphere first
+    graphics.UpdateRenderStateSkysphere();
     m_skysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
-    graphics.UpdateRenderState();
-
+    
     // Get the game object world transform
     DirectX::XMMATRIX mGO = XMLoadFloat4x4( m_cube.GetTransform() );
 	m_cbMatrices.data.mWorld = DirectX::XMMatrixTranspose( mGO );
@@ -103,12 +104,44 @@ void Application::Render()
     m_mapping.UpdateCB();
     m_cube.UpdateCB();
 
-    // Render objects
+    graphics.UpdateRenderStateCube();
     graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
     graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetMaterialCB() );
     graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetLightCB() );
     graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetMappingCB() );
     m_cube.Draw( graphics.GetContext() );
+#pragma endregion
+
+#pragma region NORMAL_CUBE
+    // Render normal scene
+    graphics.GetRenderTarget()->BindAsTexture( graphics.GetContext(), graphics.GetDepthStencil(), graphics.GetClearColor() );
+    graphics.GetDepthStencil()->ClearDepthStencil( graphics.GetContext() );
+    
+    graphics.UpdateRenderStateSkysphere();
+    m_skysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
+    
+    // Get the game object world transform
+    mGO = XMLoadFloat4x4( m_cube.GetTransform() );
+	m_cbMatrices.data.mWorld = DirectX::XMMatrixTranspose( mGO );
+    
+    // Store the view / projection in a constant buffer for the vertex shader to use
+	m_cbMatrices.data.mView = DirectX::XMMatrixTranspose( m_camera.GetViewMatrix() );
+	m_cbMatrices.data.mProjection = DirectX::XMMatrixTranspose( m_camera.GetProjectionMatrix() );
+	if ( !m_cbMatrices.ApplyChanges() ) return;
+    
+    // Update constant buffers
+    m_light.UpdateCB( m_camera );
+    m_mapping.UpdateCB();
+    m_cube.UpdateCB();
+
+    graphics.UpdateRenderStateCube();
+    m_cube.SetTexture( graphics.GetCubeBuffer()->GetShaderResourceView() );
+    graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
+    graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetMaterialCB() );
+    graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetLightCB() );
+    graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetMappingCB() );
+    m_cube.DrawRTT( graphics.GetContext() );
+#pragma endregion
 
     // Render scene to texture
     graphics.RenderSceneToTexture();

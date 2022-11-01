@@ -23,11 +23,15 @@ class Cube
 {
 public:
 	bool InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext );
+	
 	void Update( float dt, ID3D11DeviceContext* pContext );
 	void UpdateCB();
+
 	void Draw( ID3D11DeviceContext* pContext );
+	void DrawRTT( ID3D11DeviceContext* pContext );
 	void SpawnControlWindow();
 
+	inline void SetTexture( ID3D11ShaderResourceView* texture ) noexcept { m_pTextureRTT = texture; }
 	inline ID3D11Buffer* const* GetMaterialCB() const noexcept { return m_cbMaterial.GetAddressOf(); }
 	inline void SetPosition( DirectX::XMFLOAT3 position ) noexcept { m_position = position; }
 	inline XMFLOAT4X4* GetTransform() noexcept { return &m_World; }
@@ -47,6 +51,7 @@ private:
 	VertexBuffer<Vertex> m_vertexBuffer;
 	ConstantBuffer<Material_CB> m_cbMaterial;
 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTextureRTT;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTextureDiffuse;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTextureNormal;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTextureDisplacement;

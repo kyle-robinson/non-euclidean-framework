@@ -134,6 +134,19 @@ void Cube::Draw( ID3D11DeviceContext* pContext )
 	pContext->DrawIndexed( m_indexBuffer.IndexCount(), 0u, 0u );
 }
 
+void Cube::DrawRTT( ID3D11DeviceContext* pContext )
+{
+	UINT offset = 0;
+	pContext->IASetVertexBuffers( 0u, 1u, m_vertexBuffer.GetAddressOf(), m_vertexBuffer.StridePtr(), &offset );
+	pContext->IASetIndexBuffer( m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0 );
+
+	pContext->PSSetShaderResources( 0u, 1u, m_pTextureRTT.GetAddressOf() );
+	pContext->PSSetShaderResources( 1u, 1u, m_pTextureNormal.GetAddressOf() );
+	pContext->PSSetShaderResources( 2u, 1u, m_pTextureDisplacement.GetAddressOf() );
+
+	pContext->DrawIndexed( m_indexBuffer.IndexCount(), 0u, 0u );
+}
+
 void Cube::SpawnControlWindow()
 {
 	if ( ImGui::Begin( "Material Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
