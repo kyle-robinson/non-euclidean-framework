@@ -2,6 +2,8 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#define RENDER_DEPTH 3
+
 #include "Quad.h"
 #include "Shaders.h"
 #include "Sampler.h"
@@ -28,7 +30,7 @@ public:
 	inline Bind::DepthStencil* GetDepthStencil() const noexcept { return &*m_pDepthStencil; }
 	inline Bind::RenderTarget* GetRenderTarget() const noexcept { return &*m_pRenderTarget; }
 	inline Bind::RenderTarget* GetBackBuffer() const noexcept { return &*m_pBackBuffer; }
-	inline Bind::RenderTarget* GetCubeBuffer() const noexcept { return &*m_pCubeBuffer; }
+	inline Bind::RenderTarget* GetCubeBuffer( uint32_t index ) const noexcept { return &*m_pCubeBuffers.at( index ); }
 	inline float* GetClearColor() noexcept { return m_clearColor; }
 
 private:
@@ -57,9 +59,9 @@ private:
 
 	std::shared_ptr<Bind::Viewport> m_pViewport;
 	std::shared_ptr<Bind::RenderTarget> m_pBackBuffer;
-	std::shared_ptr<Bind::RenderTarget> m_pCubeBuffer;
 	std::shared_ptr<Bind::RenderTarget> m_pRenderTarget;
 	std::shared_ptr<Bind::DepthStencil> m_pDepthStencil;
+	std::unordered_map<uint32_t, std::shared_ptr<Bind::RenderTarget>> m_pCubeBuffers;
 	std::unordered_map<Bind::Sampler::Type, std::shared_ptr<Bind::Sampler>> m_pSamplerStates;
 	std::unordered_map<Bind::Rasterizer::Type, std::shared_ptr<Bind::Rasterizer>> m_pRasterizerStates;
 };
