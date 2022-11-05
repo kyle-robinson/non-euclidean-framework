@@ -28,6 +28,8 @@ public:
 	bool ProcessMessages() noexcept;
 	void Update();
 	void Render();
+
+	void SpawnControlWindow();
 private:
 	// Objects
 	Cube m_cube;

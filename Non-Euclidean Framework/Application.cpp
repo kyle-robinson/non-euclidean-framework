@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Application.h"
+#include <imgui/imgui.h>
 
 bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 {
@@ -179,6 +180,7 @@ void Application::Render()
 
     // Render imgui windows
     m_imgui.BeginRender();
+    SpawnControlWindow();
     m_imgui.SpawnInstructionWindow();
     m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
     m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
@@ -196,4 +198,22 @@ void Application::Render()
     XMStoreFloat4x4( &m_previousViewProjection,
         XMMatrixTranspose( m_camera.GetViewMatrix() ) *
         XMMatrixTranspose( m_camera.GetProjectionMatrix() ) );
+}
+
+void Application::SpawnControlWindow()
+{
+    if ( ImGui::Begin( "Depth Stencil", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+    {
+        ImGui::Text( "Render Depth" );
+        static int renderDepth = (int)RENDER_DEPTH;
+		ImGui::SliderInt( "##Render Depth", &renderDepth, 1, 5 );
+        RENDER_DEPTH = (uint32_t)renderDepth;
+
+        //if ( (uint32_t)graphics.GetCubeBuffers().size() < RENDER_DEPTH )
+        //{
+        //    graphics.GetCubeBuffers().resize( RENDER_DEPTH );
+        //    graphics.GetCubeBuffers().at( RENDER_DEPTH ) = std::make_shared<Bind::RenderTarget>( graphics.GetDevice(), graphics.GetWidth(), graphics.GetHeight() );
+        //}
+    }
+    ImGui::End();
 }

@@ -101,7 +101,7 @@ void Cube::Update( float dt, ID3D11DeviceContext* pContext )
 
 	DirectX::XMMATRIX mSpin = DirectX::XMMatrixRotationY( cummulativeTime );
 	DirectX::XMMATRIX mTranslate = DirectX::XMMatrixTranslation( 0.0f, 0.0f, 0.0f );
-	DirectX::XMMATRIX world = mTranslate * mSpin;
+	DirectX::XMMATRIX world = mTranslate;// * mSpin;
 	XMStoreFloat4x4( &m_World, world );
 }
 

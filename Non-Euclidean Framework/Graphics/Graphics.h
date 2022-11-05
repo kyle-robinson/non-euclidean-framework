@@ -2,7 +2,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
-#define RENDER_DEPTH 3
+static uint32_t RENDER_DEPTH = 5u;
 
 #include "Quad.h"
 #include "Shaders.h"
@@ -35,7 +35,8 @@ public:
 	inline ID3D11DeviceContext* GetContext() const noexcept { return m_pContext.Get(); }
 
 	inline Bind::RenderTarget* GetRenderTarget() const noexcept { return &*m_pRenderTarget; }
-	inline Bind::RenderTarget* GetCubeBuffer( uint32_t index ) const noexcept { return &*m_pCubeBuffers.at( index ); }
+	inline Bind::RenderTarget* GetCubeBuffer( uint32_t index ) { return &*m_pCubeBuffers.at( index ); }
+	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeBuffers() const noexcept { return m_pCubeBuffers; }
 
 private:
 	void InitializeDirectX( HWND hWnd );
@@ -67,7 +68,7 @@ private:
 	std::shared_ptr<Bind::BackBuffer> m_pBackBuffer;
 	std::shared_ptr<Bind::RenderTarget> m_pRenderTarget;
 	std::shared_ptr<Bind::DepthStencil> m_pDepthStencil;
-	std::unordered_map<uint32_t, std::shared_ptr<Bind::RenderTarget>> m_pCubeBuffers;
+	std::vector<std::shared_ptr<Bind::RenderTarget>> m_pCubeBuffers;
 	std::unordered_map<Bind::Sampler::Type, std::shared_ptr<Bind::Sampler>> m_pSamplerStates;
 	std::unordered_map<Bind::Rasterizer::Type, std::shared_ptr<Bind::Rasterizer>> m_pRasterizerStates;
 };
