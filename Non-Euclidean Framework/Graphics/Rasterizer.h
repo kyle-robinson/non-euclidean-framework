@@ -52,11 +52,11 @@ namespace Bind
 				return;
 			}
 		}
-		void Bind( ID3D11DeviceContext* context ) noexcept
+		inline void Bind( ID3D11DeviceContext* context ) noexcept
 		{
 			context->RSSetState( pRasterizer.Get() );
 		}
-		static void DrawSolid( ID3D11DeviceContext* context, UINT indexCount ) noexcept
+		inline static void DrawSolid( ID3D11DeviceContext* context, UINT indexCount ) noexcept
 		{
 			Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer_Solid;
 			context->RSSetState( pRasterizer_Solid.Get() );

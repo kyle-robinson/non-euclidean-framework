@@ -7,11 +7,13 @@
 #include "Resource.h"
 
 #include "Cube.h"
+#include "FXAA.h"
 #include "Input.h"
 #include "Timer.h"
 #include "Light.h"
 #include "Mapping.h"
 #include "Shaders.h"
+#include "MotionBlur.h"
 #include "ImGuiManager.h"
 #include "PostProcessing.h"
 #include "WindowContainer.h"
@@ -31,14 +33,19 @@ private:
 	Cube m_cube;
 	Light m_light;
 	Camera m_camera;
-	Mapping m_mapping;
 	ImGuiManager m_imgui;
-	RenderableGameObject m_skysphere;
+	RenderableGameObject m_objSkysphere;
 
-	// Program data/systems
+	// Systems
+	FXAA m_fxaa;
+	Mapping m_mapping;
+	MotionBlur m_motionBlur;
+	PostProcessing m_postProcessing;
+
+	// Data
 	Timer m_timer;
 	Input m_input;
-	PostProcessing m_postProcessing;
+	XMFLOAT4X4 m_previousViewProjection;
 	ConstantBuffer<Matrices> m_cbMatrices;
 };
 

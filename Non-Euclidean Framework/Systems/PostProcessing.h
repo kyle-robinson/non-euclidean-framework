@@ -10,11 +10,11 @@ class PostProcessing
 public:
 	void Initialize( ID3D11Device* pDevice );
 	void Bind( ID3D11DeviceContext* pContext, Bind::RenderTarget* pRenderTarget ) noexcept;
-	void SpawnControlWindow();
+	void SpawnControlWindow( bool usingMotionBlur, bool usingFXAA );
 	
-	void BindMonochrome() noexcept { basicEffect = BasicPostProcess::Effect::Monochrome; }
-	void BindSepia() noexcept { basicEffect = BasicPostProcess::Effect::Sepia; }
-	void UnbindEffect() noexcept { basicEffect = BasicPostProcess::Effect::Copy; }
+	inline void BindMonochrome() noexcept { basicEffect = BasicPostProcess::Effect::Monochrome; }
+	inline void BindSepia() noexcept { basicEffect = BasicPostProcess::Effect::Sepia; }
+	inline void UnbindEffect() noexcept { basicEffect = BasicPostProcess::Effect::Copy; }
 private:
 	// Post-processing parameters
 	float bloomThreshold;

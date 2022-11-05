@@ -46,7 +46,7 @@ namespace Bind
 				return;
 			}
 		}
-		void Bind( ID3D11DeviceContext* context ) noexcept
+		inline void Bind( ID3D11DeviceContext* context ) noexcept
 		{
 			context->PSSetSamplers( slot, 1u, pSampler.GetAddressOf() );
 		}

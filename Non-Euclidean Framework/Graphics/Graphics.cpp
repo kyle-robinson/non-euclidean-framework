@@ -20,7 +20,7 @@ bool Graphics::Initialize( HWND hWnd, UINT width, UINT height )
 void Graphics::InitializeDirectX( HWND hWnd )
 {
 	m_pSwapChain = std::make_shared<Bind::SwapChain>( m_pContext.GetAddressOf(), m_pDevice.GetAddressOf(), hWnd, m_viewWidth, m_viewHeight );
-    m_pBackBuffer = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_pSwapChain->GetSwapChain() );
+    m_pBackBuffer = std::make_shared<Bind::BackBuffer>( m_pDevice.Get(), m_pSwapChain->GetSwapChain() );
 	for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
 		m_pCubeBuffers.emplace( i, std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
@@ -73,6 +73,19 @@ bool Graphics::InitializeShaders()
 		hr = m_pixelShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ.fx" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create skysphere pixel shader!" );
 
+		// Define input layout for textures
+		D3D11_INPUT_ELEMENT_DESC layoutTEX[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		};
+
+		// Create the texture shaders
+		hr = m_vertexShaderTEX.Initialize( m_pDevice, L"Resources\\Shaders\\shaderTEX.fx", layoutTEX, ARRAYSIZE( layoutTEX ) );
+		COM_ERROR_IF_FAILED( hr, "Failed to create texture vertex shader!" );
+		hr = m_pixelShaderTEX.Initialize( m_pDevice, L"Resources\\Shaders\\shaderTEX.fx" );
+		COM_ERROR_IF_FAILED( hr, "Failed to create texture pixel shader!" );
+
 		// Define input layout for quad
 		D3D11_INPUT_ELEMENT_DESC layoutPP[] =
 		{
@@ -102,6 +115,20 @@ bool Graphics::InitializeRTT()
 	return true;
 }
 
+void Graphics::BeginFrame()
+{
+	// Clear render target/depth stencil
+    m_pRenderTarget->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+    m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
+}
+
+void Graphics::BeginFrameCube( uint32_t index )
+{
+	// Clear render target/depth stencil
+    m_pCubeBuffers.at( index )->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+    m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
+}
+
 void Graphics::UpdateRenderStateSkysphere()
 {
 	// Set render state for skysphere
@@ -116,25 +143,45 @@ void Graphics::UpdateRenderStateCube()
     Shaders::BindShaders( m_pContext.Get(), m_vertexShader, m_pixelShader );
 }
 
-void Graphics::RenderSceneToTexture()
+void Graphics::UpdateRenderStateObject()
+{
+	// Set default render state for objects
+    m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
+    Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderOBJ );
+}
+
+void Graphics::UpdateRenderStateTexture()
+{
+	// Set default render state for objects
+    m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
+    Shaders::BindShaders( m_pContext.Get(), m_vertexShaderTEX, m_pixelShaderTEX );
+}
+
+void Graphics::BeginRenderSceneToTexture()
 {
 	// Bind new render target
-	m_pBackBuffer->BindAsBuffer( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+	m_pBackBuffer->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+}
 
+void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA )
+{
 	// Render fullscreen texture to new render target
 	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderPP, m_pixelShaderPP );
+	m_pContext->PSSetConstantBuffers( 0u, 1u, cbMotionBlur );	
+	m_pContext->PSSetConstantBuffers( 1u, 1u, cbFXAA );	
 	m_quad.SetupBuffers( m_pContext.Get() );
 	m_pContext->PSSetShaderResources( 0u, 1u, m_pRenderTarget->GetShaderResourceViewPtr() );
+	m_pContext->PSSetShaderResources( 1u, 1u, m_pDepthStencil->GetShaderResourceViewPtr() );
 	Bind::Rasterizer::DrawSolid( m_pContext.Get(), m_quad.GetIndexBuffer().IndexCount() ); // always draw as solid
 }
 
 void Graphics::EndFrame()
 {
 	// Unbind render target
-	m_pRenderTarget->BindAsNull( m_pContext.Get() );
+	m_pRenderTarget->BindNull( m_pContext.Get() );
 	for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
-		m_pCubeBuffers.at( i )->BindAsNull( m_pContext.Get() );
-	m_pBackBuffer->BindAsNull( m_pContext.Get() );
+		m_pCubeBuffers.at( i )->BindNull( m_pContext.Get() );
+	m_pBackBuffer->BindNull( m_pContext.Get() );
 
 	// Present frame
 	HRESULT hr = m_pSwapChain->GetSwapChain()->Present( 1u, NULL );

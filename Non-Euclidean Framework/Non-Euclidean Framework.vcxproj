@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath);$(VC_IncludePath);$(SolutionDir)/External;$(WindowsSDK_IncludePath);$(ProjectDir)/;$(ProjectDir)/Graphics;$(ProjectDir)/Model;$(ProjectDir)/Input;$(ProjectDir)/Objects;$(ProjectDir)/Utility;$(ProjectDir)/Window;$(ProjectDir)/Resources</IncludePath>
+    <IncludePath>$(IncludePath);$(VC_IncludePath);$(SolutionDir)/External;$(WindowsSDK_IncludePath);$(ProjectDir)/;$(ProjectDir)/Graphics;$(ProjectDir)/Model;$(ProjectDir)/Input;$(ProjectDir)/Systems;$(ProjectDir)/Objects;$(ProjectDir)/Utility;$(ProjectDir)/Window;$(ProjectDir)/Resources</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)\External\lib;$(SolutionDir)\External\lib\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -150,6 +150,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\FXAA.h" />
+    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\Mapping.h" />
+    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\MotionBlur.h" />
+    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\PostProcessing.h" />
     <ClInclude Include="..\External\imgui\imconfig.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -180,7 +184,6 @@
     <ClInclude Include="Graphics\Graphics.h" />
     <ClInclude Include="Graphics\ImGuiManager.h" />
     <ClInclude Include="Graphics\IndexBuffer.h" />
-    <ClInclude Include="Graphics\PostProcessing.h" />
     <ClInclude Include="Graphics\Rasterizer.h" />
     <ClInclude Include="Graphics\RenderTarget.h" />
     <ClInclude Include="Graphics\Sampler.h" />
@@ -202,7 +205,6 @@
     <ClInclude Include="Objects\Camera.h" />
     <ClInclude Include="Objects\Cube.h" />
     <ClInclude Include="Objects\Light.h" />
-    <ClInclude Include="Objects\Mapping.h" />
     <ClInclude Include="Objects\Quad.h" />
     <ClInclude Include="Resources\Resource.h" />
     <ClInclude Include="Utility\COMException.h" />
@@ -216,6 +218,10 @@
     <ClInclude Include="Window\WindowContainer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\FXAA.cpp" />
+    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\Mapping.cpp" />
+    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\MotionBlur.cpp" />
+    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\PostProcessing.cpp" />
     <ClCompile Include="..\External\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -243,7 +249,6 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\ImGuiManager.cpp" />
-    <ClCompile Include="Graphics\PostProcessing.cpp" />
     <ClCompile Include="Graphics\Shaders.cpp" />
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Input\Keyboard.cpp" />
@@ -260,7 +265,6 @@
     <ClCompile Include="Objects\Camera.cpp" />
     <ClCompile Include="Objects\Cube.cpp" />
     <ClCompile Include="Objects\Light.cpp" />
-    <ClCompile Include="Objects\Mapping.cpp" />
     <ClCompile Include="Objects\Quad.cpp" />
     <ClCompile Include="Utility\DDSTextureLoader.cpp" />
     <ClCompile Include="Utility\ErrorLogger.cpp" />
@@ -273,6 +277,9 @@
     <ClCompile Include="Window\WindowContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Resources\Shaders\shaderTEX.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Resources\Shaders\shader.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>

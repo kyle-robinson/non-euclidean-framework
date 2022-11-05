@@ -12,6 +12,51 @@ struct Matrices
 	XMMATRIX mProjection;
 };
 
+// Motion Blur
+struct MotionBlurData
+{
+	MotionBlurData()
+		: UseMotionBlur( FALSE )
+		, NumSamples( 2 )
+	{}
+
+	XMMATRIX mViewProjectionInverse;
+	XMMATRIX mPreviousViewProjection;
+
+	BOOL UseMotionBlur;
+	int NumSamples;
+	XMFLOAT2 Padding;
+};
+
+struct MotionBlur_CB
+{
+	MotionBlurData MotionBlur;
+};
+
+// Fast Approximate Anti-Aliasing
+struct FXAAData
+{
+	FXAAData()
+		: SpanMax( 8.0f )
+		, ReduceMin( 1.0f / 128.0f )
+		, ReduceMul( 1.0f / 8.0f )
+		, UseFXAA( FALSE )
+	{}
+
+	XMFLOAT2 TextureSizeInverse;
+	FLOAT SpanMax;
+	FLOAT ReduceMin;
+
+	FLOAT ReduceMul;
+	BOOL UseFXAA;
+	XMFLOAT2 Padding;
+};
+
+struct FXAA_CB
+{
+	FXAAData FXAA;
+};
+
 // Materials
 struct MaterialData
 {

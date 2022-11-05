@@ -17,9 +17,16 @@ class Graphics
 {
 public:
 	bool Initialize( HWND hWnd, UINT width, UINT height );
+	void BeginFrame();
+	void BeginFrameCube( uint32_t index );
+
 	void UpdateRenderStateSkysphere();
 	void UpdateRenderStateCube();
-	void RenderSceneToTexture();
+	void UpdateRenderStateObject();
+	void UpdateRenderStateTexture();
+	
+	void BeginRenderSceneToTexture();
+	void RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA );
 	void EndFrame();
 
 	inline UINT GetWidth() const noexcept { return m_viewWidth; }
@@ -27,11 +34,8 @@ public:
 	inline ID3D11Device* GetDevice() const noexcept { return m_pDevice.Get(); }
 	inline ID3D11DeviceContext* GetContext() const noexcept { return m_pContext.Get(); }
 
-	inline Bind::DepthStencil* GetDepthStencil() const noexcept { return &*m_pDepthStencil; }
 	inline Bind::RenderTarget* GetRenderTarget() const noexcept { return &*m_pRenderTarget; }
-	inline Bind::RenderTarget* GetBackBuffer() const noexcept { return &*m_pBackBuffer; }
 	inline Bind::RenderTarget* GetCubeBuffer( uint32_t index ) const noexcept { return &*m_pCubeBuffers.at( index ); }
-	inline float* GetClearColor() noexcept { return m_clearColor; }
 
 private:
 	void InitializeDirectX( HWND hWnd );
@@ -49,6 +53,8 @@ private:
 	PixelShader m_pixelShader;
 	VertexShader m_vertexShaderPP;
 	PixelShader m_pixelShaderPP;
+	VertexShader m_vertexShaderTEX;
+	PixelShader m_pixelShaderTEX;
 	VertexShader m_vertexShaderOBJ;
 	PixelShader m_pixelShaderOBJ;
 
@@ -58,7 +64,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pContext;
 
 	std::shared_ptr<Bind::Viewport> m_pViewport;
-	std::shared_ptr<Bind::RenderTarget> m_pBackBuffer;
+	std::shared_ptr<Bind::BackBuffer> m_pBackBuffer;
 	std::shared_ptr<Bind::RenderTarget> m_pRenderTarget;
 	std::shared_ptr<Bind::DepthStencil> m_pDepthStencil;
 	std::unordered_map<uint32_t, std::shared_ptr<Bind::RenderTarget>> m_pCubeBuffers;

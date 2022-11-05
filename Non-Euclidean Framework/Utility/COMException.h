@@ -28,7 +28,7 @@ public:
 		whatMsg += L"\nFunction: " + StringConverter::StringToWide( function );
 		whatMsg += L"\nLine: " + StringConverter::StringToWide( std::to_string( line ) );
 	}
-	const wchar_t* what() const
+	inline const wchar_t* what() const
 	{
 		return whatMsg.c_str();
 	}

@@ -22,7 +22,7 @@ public:
 		stride = rhs.stride;
 		vertexCount = rhs.vertexCount;
 	}
-	VertexBuffer<T>& operator=( const VertexBuffer<T>& rhs )
+	inline VertexBuffer<T>& operator=( const VertexBuffer<T>& rhs )
 	{
 		buffer = rhs.buffer;
 		stride = rhs.stride;
@@ -30,31 +30,31 @@ public:
 		return *this;
 	}
 public:
-	ID3D11Buffer* Get() const noexcept
+	inline ID3D11Buffer* Get() const noexcept
 	{
 		return buffer.Get();
 	}
-	ID3D11Buffer* const* GetAddressOf() const noexcept
+	inline ID3D11Buffer* const* GetAddressOf() const noexcept
 	{
 		return buffer.GetAddressOf();
 	}
-	UINT VertexCount() const noexcept
+	inline UINT VertexCount() const noexcept
 	{
 		return vertexCount;
 	}
-	const UINT Stride() const noexcept
+	inline const UINT Stride() const noexcept
 	{
 		return stride;
 	}
-	const UINT* StridePtr() const noexcept
+	inline const UINT* StridePtr() const noexcept
 	{
 		return &stride;
 	}
-	const std::vector<XMFLOAT3>& GetVertexPositions() const noexcept
+	inline const std::vector<XMFLOAT3>& GetVertexPositions() const noexcept
 	{
 		return vertexPositions;
 	}
-	HRESULT Initialize( ID3D11Device* device, T* data, UINT vertexCount )
+	inline HRESULT Initialize( ID3D11Device* device, T* data, UINT vertexCount )
 	{
 		if ( buffer.Get() != nullptr )
 			buffer.Reset();

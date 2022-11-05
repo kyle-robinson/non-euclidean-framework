@@ -8,20 +8,26 @@
 #include "ErrorLogger.h"
 #include "DepthStencil.h"
 
+extern UINT MAX_QUALITY;
+extern UINT SAMPLE_COUNT;
+
 namespace Bind
 {
 	class DepthStencil;
-	class RenderTarget
+#pragma region BACK_BUFFER
+	class BackBuffer
 	{
 	public:
-		RenderTarget( ID3D11Device* device, IDXGISwapChain* swapChain )
+		BackBuffer( ID3D11Device* device, IDXGISwapChain* swapChain )
 		{
 			try
 			{
 				Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
 				HRESULT hr = swapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( LPVOID* )pBackBuffer.GetAddressOf() );
 				COM_ERROR_IF_FAILED( hr, "Failed to create swap chain!" );
-				hr = device->CreateRenderTargetView( pBackBuffer.Get(), nullptr, backBuffer.GetAddressOf() );
+
+				CD3D11_RENDER_TARGET_VIEW_DESC rtvDesc( D3D11_RTV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R8G8B8A8_UNORM );
+				hr = device->CreateRenderTargetView( pBackBuffer.Get(), &rtvDesc, backBuffer.GetAddressOf() );
 				COM_ERROR_IF_FAILED( hr, "Failed to create render target view!" );
 			}
 			catch ( COMException& exception )
@@ -30,6 +36,33 @@ namespace Bind
 				return;
 			}
 		}
+		inline void Bind( ID3D11DeviceContext* context, DepthStencil* depthStencil, float clearColor[4] ) noexcept
+		{
+			context->OMSetRenderTargets( 1u, backBuffer.GetAddressOf(), depthStencil->GetDepthStencilView() );
+			context->ClearRenderTargetView( backBuffer.Get(), clearColor );
+		}
+		inline void BindNull( ID3D11DeviceContext* context ) noexcept
+		{
+			Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
+			context->OMSetRenderTargets( 1u, nullRenderTarget.GetAddressOf(), nullptr );
+		}
+		inline ID3D11RenderTargetView* GetBackBuffer() noexcept
+		{
+			return backBuffer.Get();
+		}
+		inline ID3D11RenderTargetView** GetBackBufferPtr() noexcept
+		{
+			return backBuffer.GetAddressOf();
+		}
+	private:
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBuffer;
+	};
+#pragma endregion
+
+#pragma region RENDER_TARGET
+	class RenderTarget
+	{
+	public:
 		RenderTarget( ID3D11Device* device, int width, int height )
 		{
 			try
@@ -38,15 +71,15 @@ namespace Bind
 				D3D11_TEXTURE2D_DESC textureDesc = { 0 };
 				textureDesc.Width = width;
 				textureDesc.Height = height;
-				textureDesc.MipLevels = 1;
-				textureDesc.ArraySize = 1;
+				textureDesc.MipLevels = 1u;
+				textureDesc.ArraySize = 1u;
 				textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-				textureDesc.SampleDesc.Count = 1u;
-				textureDesc.SampleDesc.Quality = 0u;
+				textureDesc.SampleDesc.Count = SAMPLE_COUNT;
+				textureDesc.SampleDesc.Quality = MAX_QUALITY;
 				textureDesc.Usage = D3D11_USAGE_DEFAULT;
 				textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-				textureDesc.CPUAccessFlags = 0;
-				textureDesc.MiscFlags = 0;
+				textureDesc.CPUAccessFlags = 0u;
+				textureDesc.MiscFlags = 0u;
 				Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 				HRESULT hr = device->CreateTexture2D( &textureDesc, nullptr, pTexture.GetAddressOf() );
 				COM_ERROR_IF_FAILED( hr, "Failed to create Texture for Render Target!" );
@@ -55,8 +88,8 @@ namespace Bind
 				D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 				srvDesc.Format = textureDesc.Format;
 				srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-				srvDesc.Texture2D.MostDetailedMip = 0;
-				srvDesc.Texture2D.MipLevels = 1;
+				srvDesc.Texture2D.MostDetailedMip = 0u;
+				srvDesc.Texture2D.MipLevels = 1u;
 				hr = device->CreateShaderResourceView( pTexture.Get(), &srvDesc, shaderResourceView.GetAddressOf() );
 				COM_ERROR_IF_FAILED( hr, "Failed to create Shader Resource View!" );
 
@@ -64,7 +97,6 @@ namespace Bind
 				D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 				rtvDesc.Format = textureDesc.Format;
 				rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-				rtvDesc.Texture2D = D3D11_TEX2D_RTV{ 0 };
 				hr = device->CreateRenderTargetView( pTexture.Get(), &rtvDesc, renderTargetView.GetAddressOf() );
 				COM_ERROR_IF_FAILED( hr, "Failed to create Render Target View with Texture!" );
 			}
@@ -74,36 +106,39 @@ namespace Bind
 				return;
 			}
 		}
-		void BindAsBuffer( ID3D11DeviceContext* context, DepthStencil* depthStencil, float clearColor[4] ) noexcept
-		{
-			context->OMSetRenderTargets( 1, backBuffer.GetAddressOf(), depthStencil->GetDepthStencilView() );
-			context->ClearRenderTargetView( backBuffer.Get(), clearColor );
-		}
-		void BindAsTexture( ID3D11DeviceContext* context, DepthStencil* depthStencil, float clearColor[4] ) noexcept
+		inline void Bind( ID3D11DeviceContext* context, DepthStencil* depthStencil, float clearColor[4] ) noexcept
 		{
 			context->OMSetRenderTargets( 1u, renderTargetView.GetAddressOf(), depthStencil->GetDepthStencilView() );
 			context->ClearRenderTargetView( renderTargetView.Get(), clearColor );
 		}
-		void BindAsNull( ID3D11DeviceContext* context ) noexcept
+		inline void BindNull( ID3D11DeviceContext* context ) noexcept
 		{
 			Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
 			context->OMSetRenderTargets( 1u, nullRenderTarget.GetAddressOf(), nullptr );
 			Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullShaderResourceView = nullptr;
 			context->PSSetShaderResources( 0u, 1u, nullShaderResourceView.GetAddressOf() );
 		}
-		ID3D11ShaderResourceView* GetShaderResourceView() noexcept
+		inline ID3D11ShaderResourceView* GetShaderResourceView() noexcept
 		{
 			return shaderResourceView.Get();
 		}
-		ID3D11ShaderResourceView** GetShaderResourceViewPtr() noexcept
+		inline ID3D11ShaderResourceView** GetShaderResourceViewPtr() noexcept
 		{
 			return shaderResourceView.GetAddressOf();
 		}
+		inline ID3D11RenderTargetView* GetRenderTarget() noexcept
+		{
+			return renderTargetView.Get();
+		}
+		inline ID3D11RenderTargetView** GetRenderTargetPtr() noexcept
+		{
+			return renderTargetView.GetAddressOf();
+		}
 	private:
-		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBuffer;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
 	};
+#pragma endregion
 }
 
 #endif

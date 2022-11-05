@@ -20,7 +20,7 @@ public:
 	void Initialize( int width, int height );
 	void UpdateMatrices( std::unique_ptr<Camera>& camera );
 	bool TestIntersection( int mouseX, int mouseY, GameObject3D object );
-	void SetWidthHight( int Width, int Hight ) { width = Width; height = Hight; }
+	inline void SetWidthHight( int Width, int Hight ) { width = Width; height = Hight; }
 private:
 	DirectX::XMMATRIX viewMatrix, projectionMatrix;
 	int width, height;

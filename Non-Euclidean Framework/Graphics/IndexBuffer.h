@@ -15,19 +15,19 @@ private:
 	UINT indexCount = 0;
 public:
 	IndexBuffer() {}
-	ID3D11Buffer* Get() const noexcept
+	inline ID3D11Buffer* Get() const noexcept
 	{
 		return buffer.Get();
 	}
-	ID3D11Buffer* const* GetAddressOf() const noexcept
+	inline ID3D11Buffer* const* GetAddressOf() const noexcept
 	{
 		return buffer.GetAddressOf();
 	}
-	UINT IndexCount() const noexcept
+	inline UINT IndexCount() const noexcept
 	{
 		return indexCount;
 	}
-	HRESULT Initialize( ID3D11Device* device, WORD* data, UINT indexCount )
+	inline HRESULT Initialize( ID3D11Device* device, WORD* data, UINT indexCount )
 	{
 		if ( buffer.Get() != nullptr )
 			buffer.Reset();

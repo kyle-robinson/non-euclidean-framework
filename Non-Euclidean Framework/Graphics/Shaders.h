@@ -27,9 +27,9 @@ public:
 		D3D11_INPUT_ELEMENT_DESC* layoutDesc,
 		UINT numElements
 	);
-	ID3D11VertexShader* GetShader() const noexcept { return shader.Get(); };
-	ID3D10Blob* GetBuffer() const noexcept { return shaderBuffer.Get(); };
-	ID3D11InputLayout* GetInputLayout() const noexcept { return inputLayout.Get(); };
+	inline ID3D11VertexShader* GetShader() const noexcept { return shader.Get(); };
+	inline ID3D10Blob* GetBuffer() const noexcept { return shaderBuffer.Get(); };
+	inline ID3D11InputLayout* GetInputLayout() const noexcept { return inputLayout.Get(); };
 private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> shader;
@@ -40,8 +40,8 @@ class PixelShader : Shaders
 {
 public:
 	HRESULT Initialize( Microsoft::WRL::ComPtr<ID3D11Device>& device, std::wstring shaderPath );
-	ID3D11PixelShader* GetShader() const noexcept { return shader.Get(); }
-	ID3D10Blob* GetBlob() const noexcept { return shaderBuffer.Get(); };
+	inline ID3D11PixelShader* GetShader() const noexcept { return shader.Get(); }
+	inline ID3D10Blob* GetBlob() const noexcept { return shaderBuffer.Get(); };
 private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
 	Microsoft::WRL::ComPtr<ID3D10Blob> shaderBuffer;

@@ -17,15 +17,15 @@ private:
 public:
 	ConstantBuffer() {}
 	T data;
-	ID3D11Buffer* Get() const noexcept
+	inline ID3D11Buffer* Get() const noexcept
 	{
 		return buffer.Get();
 	}
-	ID3D11Buffer* const* GetAddressOf() const noexcept
+	inline ID3D11Buffer* const* GetAddressOf() const noexcept
 	{
 		return buffer.GetAddressOf();
 	}
-	HRESULT Initialize( ID3D11Device* device, ID3D11DeviceContext* context )
+	inline HRESULT Initialize( ID3D11Device* device, ID3D11DeviceContext* context )
 	{
 		if ( buffer.Get() != nullptr )
 			buffer.Reset();
@@ -43,7 +43,7 @@ public:
 		HRESULT hr = device->CreateBuffer( &constantBufferDesc, NULL, buffer.GetAddressOf() );
 		return hr;
 	}
-	bool ApplyChanges()
+	inline bool ApplyChanges()
 	{
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 		HRESULT hr = context->Map( buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource );

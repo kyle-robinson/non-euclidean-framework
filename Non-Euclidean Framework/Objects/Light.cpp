@@ -3,10 +3,16 @@
 #include "Camera.h"
 #include <imgui/imgui.h>
 
-bool Light::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
+bool Light::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_vertexshader )
 {
 	try
 	{
+		// Initialize light model
+        if ( !m_objLight.Initialize( "Resources\\Models\\light.obj", pDevice, pContext, cb_vs_vertexshader ) )
+		    return false;
+        m_objLight.SetInitialScale( 0.1f, 0.1f, 0.1f );
+
+        // Initialize constant buffer
 		HRESULT hr = m_cbLight.Initialize( pDevice, pContext );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'Light' constant buffer!" );
 	}
@@ -16,6 +22,12 @@ bool Light::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 		return false;
 	}
 	return true;
+}
+
+void Light::Draw( const XMMATRIX& view, const XMMATRIX& projection )
+{
+    if ( !m_bAttachedToCamera )
+        m_objLight.Draw( view, projection );
 }
 
 void Light::UpdateCB( Camera& camera )
@@ -42,6 +54,9 @@ void Light::UpdateCB( Camera& camera )
     if ( m_bAttachedToCamera )
         m_fPosition = cameraPosition;
     light.Position = m_fPosition;
+
+    // Update model position
+    m_objLight.SetPosition( XMFLOAT3( m_fPosition.x, m_fPosition.y, m_fPosition.z ) );
 
     DirectX::XMVECTOR lightDirection = DirectX::XMVectorSet(
         camera.GetCameraTarget().x - m_fPosition.x,
