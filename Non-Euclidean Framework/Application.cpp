@@ -191,4 +191,9 @@ void Application::Render()
 
     // Present frame
     graphics.EndFrame();
+
+    // Store current viewProj for next render pass
+    XMStoreFloat4x4( &m_previousViewProjection,
+        XMMatrixTranspose( m_camera.GetViewMatrix() ) *
+        XMMatrixTranspose( m_camera.GetProjectionMatrix() ) );
 }
