@@ -5,6 +5,16 @@
 class Camera;
 #include "RenderableGameObject.h"
 
+enum class Side
+{
+	FRONT,
+	BACK,
+	LEFT,
+	RIGHT,
+	TOP,
+	BOTTOM
+};
+
 class Face : public RenderableGameObject
 {
 public:
@@ -19,15 +29,6 @@ private:
 class StencilCube
 {
 public:
-	enum class Side
-	{
-		FRONT,
-		BACK,
-		LEFT,
-		RIGHT,
-		TOP,
-		BOTTOM
-	};
 	bool Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pDevice );
 	void SetTexture( Side side, ID3D11ShaderResourceView* pTexture );
 	void Draw( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_matrix, Camera& pCamera );

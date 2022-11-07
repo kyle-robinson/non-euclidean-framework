@@ -17,6 +17,28 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         // Initialize input 
         m_camera.Initialize( XMFLOAT3( 0.0f, 0.0f, -3.0f ), width, height );
         m_input.Initialize( renderWindow, m_camera );
+        for ( uint32_t i = 0; i < CAMERA_COUNT; i++ )
+        {
+            Camera camera;
+            camera.Initialize( XMFLOAT3( 0.0f, 0.0f, 0.0f ), width, height );
+            m_stencilCameras.emplace( (Side)i, std::move( camera ) );
+        }
+        m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -3.0f ) );
+        
+        m_stencilCameras.at( Side::BACK ).SetPosition( XMFLOAT3( 0.0f, 0.0f, 3.0f ) );
+        m_stencilCameras.at( Side::BACK ).SetRotation( XMFLOAT3( 0.0f, -XM_PI, 0.0f ) );
+        
+        m_stencilCameras.at( Side::LEFT ).SetPosition( XMFLOAT3( 3.0f, 0.0f, 0.0f ) );
+        m_stencilCameras.at( Side::LEFT ).SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
+        
+        m_stencilCameras.at( Side::RIGHT ).SetPosition( XMFLOAT3( -3.0f, 0.0f, 0.0f ) );
+        m_stencilCameras.at( Side::RIGHT ).SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
+        
+        m_stencilCameras.at( Side::TOP ).SetPosition( XMFLOAT3( 0.0f, 3.0f, 0.0f ) );
+        m_stencilCameras.at( Side::TOP ).SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
+        
+        m_stencilCameras.at( Side::BOTTOM ).SetPosition( XMFLOAT3( 0.0f, -3.0f, 0.0f ) );
+        m_stencilCameras.at( Side::BOTTOM ).SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
 
         // Initialize constant buffers
         HRESULT hr = m_cbMatrices.Initialize( graphics.GetDevice(), graphics.GetContext() );
@@ -97,35 +119,40 @@ void Application::Update()
 void Application::Render()
 {
 #pragma region RTT_CUBES
-    for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
+    for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
     {
-        // Render RTT cube
-        graphics.BeginFrameCube( i );
+        for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
+        {
+            // Render RTT cube
+            graphics.BeginFrameCube( (Side)i, j );
+            Camera camera = m_stencilCameras.at( (Side)i );
 
-        graphics.UpdateRenderStateSkysphere();
-        m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
+            graphics.UpdateRenderStateSkysphere();
+            m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
     
-        // Update constant buffers
-        m_light.UpdateCB( m_camera );
-        m_mapping.UpdateCB();
-        m_cube.UpdateCB();
+            // Update constant buffers
+            m_light.UpdateCB( camera );
+            m_mapping.UpdateCB();
+            m_cube.UpdateCB();
 
-        // Draw cube with stencil view
-        graphics.UpdateRenderStateCube();
-        m_cube.UpdateBuffers( m_cbMatrices, m_camera );
-        if ( i > 0 )
-            m_cube.SetTexture( graphics.GetCubeBuffer( i - 1 )->GetShaderResourceView() );
-        graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
-        graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
-        graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
-        graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-        if ( i == 0 )
-            m_cube.Draw( graphics.GetContext() );
-        else
-            m_cube.DrawRTT( graphics.GetContext() );
+            // Draw cube with stencil view
+            graphics.UpdateRenderStateCube();
+            m_cube.UpdateBuffers( m_cbMatrices, camera );
+            if ( j > 0 )
+                m_cube.SetTexture( graphics.GetCubeBuffer( (Side)i, j - 1 )->GetShaderResourceView() );
+            graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
+            graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
+            graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
+            graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
+            if ( j == 0 )
+                m_cube.Draw( graphics.GetContext() );
+            else
+                m_cube.DrawRTT( graphics.GetContext() );
 
-        graphics.UpdateRenderStateTexture();
-        m_light.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
+            // Draw light object
+            graphics.UpdateRenderStateTexture();
+            m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+        }
     }
 #pragma endregion
 
@@ -142,25 +169,27 @@ void Application::Render()
     m_cube.UpdateCB();
 
     // Draw normal cube
-    graphics.UpdateRenderStateCube();
-    m_cube.UpdateBuffers( m_cbMatrices, m_camera );
-    m_cube.SetTexture( graphics.GetCubeBuffer( RENDER_DEPTH - 1 )->GetShaderResourceView() );
-    graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
-    graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
-    graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
-    graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-    m_cube.DrawRTT( graphics.GetContext() );
+    //graphics.UpdateRenderStateCube();
+    //m_cube.UpdateBuffers( m_cbMatrices, m_camera );
+    //m_cube.SetTexture( graphics.GetCubeBuffer( RENDER_DEPTH - 1 )->GetShaderResourceView() );
+    //graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
+    //graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
+    //graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
+    //graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
+    //m_cube.DrawRTT( graphics.GetContext() );
 
     // Draw stencil cube
     graphics.UpdateRenderStateObject();
-    for ( uint32_t i = 0u; i < 6u; i++ )
-        m_stencilCube.SetTexture( (StencilCube::Side)i, m_pTexture.Get() );
+    for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+        m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1 )->GetShaderResourceView() );
     m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
+    // Draw light object
     graphics.UpdateRenderStateTexture();
     m_light.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
 #pragma endregion
 
+#pragma region POST-PROCESSING
     // Setup motion blur
     XMMATRIX viewProjInv = XMMatrixInverse( nullptr, XMMatrixTranspose( m_camera.GetViewMatrix() ) * XMMatrixTranspose( m_camera.GetProjectionMatrix() ) );
     m_motionBlur.SetViewProjInv( viewProjInv );
@@ -197,6 +226,7 @@ void Application::Render()
     XMStoreFloat4x4( &m_previousViewProjection,
         XMMatrixTranspose( m_camera.GetViewMatrix() ) *
         XMMatrixTranspose( m_camera.GetProjectionMatrix() ) );
+#pragma endregion
 }
 
 void Application::SpawnControlWindow()

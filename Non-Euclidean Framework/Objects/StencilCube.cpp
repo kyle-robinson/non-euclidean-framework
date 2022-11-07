@@ -93,8 +93,8 @@ bool StencilCube::Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pDevi
         m_pFaces.at( Side::BOTTOM )->SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
 
         // Adjust entire cube position
-        for ( uint32_t i = 0u; i < 6u; i++ )
-            m_pFaces.at( (Side)i )->AdjustPosition( XMFLOAT3( -2.5f, 0.0f, 0.0f ) );
+        //for ( uint32_t i = 0u; i < 6u; i++ )
+        //    m_pFaces.at( (Side)i )->AdjustPosition( XMFLOAT3( -2.5f, 0.0f, 0.0f ) );
     }
     catch ( COMException& exception )
     {

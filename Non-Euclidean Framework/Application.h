@@ -39,6 +39,7 @@ private:
 	ImGuiManager m_imgui;
 	StencilCube m_stencilCube;
 	RenderableGameObject m_objSkysphere;
+	std::unordered_map<Side, Camera> m_stencilCameras;
 
 	// Systems
 	FXAA m_fxaa;

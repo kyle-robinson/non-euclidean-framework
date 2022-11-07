@@ -2,7 +2,9 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+enum class Side;
 static uint32_t RENDER_DEPTH = 5u;
+static uint32_t CAMERA_COUNT = 6u;
 
 #include "Quad.h"
 #include "Shaders.h"
@@ -18,7 +20,7 @@ class Graphics
 public:
 	bool Initialize( HWND hWnd, UINT width, UINT height );
 	void BeginFrame();
-	void BeginFrameCube( uint32_t index );
+	void BeginFrameCube( Side side, uint32_t index );
 
 	void UpdateRenderStateSkysphere();
 	void UpdateRenderStateCube();
@@ -35,8 +37,9 @@ public:
 	inline ID3D11DeviceContext* GetContext() const noexcept { return m_pContext.Get(); }
 
 	inline Bind::RenderTarget* GetRenderTarget() const noexcept { return &*m_pRenderTarget; }
-	inline Bind::RenderTarget* GetCubeBuffer( uint32_t index ) { return &*m_pCubeBuffers.at( index ); }
-	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeBuffers() const noexcept { return m_pCubeBuffers; }
+	inline Bind::RenderTarget* GetCubeBuffer( Side side, uint32_t index ) { return &*m_pCubeBuffers.at( side ).at( index ); }
+	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeBufferSide( Side side ) const noexcept { return m_pCubeBuffers.at( side ); }
+	inline std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> GetCubeBufferAll( Side side ) const noexcept { return m_pCubeBuffers; }
 
 private:
 	void InitializeDirectX( HWND hWnd );
@@ -68,8 +71,8 @@ private:
 	std::shared_ptr<Bind::BackBuffer> m_pBackBuffer;
 	std::shared_ptr<Bind::RenderTarget> m_pRenderTarget;
 	std::shared_ptr<Bind::DepthStencil> m_pDepthStencil;
-	std::vector<std::shared_ptr<Bind::RenderTarget>> m_pCubeBuffers;
 	std::unordered_map<Bind::Sampler::Type, std::shared_ptr<Bind::Sampler>> m_pSamplerStates;
+	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeBuffers; // vector of depth textures for each face
 	std::unordered_map<Bind::Rasterizer::Type, std::shared_ptr<Bind::Rasterizer>> m_pRasterizerStates;
 };
 
