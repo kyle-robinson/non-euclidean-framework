@@ -119,14 +119,53 @@ void Application::Update()
 void Application::Render()
 {
 #pragma region RTT_CUBES
-    for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+    if ( m_bUseStencilCube )
     {
-        for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
+        for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+        {
+            for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
+            {
+                // Render RTT cube
+                graphics.BeginFrameCube( (Side)i, j );
+                Camera camera = m_stencilCameras.at( (Side)i );
+
+                graphics.UpdateRenderStateSkysphere();
+                m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+    
+                // Update constant buffers
+                m_light.UpdateCB( camera );
+                m_mapping.UpdateCB();
+                m_cube.UpdateCB();
+
+                // Draw cube with stencil view
+                graphics.UpdateRenderStateCube();
+                m_cube.UpdateBuffers( m_cbMatrices, camera );
+                if ( j > 0 )
+                    m_cube.SetTexture( graphics.GetCubeBuffer( (Side)i, j - 1 )->GetShaderResourceView() );
+                graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
+                graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
+                graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
+                graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
+                if ( j == 0 )
+                    m_cube.Draw( graphics.GetContext() );
+                else
+                    m_cube.DrawRTT( graphics.GetContext() );
+
+                // Draw light object
+                graphics.UpdateRenderStateTexture();
+                m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+            }
+        }
+    }
+    else
+    {
+        for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
         {
             // Render RTT cube
-            graphics.BeginFrameCube( (Side)i, j );
-            Camera camera = m_stencilCameras.at( (Side)i );
-
+            graphics.BeginFrameCube( (Side)0, i );
+            Camera camera = m_bUseStaticCamera ?
+                m_stencilCameras.at( (Side)0 ) : m_camera;
+            
             graphics.UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
     
@@ -138,13 +177,13 @@ void Application::Render()
             // Draw cube with stencil view
             graphics.UpdateRenderStateCube();
             m_cube.UpdateBuffers( m_cbMatrices, camera );
-            if ( j > 0 )
-                m_cube.SetTexture( graphics.GetCubeBuffer( (Side)i, j - 1 )->GetShaderResourceView() );
+            if ( i > 0 )
+                m_cube.SetTexture( graphics.GetCubeBuffer( (Side)0, i - 1 )->GetShaderResourceView() );
             graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
             graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
             graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
             graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-            if ( j == 0 )
+            if ( i == 0 )
                 m_cube.Draw( graphics.GetContext() );
             else
                 m_cube.DrawRTT( graphics.GetContext() );
@@ -168,21 +207,26 @@ void Application::Render()
     m_mapping.UpdateCB();
     m_cube.UpdateCB();
 
-    // Draw normal cube
-    //graphics.UpdateRenderStateCube();
-    //m_cube.UpdateBuffers( m_cbMatrices, m_camera );
-    //m_cube.SetTexture( graphics.GetCubeBuffer( RENDER_DEPTH - 1 )->GetShaderResourceView() );
-    //graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
-    //graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
-    //graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
-    //graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-    //m_cube.DrawRTT( graphics.GetContext() );
-
-    // Draw stencil cube
-    graphics.UpdateRenderStateObject();
-    for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-        m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1 )->GetShaderResourceView() );
-    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+    if ( m_bUseStencilCube )
+    {
+        // Draw stencil cube
+        graphics.UpdateRenderStateObject();
+        for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+            m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1 )->GetShaderResourceView() );
+        m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+    }
+    else
+    {
+        // Draw normal cube
+        graphics.UpdateRenderStateCube();
+        m_cube.UpdateBuffers( m_cbMatrices, m_camera );
+        m_cube.SetTexture( graphics.GetCubeBuffer( (Side)0, RENDER_DEPTH - 1 )->GetShaderResourceView() );
+        graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
+        graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
+        graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
+        graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
+        m_cube.DrawRTT( graphics.GetContext() );
+    }    
 
     // Draw light object
     graphics.UpdateRenderStateTexture();
@@ -233,6 +277,14 @@ void Application::SpawnControlWindow()
 {
     if ( ImGui::Begin( "Depth Stencil", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
     {
+        static bool useStencilCube = m_bUseStencilCube;
+        ImGui::Checkbox( "Use Stencil Cube?", &useStencilCube );
+	    m_bUseStencilCube = useStencilCube;
+
+        static bool useStaticCamera = m_bUseStaticCamera;
+        ImGui::Checkbox( "Use Static Camera?", &useStaticCamera );
+        m_bUseStaticCamera = useStaticCamera;
+
         ImGui::Text( "Render Depth" );
         static int renderDepth = (int)RENDER_DEPTH;
 		ImGui::SliderInt( "##Render Depth", &renderDepth, 1, 5 );

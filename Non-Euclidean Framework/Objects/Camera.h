@@ -9,6 +9,7 @@ class Camera
 public:
 	void Initialize( const XMFLOAT3& initialPosition, int width, int height );
 	void SetProjectionValues( FLOAT fovDegrees,FLOAT aspectRatio, FLOAT nearZ, FLOAT farZ  );
+	Camera& operator = ( const Camera& cam ) { return *this; }
 
 	inline const XMMATRIX& GetViewMatrix() const noexcept { return view; };
 	inline const XMMATRIX& GetProjectionMatrix() const noexcept { return projection; };

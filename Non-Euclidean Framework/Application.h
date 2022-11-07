@@ -32,6 +32,9 @@ public:
 
 	void SpawnControlWindow();
 private:
+	bool m_bUseStencilCube = false;
+	bool m_bUseStaticCamera = true;
+
 	// Objects
 	Cube m_cube;
 	Light m_light;
