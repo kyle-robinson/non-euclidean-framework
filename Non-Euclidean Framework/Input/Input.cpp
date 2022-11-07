@@ -70,6 +70,8 @@ void Input::UpdateKeyboard( float dt )
     if ( keyboard.KeyIsPressed( 'A' ) ) m_pCamera->MoveLeft( dt );
     if ( keyboard.KeyIsPressed( 'S' ) ) m_pCamera->MoveBackward( dt );
     if ( keyboard.KeyIsPressed( 'D' ) ) m_pCamera->MoveRight( dt );
+    if ( keyboard.KeyIsPressed( VK_SPACE ) ) m_pCamera->MoveUp( dt );
+    if ( keyboard.KeyIsPressed( VK_CONTROL ) ) m_pCamera->MoveDown( dt );
 
     // Camera speed
     m_pCamera->SetCameraSpeed( 2.5f );

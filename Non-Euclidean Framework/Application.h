@@ -14,6 +14,7 @@
 #include "Mapping.h"
 #include "Shaders.h"
 #include "MotionBlur.h"
+#include "StencilCube.h"
 #include "ImGuiManager.h"
 #include "PostProcessing.h"
 #include "WindowContainer.h"
@@ -36,6 +37,7 @@ private:
 	Light m_light;
 	Camera m_camera;
 	ImGuiManager m_imgui;
+	StencilCube m_stencilCube;
 	RenderableGameObject m_objSkysphere;
 
 	// Systems
@@ -49,6 +51,8 @@ private:
 	Input m_input;
 	XMFLOAT4X4 m_previousViewProjection;
 	ConstantBuffer<Matrices> m_cbMatrices;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTextureLight;
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Cube.h"
+#include "Camera.h"
 #include <imgui/imgui.h>
 
 Vertex vertices[] =
@@ -94,13 +95,13 @@ bool Cube::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext 
 	return true;
 }
 
-void Cube::Update( float dt, ID3D11DeviceContext* pContext )
+void Cube::Update( float dt )
 {
 	static float cummulativeTime = 0;
 	cummulativeTime += dt;
 
 	DirectX::XMMATRIX mSpin = DirectX::XMMatrixRotationY( cummulativeTime );
-	DirectX::XMMATRIX mTranslate = DirectX::XMMatrixTranslation( 0.0f, 0.0f, 0.0f );
+	DirectX::XMMATRIX mTranslate = DirectX::XMMatrixTranslation( m_position.x, m_position.y, m_position.z );
 	DirectX::XMMATRIX world = mTranslate;// * mSpin;
 	XMStoreFloat4x4( &m_World, world );
 }
@@ -119,6 +120,18 @@ void Cube::UpdateCB()
 	// Add to constant buffer
 	m_cbMaterial.data.Material = materialData;
 	if ( !m_cbMaterial.ApplyChanges() ) return;
+}
+
+void Cube::UpdateBuffers( ConstantBuffer<Matrices>& cb_vs_matrices, Camera& pCamera )
+{
+	// Get the game object world transform
+    XMMATRIX mGO = XMLoadFloat4x4( &m_World );
+	cb_vs_matrices.data.mWorld = XMMatrixTranspose( mGO );
+    
+    // Store the view / projection in a constant buffer for the vertex shader to use
+	cb_vs_matrices.data.mView = XMMatrixTranspose( pCamera.GetViewMatrix() );
+	cb_vs_matrices.data.mProjection = XMMatrixTranspose( pCamera.GetProjectionMatrix() );
+	if ( !cb_vs_matrices.ApplyChanges() ) return;
 }
 
 void Cube::Draw( ID3D11DeviceContext* pContext )

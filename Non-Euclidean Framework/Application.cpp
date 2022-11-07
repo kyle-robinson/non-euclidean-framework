@@ -24,7 +24,10 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 
         // Initialize game objects
 	    hr = m_cube.InitializeMesh( graphics.GetDevice(), graphics.GetContext() );
-        COM_ERROR_IF_FAILED(hr, "Failed to create 'cube' object!");
+        COM_ERROR_IF_FAILED( hr, "Failed to create 'cube' object!" );
+
+        hr = m_stencilCube.Initialize( graphics.GetContext(), graphics.GetDevice() );
+        COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube' object!" );
 
         hr = m_light.Initialize( graphics.GetDevice(), graphics.GetContext(), m_cbMatrices );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'light' object!" );
@@ -46,6 +49,10 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         if ( !m_objSkysphere.Initialize( "Resources\\Models\\sphere.obj", graphics.GetDevice(), graphics.GetContext(), m_cbMatrices ) )
 		    return false;
         m_objSkysphere.SetInitialScale( 50.0f, 50.0f, 50.0f );
+
+        // Initialize Textures
+        hr = CreateDDSTextureFromFile( graphics.GetDevice(), L"Resources\\Textures\\bricks_TEX.dds", nullptr, m_pTexture.GetAddressOf() );
+		COM_ERROR_IF_FAILED( hr, "Failed to create 'diffuse' texture!" );
     }
     catch ( COMException& exception )
 	{
@@ -84,7 +91,7 @@ void Application::Update()
     m_objSkysphere.SetPosition( m_camera.GetPositionFloat3() );
 
     // Update the cube transform, material etc. 
-    m_cube.Update( dt, graphics.GetContext() );
+    m_cube.Update( dt );
 }
 
 void Application::Render()
@@ -98,21 +105,14 @@ void Application::Render()
         graphics.UpdateRenderStateSkysphere();
         m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
     
-        // Get the game object world transform
-        XMMATRIX mGO = XMLoadFloat4x4( m_cube.GetTransform() );
-	    m_cbMatrices.data.mWorld = DirectX::XMMatrixTranspose( mGO );
-    
-        // Store the view / projection in a constant buffer for the vertex shader to use
-	    m_cbMatrices.data.mView = DirectX::XMMatrixTranspose( m_camera.GetViewMatrix() );
-	    m_cbMatrices.data.mProjection = DirectX::XMMatrixTranspose( m_camera.GetProjectionMatrix() );
-	    if ( !m_cbMatrices.ApplyChanges() ) return;
-    
         // Update constant buffers
         m_light.UpdateCB( m_camera );
         m_mapping.UpdateCB();
         m_cube.UpdateCB();
 
+        // Draw cube with stencil view
         graphics.UpdateRenderStateCube();
+        m_cube.UpdateBuffers( m_cbMatrices, m_camera );
         if ( i > 0 )
             m_cube.SetTexture( graphics.GetCubeBuffer( i - 1 )->GetShaderResourceView() );
         graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
@@ -136,27 +136,26 @@ void Application::Render()
     graphics.UpdateRenderStateSkysphere();
     m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
     
-    // Get the game object world transform
-    XMMATRIX mGO = XMLoadFloat4x4( m_cube.GetTransform() );
-	m_cbMatrices.data.mWorld = DirectX::XMMatrixTranspose( mGO );
-    
-    // Store the view / projection in a constant buffer for the vertex shader to use
-	m_cbMatrices.data.mView = DirectX::XMMatrixTranspose( m_camera.GetViewMatrix() );
-	m_cbMatrices.data.mProjection = DirectX::XMMatrixTranspose( m_camera.GetProjectionMatrix() );
-	if ( !m_cbMatrices.ApplyChanges() ) return;
-    
     // Update constant buffers
     m_light.UpdateCB( m_camera );
     m_mapping.UpdateCB();
     m_cube.UpdateCB();
 
+    // Draw normal cube
     graphics.UpdateRenderStateCube();
+    m_cube.UpdateBuffers( m_cbMatrices, m_camera );
     m_cube.SetTexture( graphics.GetCubeBuffer( RENDER_DEPTH - 1 )->GetShaderResourceView() );
     graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
     graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
     graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
     graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
     m_cube.DrawRTT( graphics.GetContext() );
+
+    // Draw stencil cube
+    graphics.UpdateRenderStateObject();
+    for ( uint32_t i = 0u; i < 6u; i++ )
+        m_stencilCube.SetTexture( (StencilCube::Side)i, m_pTexture.Get() );
+    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
     graphics.UpdateRenderStateTexture();
     m_light.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
@@ -208,12 +207,6 @@ void Application::SpawnControlWindow()
         static int renderDepth = (int)RENDER_DEPTH;
 		ImGui::SliderInt( "##Render Depth", &renderDepth, 1, 5 );
         RENDER_DEPTH = (uint32_t)renderDepth;
-
-        //if ( (uint32_t)graphics.GetCubeBuffers().size() < RENDER_DEPTH )
-        //{
-        //    graphics.GetCubeBuffers().resize( RENDER_DEPTH );
-        //    graphics.GetCubeBuffers().at( RENDER_DEPTH ) = std::make_shared<Bind::RenderTarget>( graphics.GetDevice(), graphics.GetWidth(), graphics.GetHeight() );
-        //}
     }
     ImGui::End();
 }

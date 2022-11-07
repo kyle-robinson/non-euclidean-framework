@@ -27,7 +27,7 @@ bool Light::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext, Co
 void Light::Draw( const XMMATRIX& view, const XMMATRIX& projection )
 {
     if ( !m_bAttachedToCamera )
-        m_objLight.Draw( view, projection );
+        m_objLight.Draw( XMMatrixTranspose( view ), XMMatrixTranspose( projection ) );
 }
 
 void Light::UpdateCB( Camera& camera )
