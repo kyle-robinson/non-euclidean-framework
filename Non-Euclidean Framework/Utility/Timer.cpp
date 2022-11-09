@@ -18,7 +18,7 @@ float Timer::GetDeltaTime( bool capAt60FPS )
     if ( capAt60FPS )
     {
         float FPS60 = 1.0f / 60.0f;
-        static float cummulativeTime = 0;
+        static float cummulativeTime = 0.0f;
         cummulativeTime += deltaTime;
         if ( cummulativeTime >= FPS60 )
             cummulativeTime = cummulativeTime - FPS60;

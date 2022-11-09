@@ -3,9 +3,6 @@
 #define GRAPHICS_H
 
 enum class Side;
-static uint32_t RENDER_DEPTH = 5u;
-static uint32_t CAMERA_COUNT = 6u;
-
 #include "Quad.h"
 #include "Shaders.h"
 #include "Sampler.h"

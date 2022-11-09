@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "Graphics.h"
 
+uint32_t RENDER_DEPTH = 5u;
+uint32_t CAMERA_COUNT = 6u;
+uint32_t THREAD_COUNT = 6u;
+
 bool Graphics::Initialize( HWND hWnd, UINT width, UINT height )
 {
 	m_viewWidth = width;
@@ -26,9 +30,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 	{
 		std::vector<std::shared_ptr<Bind::RenderTarget>> renderTargets;
 		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
-		{
 			renderTargets.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
-		}
 		m_pCubeBuffers.emplace( (Side)i, renderTargets );
 	}
 
@@ -46,7 +48,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 
 	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-	RENDER_DEPTH = 3u;
+	RENDER_DEPTH = 2u;
 }
 
 bool Graphics::InitializeShaders()

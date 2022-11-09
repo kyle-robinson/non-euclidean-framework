@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "Application.h"
+#include "ThreadManager.h"
 #include <imgui/imgui.h>
+
+extern uint32_t RENDER_DEPTH;
+extern uint32_t CAMERA_COUNT;
+extern uint32_t THREAD_COUNT;
 
 bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 {
@@ -120,80 +125,64 @@ void Application::Update()
 void Application::Render()
 {
 #pragma region RTT_CUBES
-    if ( m_bUseStencilCube )
+    std::function<void( uint32_t i, uint32_t j )> RenderStencils = std::function( [&]( uint32_t i, uint32_t j ) -> void
     {
-        for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+        // Render RTT cube
+        graphics.BeginFrameCube( (Side)i, j );
+        Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i ) : m_camera;
+
+        graphics.UpdateRenderStateSkysphere();
+        m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+    
+        // Update constant buffers
+        m_light.UpdateCB( camera );
+        m_mapping.UpdateCB();
+        m_cube.UpdateCB();
+
+        // Draw cube with stencil view
+        graphics.UpdateRenderStateCube();
+        m_cube.UpdateBuffers( m_cbMatrices, camera );
+        if ( j > 0 )
+            m_cube.SetTexture( graphics.GetCubeBuffer( (Side)i, j - 1 )->GetShaderResourceView() );
+        graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
+        graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
+        graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
+        graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
+        if ( j == 0 )
+            m_cube.Draw( graphics.GetContext() );
+        else
+            m_cube.DrawRTT( graphics.GetContext() );
+
+        // Draw light object
+        graphics.UpdateRenderStateTexture();
+        m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+    } );
+
+    // Offload rtt rendering to separate threads
+    uint32_t start = 0u, end = 1u;
+    uint32_t threadCount = m_bUseStencilCube ? CAMERA_COUNT : RENDER_DEPTH;
+    for ( uint32_t t = 0u; t < threadCount; ++t )
+    {
+        ThreadManager::CreateThread( [=]() -> void
         {
-            for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
+            ThreadManager::Lock();
+            if ( m_bUseStencilCube )
             {
-                // Render RTT cube
-                graphics.BeginFrameCube( (Side)i, j );
-                Camera camera = m_stencilCameras.at( (Side)i );
-
-                graphics.UpdateRenderStateSkysphere();
-                m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-    
-                // Update constant buffers
-                m_light.UpdateCB( camera );
-                m_mapping.UpdateCB();
-                m_cube.UpdateCB();
-
-                // Draw cube with stencil view
-                graphics.UpdateRenderStateCube();
-                m_cube.UpdateBuffers( m_cbMatrices, camera );
-                if ( j > 0 )
-                    m_cube.SetTexture( graphics.GetCubeBuffer( (Side)i, j - 1 )->GetShaderResourceView() );
-                graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
-                graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
-                graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
-                graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-                if ( j == 0 )
-                    m_cube.Draw( graphics.GetContext() );
-                else
-                    m_cube.DrawRTT( graphics.GetContext() );
-
-                // Draw light object
-                graphics.UpdateRenderStateTexture();
-                m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+                for ( uint32_t i = start; i < end; ++i )
+                    for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+                        RenderStencils( i, j );
             }
-        }
-    }
-    else
-    {
-        for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
-        {
-            // Render RTT cube
-            graphics.BeginFrameCube( (Side)0, i );
-            Camera camera = m_bUseStaticCamera ?
-                m_stencilCameras.at( (Side)0 ) : m_camera;
-            
-            graphics.UpdateRenderStateSkysphere();
-            m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-    
-            // Update constant buffers
-            m_light.UpdateCB( camera );
-            m_mapping.UpdateCB();
-            m_cube.UpdateCB();
-
-            // Draw cube with stencil view
-            graphics.UpdateRenderStateCube();
-            m_cube.UpdateBuffers( m_cbMatrices, camera );
-            if ( i > 0 )
-                m_cube.SetTexture( graphics.GetCubeBuffer( (Side)0, i - 1 )->GetShaderResourceView() );
-            graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
-            graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
-            graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
-            graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-            if ( i == 0 )
-                m_cube.Draw( graphics.GetContext() );
             else
-                m_cube.DrawRTT( graphics.GetContext() );
-
-            // Draw light object
-            graphics.UpdateRenderStateTexture();
-            m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-        }
+            {
+                for ( uint32_t j = start; j < end; ++j )
+                    RenderStencils( 0, j );
+            }
+            ThreadManager::Unlock();
+        } );
+        ++start;
+        ++end;
     }
+    ThreadManager::WaitForAllThreads();
 #pragma endregion
 
 #pragma region NORMAL_CUBE

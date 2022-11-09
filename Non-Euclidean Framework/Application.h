@@ -56,7 +56,6 @@ private:
 	XMFLOAT4X4 m_previousViewProjection;
 	ConstantBuffer<Matrices> m_cbMatrices;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTextureLight;
 };
 
 #endif
