@@ -17,6 +17,8 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         // Initialize input 
         m_camera.Initialize( XMFLOAT3( 0.0f, 0.0f, -3.0f ), width, height );
         m_input.Initialize( renderWindow, m_camera );
+        m_imgui.Initialize( renderWindow.GetHWND(), graphics.GetDevice(), graphics.GetContext() );
+
         for ( uint32_t i = 0; i < CAMERA_COUNT; i++ )
         {
             Camera camera;
@@ -55,7 +57,6 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'light' object!" );
 
         // Initialize systems
-        m_imgui.Initialize( renderWindow.GetHWND(), graphics.GetDevice(), graphics.GetContext() );
         m_postProcessing.Initialize( graphics.GetDevice() );
 
         hr = m_mapping.Initialize( graphics.GetDevice(), graphics.GetContext() );
