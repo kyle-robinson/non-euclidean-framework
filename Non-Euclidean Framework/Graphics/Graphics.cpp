@@ -64,9 +64,9 @@ bool Graphics::InitializeShaders()
 		};
 
 		// Create the cube shaders
-		HRESULT hr = m_vertexShader.Initialize( m_pDevice, L"Resources\\Shaders\\shader.fx", layout, ARRAYSIZE( layout ) );
+		HRESULT hr = m_vertexShader.Initialize( m_pDevice, L"Resources\\Shaders\\shader_VS.hlsl", layout, ARRAYSIZE( layout ) );
 		COM_ERROR_IF_FAILED( hr, "Failed to create cube vertex shader!" );
-		hr = m_pixelShader.Initialize( m_pDevice, L"Resources\\Shaders\\shader.fx" );
+		hr = m_pixelShader.Initialize( m_pDevice, L"Resources\\Shaders\\shader_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create cube pixel shader!" );
 
 		// Define input layout for models
@@ -78,9 +78,9 @@ bool Graphics::InitializeShaders()
 		};
 
 		// Create the model shaders
-		hr = m_vertexShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ.fx", layoutOBJ, ARRAYSIZE( layoutOBJ ) );
+		hr = m_vertexShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_VS.hlsl", layoutOBJ, ARRAYSIZE( layoutOBJ ) );
 		COM_ERROR_IF_FAILED( hr, "Failed to create skysphere vertex shader!" );
-		hr = m_pixelShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ.fx" );
+		hr = m_pixelShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create skysphere pixel shader!" );
 
 		// Define input layout for textures
@@ -91,9 +91,9 @@ bool Graphics::InitializeShaders()
 		};
 
 		// Create the texture shaders
-		hr = m_vertexShaderTEX.Initialize( m_pDevice, L"Resources\\Shaders\\shaderTEX.fx", layoutTEX, ARRAYSIZE( layoutTEX ) );
+		hr = m_vertexShaderTEX.Initialize( m_pDevice, L"Resources\\Shaders\\shaderTEX_VS.hlsl", layoutTEX, ARRAYSIZE( layoutTEX ) );
 		COM_ERROR_IF_FAILED( hr, "Failed to create texture vertex shader!" );
-		hr = m_pixelShaderTEX.Initialize( m_pDevice, L"Resources\\Shaders\\shaderTEX.fx" );
+		hr = m_pixelShaderTEX.Initialize( m_pDevice, L"Resources\\Shaders\\shaderTEX_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create texture pixel shader!" );
 
 		// Define input layout for quad
@@ -103,9 +103,9 @@ bool Graphics::InitializeShaders()
 		};
 
 		// Create the quad shaders
-		hr = m_vertexShaderPP.Initialize( m_pDevice, L"Resources\\Shaders\\shaderPP.fx", layoutPP, ARRAYSIZE( layoutPP ) );
+		hr = m_vertexShaderPP.Initialize( m_pDevice, L"Resources\\Shaders\\shaderPP_VS.hlsl", layoutPP, ARRAYSIZE( layoutPP ) );
 		COM_ERROR_IF_FAILED( hr, "Failed to create quad vertex shader!" );
-		hr = m_pixelShaderPP.Initialize( m_pDevice, L"Resources\\Shaders\\shaderPP.fx" );
+		hr = m_pixelShaderPP.Initialize( m_pDevice, L"Resources\\Shaders\\shaderPP_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create quad pixel shader!" );
 	}
 	catch ( COMException& exception )

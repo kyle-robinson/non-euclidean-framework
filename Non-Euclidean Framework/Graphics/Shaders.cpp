@@ -35,7 +35,7 @@ HRESULT Shaders::CompileShaderFromFile( std::wstring szFileName, LPCSTR szEntryP
 HRESULT VertexShader::Initialize( Microsoft::WRL::ComPtr<ID3D11Device>& device, std::wstring shaderPath, D3D11_INPUT_ELEMENT_DESC* layoutDesc, UINT numElements )
 {
 	// Compile the vertex shader
-    HRESULT hr = CompileShaderFromFile( shaderPath.c_str(), "VS", "vs_4_0", shaderBuffer.GetAddressOf()  );
+    HRESULT hr = CompileShaderFromFile( shaderPath.c_str(), "VS", "vs_5_0", shaderBuffer.GetAddressOf()  );
     if ( FAILED( hr ) )
     {
         ErrorLogger::Log( hr, "The FX file cannot be compiled.\n"
@@ -70,7 +70,7 @@ HRESULT VertexShader::Initialize( Microsoft::WRL::ComPtr<ID3D11Device>& device, 
 HRESULT PixelShader::Initialize( Microsoft::WRL::ComPtr<ID3D11Device>& device, std::wstring shaderPath )
 {
 	// Compile the pixel shader
-    HRESULT hr = CompileShaderFromFile( shaderPath.c_str(), "PS", "ps_4_0", shaderBuffer.GetAddressOf() );
+    HRESULT hr = CompileShaderFromFile( shaderPath.c_str(), "PS", "ps_5_0", shaderBuffer.GetAddressOf() );
     if ( FAILED( hr ) )
     {
         ErrorLogger::Log( hr, "The FX file cannot be compiled.\n"

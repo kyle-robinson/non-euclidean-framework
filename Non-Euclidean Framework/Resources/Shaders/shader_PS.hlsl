@@ -1,9 +1,7 @@
 // Definitions
 #define MAX_LIGHTS 1
-#define DIRECTIONAL_LIGHT 0
-#define POINT_LIGHT 1
-#define SPOT_LIGHT 2
 
+// Resources
 Texture2D textureDiffuse : register( t0 );
 Texture2D textureNormal : register( t1 );
 Texture2D textureDisplacement : register( t2 );
@@ -33,9 +31,10 @@ struct Light
     float LinearAttenuation;
     float QuadraticAttenuation;
     
+    float Intensity;
     int LightType;
     bool Enabled;
-    int2 Padding;
+    float Padding;
 };
 
 struct LightingResult
@@ -57,13 +56,6 @@ struct _Mapping
 };
 
 // Constant Buffers
-cbuffer ConstantBuffer : register( b0 )
-{
-	matrix World;
-	matrix View;
-	matrix Projection;
-}
-
 cbuffer MaterialProperties : register( b1 )
 {
 	_Material Material;
@@ -136,21 +128,21 @@ LightingResult ComputeLighting( float4 vertexPos, float3 N, float3 vertexToEye )
 	LightingResult totalResult = { { 0, 0, 0, 0 },{ 0, 0, 0, 0 } };
 
 	[unroll]
-	for (int i = 0; i < MAX_LIGHTS; ++i)
+	for ( int i = 0; i < MAX_LIGHTS; ++i )
 	{
 		LightingResult result = { { 0, 0, 0, 0 },{ 0, 0, 0, 0 } };
 
-		if (!Lights[i].Enabled) 
+		if ( !Lights[i].Enabled ) 
 			continue;
 		
-		result = DoPointLight(Lights[i], vertexToEye, vertexPos, N);
+		result = DoPointLight( Lights[i], vertexToEye, vertexPos, N );
 		
 		totalResult.Diffuse += result.Diffuse;
 		totalResult.Specular += result.Specular;
 	}
 
-	totalResult.Diffuse = saturate(totalResult.Diffuse);
-	totalResult.Specular = saturate(totalResult.Specular);
+	totalResult.Diffuse = saturate( totalResult.Diffuse );
+	totalResult.Specular = saturate( totalResult.Specular );
 
 	return totalResult;
 }
@@ -297,45 +289,6 @@ float ParallaxSelfShadowing( float3 toLight, float2 texCoord, bool softShadow )
     return shadowFactor;
 }
 
-// Vertex Shader
-struct VS_INPUT
-{
-    float4 Position : POSITION;
-    float3 Normal : NORMAL;
-    float2 TexCoord : TEXCOORD0;
-    float3 Tangent : TANGENT;
-    float3 Binormal : BINORMAL;
-};
-
-struct VS_OUTPUT
-{
-    float4 Position : SV_POSITION;
-    float4 WorldPosition : POSITION_W;
-    float4 ViewPosition : POSITION_V;
-    float3 Normal : NORMAL;
-    float2 TexCoord : TEXCOORD0;
-    float3 Tangent : TANGENT;
-    float3 Binormal : BINORMAL;
-};
-
-VS_OUTPUT VS( VS_INPUT input )
-{
-    VS_OUTPUT output = (VS_OUTPUT)0;
-    output.Position = mul( input.Position, World );
-	output.WorldPosition = output.Position;
-    output.Position = mul( output.Position, View );
-    output.ViewPosition = output.Position;
-    output.Position = mul( output.Position, Projection );
-
-	// convert from model to world space
-	output.Normal = mul( float4( input.Normal, 1.0f ), World ).xyz;
-	output.Tangent = mul( float4( input.Tangent, 1.0f ), World ).xyz;
-	output.Binormal = mul( float4( input.Binormal, 1.0f ), World ).xyz;
-
-	output.TexCoord = input.TexCoord;
-    return output;
-}
-
 // Pixel Shader
 struct PS_INPUT
 {
@@ -369,7 +322,7 @@ float4 PS( PS_INPUT input ) : SV_TARGET
         else
             input.TexCoord = SimpleParallax( input.TexCoord, vertexToEyeTS );
         
-        if ( input.TexCoord.x > 1.0 || input.TexCoord.y > 1.0 || input.TexCoord.x < 0.0 || input.TexCoord.y < 0.0 )
+        if ( input.TexCoord.x > 1.0f || input.TexCoord.y > 1.0f || input.TexCoord.x < 0.0f || input.TexCoord.y < 0.0f )
             discard;
     }
 	
@@ -381,15 +334,16 @@ float4 PS( PS_INPUT input ) : SV_TARGET
     LightingResult lit = ComputeLighting( input.WorldPosition, normalize( input.Normal ), vertexToLight );
 
 	// texture/material
-    float intensity = 4.0f;
-    float4 textureColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float4 emissive = Material.Emissive * intensity;
-	float4 ambient = Material.Ambient * GlobalAmbient * intensity;
-	float4 diffuse = Material.Diffuse * lit.Diffuse * intensity;
-	float4 specular = Material.Specular * lit.Specular * intensity;
+    float4 textureColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float4 emissive = Material.Emissive * Lights[0].Intensity;
+	float4 ambient = Material.Ambient * GlobalAmbient * Lights[0].Intensity;
+	float4 diffuse = Material.Diffuse * lit.Diffuse * Lights[0].Intensity;
+	float4 specular = Material.Specular * lit.Specular * Lights[0].Intensity;
 
-	if ( Material.UseTexture )
+    if ( Material.UseTexture )
         textureColor = textureDiffuse.Sample( samplerState, input.TexCoord );
+    else
+        textureColor = float4( 1.0f, 1.0f, 1.0f, 1.0f );
 
     // self-shadowing
     float shadowFactor = 1.0f;

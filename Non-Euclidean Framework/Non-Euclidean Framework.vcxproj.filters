@@ -67,6 +67,9 @@
     <Filter Include="Source Files\Systems">
       <UniqueIdentifier>{d2d33e19-ea55-4827-8615-b8acc32115fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{d3d47228-5abd-46b6-ad24-71859b580a5f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\Viewport.h">
@@ -340,20 +343,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Resources\Shaders\shader.fx">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\shaderOBJ.fx">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\shaderPP.fx">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Resources\Shaders\shaderTEX.fx">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Fonts\open_sans_ms_16.spritefont">
       <Filter>Resource Files\Resources</Filter>
     </None>
@@ -403,5 +392,31 @@
     <Image Include="Resources\Textures\minecraft.dds">
       <Filter>Resource Files\Textures</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Resources\Shaders\shader_PS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shader_VS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderOBJ_PS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderOBJ_VS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderPP_PS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderPP_VS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderTEX_PS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderTEX_VS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

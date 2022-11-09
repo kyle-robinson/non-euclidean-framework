@@ -37,7 +37,7 @@ void ImGuiManager::EndRender() const noexcept
 
 void ImGuiManager::SpawnInstructionWindow() const noexcept
 {   
-	if ( ImGui::Begin( "Scene Instructions", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+	if ( ImGui::Begin( "Scene Information", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
 	{
 		ImGui::Text( "Camera Controls" );
         ImGui::NewLine();

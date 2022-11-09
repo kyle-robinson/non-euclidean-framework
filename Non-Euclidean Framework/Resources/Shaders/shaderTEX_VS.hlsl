@@ -1,6 +1,10 @@
 #pragma pack_matrix( row_major )
 
-// Vertex Shader
+// Resources
+Texture2D textureObj : register( t0 );
+SamplerState samplerState : register( s0 );
+
+// Constant Buffers
 cbuffer ConstantBuffer : register( b0 )
 {
     float4x4 World;
@@ -8,6 +12,7 @@ cbuffer ConstantBuffer : register( b0 )
     float4x4 Projection;
 };
 
+// Vertex Shader
 struct VS_INPUT
 {
     float3 Position : POSITION;
@@ -32,9 +37,6 @@ VS_OUTPUT VS( VS_INPUT input )
     
     return output;
 }
-
-Texture2D textureObj : register( t0 );
-SamplerState samplerState : register( s0 );
 
 // Pixel Shader
 struct PS_INPUT

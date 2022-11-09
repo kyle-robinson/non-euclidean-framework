@@ -27,7 +27,7 @@ bool Light::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext, Co
 void Light::Draw( const XMMATRIX& view, const XMMATRIX& projection )
 {
     if ( !m_bAttachedToCamera )
-        m_objLight.Draw( XMMatrixTranspose( view ), XMMatrixTranspose( projection ) );
+        m_objLight.Draw( view, projection );
 }
 
 void Light::UpdateCB( Camera& camera )
@@ -49,6 +49,7 @@ void Light::UpdateCB( Camera& camera )
     light.ConstantAttenuation = m_fConstantAttenuation;
     light.LinearAttenuation = m_fLinearAttenuation;
     light.QuadraticAttenuation = m_fQuadraticAttenuation;
+    light.Intensity = m_fIntensity;
 
     // Setup light
     if ( m_bAttachedToCamera )
@@ -103,6 +104,10 @@ void Light::SpawnControlWindow()
 
         ImGui::Text( "Quadratic Attenuation" );
 		ImGui::SliderFloat( "##Quadratic", &m_fQuadraticAttenuation, 0.0f, 1.0f, "%.1f" );
+		ImGui::NewLine();
+
+        ImGui::Text( "Intensity" );
+		ImGui::SliderFloat( "##Intensity", &m_fIntensity, 1.0f, 10.0f, "%1.f" );
     }
     ImGui::End();
 }

@@ -25,6 +25,7 @@ private:
 	FLOAT m_fConstantAttenuation = 1.0f;
 	FLOAT m_fLinearAttenuation = 1.0f;
 	FLOAT m_fQuadraticAttenuation = 1.0f;
+	FLOAT m_fIntensity = 4.0f;
 
 	RenderableGameObject m_objLight;
 	bool m_bAttachedToCamera = true;
