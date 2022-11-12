@@ -9,7 +9,6 @@
 #include "FXAA.h"
 #include "Input.h"
 #include "Timer.h"
-#include "Light.h"
 #include "Shaders.h"
 #include "MotionBlur.h"
 #include "StencilCube.h"
@@ -33,7 +32,6 @@ public:
 private:
 	// Objects
 	Face m_face;
-	Light m_light;
 	Camera m_camera;
 	ImGuiManager m_imgui;
 	StencilCube m_stencilCube;

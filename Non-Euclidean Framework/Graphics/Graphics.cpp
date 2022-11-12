@@ -32,6 +32,12 @@ void Graphics::InitializeDirectX( HWND hWnd )
 		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
 			renderTargets.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
 		m_pCubeBuffers.emplace( (Side)i, renderTargets );
+	}
+	for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+	{
+		std::vector<std::shared_ptr<Bind::RenderTarget>> renderTargets;
+		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
+			renderTargets.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
 		m_pCubeInvBuffers.emplace( (Side)i, renderTargets );
 	}
 

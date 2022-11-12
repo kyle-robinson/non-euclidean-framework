@@ -61,9 +61,6 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         hr = m_stencilCubeInv.Initialize( graphics.GetContext(), graphics.GetDevice() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube inverse' object!" );
 
-        hr = m_light.Initialize( graphics.GetDevice(), graphics.GetContext(), m_cbMatrices );
-	    COM_ERROR_IF_FAILED( hr, "Failed to create 'light' object!" );
-
         // Initialize systems
         m_postProcessing.Initialize( graphics.GetDevice() );
 
@@ -130,9 +127,6 @@ void Application::Render()
 
         graphics.UpdateRenderStateSkysphere();
         m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-    
-        // Update constant buffers
-        m_light.UpdateCB( camera );
 
         // Draw face with stencil view
         graphics.UpdateRenderStateObject();
@@ -152,10 +146,7 @@ void Application::Render()
         case Side::BOTTOM: m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) ); break;
         }
         m_face.Draw( m_cbMatrices, camera );
-
-        // Draw light object
-        graphics.UpdateRenderStateTexture();
-        m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+        graphics.GetCubeBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
     } );
 #pragma endregion
 
@@ -178,17 +169,8 @@ void Application::Render()
 
         // Render RTT cube
         graphics.UpdateRenderStateObject();
-        m_stencilCube.SetTexture( Side::FRONT, graphics.GetCubeBuffer( Side::BACK, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCube.SetTexture( Side::BACK, graphics.GetCubeBuffer( Side::FRONT, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCube.SetTexture( Side::LEFT, graphics.GetCubeBuffer( Side::RIGHT, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCube.SetTexture( Side::RIGHT, graphics.GetCubeBuffer( Side::LEFT, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCube.SetTexture( Side::TOP, graphics.GetCubeBuffer( Side::BOTTOM, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCube.SetTexture( Side::BOTTOM, graphics.GetCubeBuffer( Side::TOP, RENDER_DEPTH - 1u )->GetShaderResourceView() );
         m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, camera );
-
-        // Draw light object
-        graphics.UpdateRenderStateTexture();
-        m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+        graphics.GetCubeInvBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
     } );
 #pragma endregion
 
@@ -198,18 +180,10 @@ void Application::Render()
         for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
             RenderCubeStencils( i, j );
 
-    // Store cube textures
-    std::unordered_map<Side, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textures;
-    textures = m_stencilCube.GetTextures();
-
     // Generate inverse cube geometry and render targets
     for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
         for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
             RenderCubeInvStencils( i, j );
-
-    // Restore original cube textures
-    for ( uint32_t i = 0u; i < 6u; i++ )
-        m_stencilCube.SetTexture( (Side)i, textures.at( (Side)i ).Get() );
 #pragma endregion
 
 #pragma region MAIN_SCENE
@@ -218,9 +192,6 @@ void Application::Render()
     
     graphics.UpdateRenderStateSkysphere();
     m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
-    
-    // Update constant buffers
-    m_light.UpdateCB( m_camera );
 
     // Draw stencil cube inverse
     graphics.UpdateRenderStateObject();
@@ -232,10 +203,6 @@ void Application::Render()
     for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
         m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
     m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
-
-    // Draw light object
-    graphics.UpdateRenderStateTexture();
-    m_light.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
 #pragma endregion
 
 #pragma region POST-PROCESSING
@@ -263,7 +230,6 @@ void Application::Render()
     m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
     m_postProcessing.SpawnControlWindow(
         m_motionBlur.IsActive(), m_fxaa.IsActive() );
-    m_light.SpawnControlWindow();
     m_imgui.EndRender();
 
     // Present frame

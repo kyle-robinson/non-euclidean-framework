@@ -48,17 +48,6 @@ void StencilCube::SetTexture( Side side, ID3D11ShaderResourceView* pTexture ) no
     m_pTextures.at( side ) = pTexture;
 }
 
-std::unordered_map<Side, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> StencilCube::GetTextures() const noexcept
-{
-    return m_pTextures;
-}
-
-void StencilCube::SetRotation( float x, float y, float z ) noexcept
-{
-    for ( uint32_t i = 0u; i < 6u; i++ )
-        m_pFaces.at( (Side)i )->AdjustRotation( x, y, z );
-}
-
 void StencilCube::SetScale( float x, float y, float z ) noexcept
 {
     for ( uint32_t i = 0u; i < 6u; i++ )
