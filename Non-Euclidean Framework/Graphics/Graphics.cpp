@@ -81,9 +81,11 @@ bool Graphics::InitializeShaders()
 
 		// Create the model shaders
 		hr = m_vertexShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_VS.hlsl", layoutOBJ, ARRAYSIZE( layoutOBJ ) );
-		COM_ERROR_IF_FAILED( hr, "Failed to create skysphere vertex shader!" );
+		COM_ERROR_IF_FAILED( hr, "Failed to create object vertex shader!" );
 		hr = m_pixelShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_PS.hlsl" );
-		COM_ERROR_IF_FAILED( hr, "Failed to create skysphere pixel shader!" );
+		COM_ERROR_IF_FAILED( hr, "Failed to create object pixel shader!" );
+		hr = m_pixelShaderBD.Initialize( m_pDevice, L"Resources\\Shaders\\shaderBD_PS.hlsl" );
+		COM_ERROR_IF_FAILED( hr, "Failed to create object border pixel shader!" );
 
 		// Define input layout for textures
 		D3D11_INPUT_ELEMENT_DESC layoutTEX[] =
@@ -159,7 +161,7 @@ void Graphics::UpdateRenderStateObject()
 {
 	// Set default render state for objects
     m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
-    Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderOBJ );
+    Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderBD );
 }
 
 void Graphics::UpdateRenderStateTexture()

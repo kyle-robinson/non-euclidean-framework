@@ -424,5 +424,8 @@
     <FxCompile Include="Resources\Shaders\shaderTEX_VS.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderBD_PS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

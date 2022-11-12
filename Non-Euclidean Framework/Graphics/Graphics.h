@@ -58,6 +58,7 @@ private:
 	PixelShader m_pixelShaderTEX;
 	VertexShader m_vertexShaderOBJ;
 	PixelShader m_pixelShaderOBJ;
+	PixelShader m_pixelShaderBD;
 
 	// Pipeline components
 	std::shared_ptr<Bind::SwapChain> m_pSwapChain;
