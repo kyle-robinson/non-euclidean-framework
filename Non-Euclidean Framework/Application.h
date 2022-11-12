@@ -16,6 +16,7 @@
 #include "MotionBlur.h"
 #include "StencilCube.h"
 #include "ImGuiManager.h"
+#include "StencilCubeInv.h"
 #include "PostProcessing.h"
 #include "WindowContainer.h"
 #include "RenderableGameObject.h"
@@ -32,8 +33,9 @@ public:
 
 	void SpawnControlWindow();
 private:
-	bool m_bUseStencilCube = false;
 	bool m_bUseStaticCamera = true;
+	bool m_bUseStencilCube = false;
+	bool m_bUseStencilCubeInv = true;
 
 	// Objects
 	Cube m_cube;
@@ -41,6 +43,7 @@ private:
 	Camera m_camera;
 	ImGuiManager m_imgui;
 	StencilCube m_stencilCube;
+	StencilCubeInv m_stencilCubeInv;
 	RenderableGameObject m_objSkysphere;
 	std::unordered_map<Side, Camera> m_stencilCameras;
 

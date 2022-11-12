@@ -32,6 +32,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
 			renderTargets.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
 		m_pCubeBuffers.emplace( (Side)i, renderTargets );
+		m_pCubeInvBuffers.emplace( (Side)i, renderTargets );
 	}
 
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
@@ -143,6 +144,13 @@ void Graphics::BeginFrameCube( Side side, uint32_t index )
     m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
 }
 
+void Graphics::BeginFrameCubeInv( Side side, uint32_t index )
+{
+	// Clear render target/depth stencil
+	m_pCubeInvBuffers.at( side ).at( index )->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+    m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
+}
+
 void Graphics::UpdateRenderStateSkysphere()
 {
 	// Set render state for skysphere
@@ -194,8 +202,13 @@ void Graphics::EndFrame()
 	// Unbind render target
 	m_pRenderTarget->BindNull( m_pContext.Get() );
 	for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+	{
 		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
+		{
 			m_pCubeBuffers.at( (Side)i ).at( j )->BindNull( m_pContext.Get() );
+			m_pCubeInvBuffers.at( (Side)i ).at( j )->BindNull( m_pContext.Get() );
+		}
+	}
 	m_pBackBuffer->BindNull( m_pContext.Get() );
 
 	// Present frame
