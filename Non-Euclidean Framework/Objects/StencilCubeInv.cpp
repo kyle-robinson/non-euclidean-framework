@@ -34,10 +34,6 @@ bool StencilCubeInv::Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pD
 
         m_pFaces.at( Side::TOP )->SetPosition( XMFLOAT3( 0.0f, -3.0f, 0.0f ) );
         m_pFaces.at( Side::TOP )->SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
-
-        // Adjust entire room position
-        //for ( uint32_t i = 0u; i < 6u; i++ )
-        //    m_pFaces.at( (Side)i )->AdjustPosition( XMFLOAT3( -2.5f, 0.0f, 0.0f ) );
     }
     catch ( COMException& exception )
     {
