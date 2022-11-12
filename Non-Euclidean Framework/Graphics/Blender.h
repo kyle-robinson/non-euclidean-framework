@@ -12,7 +12,12 @@ namespace Bind
 	class Blender
 	{
 	public:
-		Blender( ID3D11Device* device )
+		enum class Type
+		{
+			BASIC,
+			COLOR
+		};
+		Blender( ID3D11Device* device, Type type )
 		{
 			try
 			{
@@ -25,6 +30,12 @@ namespace Bind
 				renderTargetBlendDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
 				renderTargetBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
 				renderTargetBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+				if ( type == Type::COLOR )
+				{
+					renderTargetBlendDesc.SrcBlend = D3D11_BLEND_SRC_COLOR;
+					renderTargetBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_COLOR;
+				}
 
 				D3D11_BLEND_DESC blendDesc = { 0 };
 				blendDesc.RenderTarget[0] = renderTargetBlendDesc;

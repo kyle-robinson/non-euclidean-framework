@@ -178,8 +178,12 @@ void Application::Render()
 
         // Render RTT cube
         graphics.UpdateRenderStateObject();
-        for ( uint32_t x = 0u; x < CAMERA_COUNT; x++ )
-            m_stencilCube.SetTexture( (Side)x, graphics.GetCubeBuffer( (Side)x, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( Side::FRONT, graphics.GetCubeBuffer( Side::BACK, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( Side::BACK, graphics.GetCubeBuffer( Side::FRONT, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( Side::LEFT, graphics.GetCubeBuffer( Side::RIGHT, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( Side::RIGHT, graphics.GetCubeBuffer( Side::LEFT, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( Side::TOP, graphics.GetCubeBuffer( Side::BOTTOM, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( Side::BOTTOM, graphics.GetCubeBuffer( Side::TOP, RENDER_DEPTH - 1u )->GetShaderResourceView() );
         m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, camera );
 
         // Draw light object
@@ -188,48 +192,24 @@ void Application::Render()
     } );
 #pragma endregion
 
-#pragma region RTT_THREADING
-    // Offload rtt rendering to separate threads
-    uint32_t start = 0u, end = 1u;
-    uint32_t threadCount = CAMERA_COUNT;
-    for ( uint32_t t = 0u; t < threadCount; ++t )
-    {
-        ThreadManager::CreateThread( [=]() -> void
-        {
-            ThreadManager::Lock();
-            for ( uint32_t i = start; i < end; ++i )
-            {
-                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                {
-                    RenderCubeStencils( i, j );
-                }
-            }
-            ThreadManager::Unlock();
-        } );
-        ++start;
-        ++end;
-    }
-    ThreadManager::WaitForAllThreads();
+#pragma region RTT_GENERATION
+    // Generate cube geometry and render targets
+    for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
+        for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+            RenderCubeStencils( i, j );
 
-    start = 0u, end = 1u;
-    for ( uint32_t t = 0u; t < threadCount; ++t )
-    {
-        ThreadManager::CreateThread( [=]() -> void
-        {
-            ThreadManager::Lock();
-            for ( uint32_t i = start; i < end; ++i )
-            {
-                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                {
-                    RenderCubeInvStencils( i, j );
-                }
-            }
-            ThreadManager::Unlock();
-        } );
-        ++start;
-        ++end;
-    }
-    ThreadManager::WaitForAllThreads();
+    // Store cube textures
+    std::unordered_map<Side, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textures;
+    textures = m_stencilCube.GetTextures();
+
+    // Generate inverse cube geometry and render targets
+    for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
+        for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+            RenderCubeInvStencils( i, j );
+
+    // Restore original cube textures
+    for ( uint32_t i = 0u; i < 6u; i++ )
+        m_stencilCube.SetTexture( (Side)i, textures.at( (Side)i ).Get() );
 #pragma endregion
 
 #pragma region MAIN_SCENE

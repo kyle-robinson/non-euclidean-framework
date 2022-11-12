@@ -38,7 +38,13 @@ void Graphics::InitializeDirectX( HWND hWnd )
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pDepthStencil = std::make_shared<Bind::DepthStencil>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
 	m_pViewport = std::make_shared<Bind::Viewport>( m_pContext.Get(), m_viewWidth, m_viewHeight );
-	m_pBlender = std::make_shared<Bind::Blender>( m_pDevice.Get() );
+	
+	m_pBlenderStates.emplace( Bind::Blender::Type::BASIC, std::make_shared<Bind::Blender>( m_pDevice.Get(), Bind::Blender::Type::BASIC ) );
+	m_pBlenderStates.emplace( Bind::Blender::Type::COLOR, std::make_shared<Bind::Blender>( m_pDevice.Get(), Bind::Blender::Type::COLOR ) );
+
+	m_pStencilStates.emplace( Bind::Stencil::Type::OFF, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::OFF ) );
+	m_pStencilStates.emplace( Bind::Stencil::Type::MASK, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::MASK ) );
+	m_pStencilStates.emplace( Bind::Stencil::Type::WRITE, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::WRITE ) );
     
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SOLID, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SOLID ) );
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SKYSPHERE, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SKYSPHERE ) );
@@ -50,7 +56,8 @@ void Graphics::InitializeDirectX( HWND hWnd )
 
 	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-	m_pBlender->Bind( m_pContext.Get() );
+	m_pBlenderStates[Bind::Blender::Type::BASIC]->Bind( m_pContext.Get() );
+	m_pStencilStates[Bind::Stencil::Type::OFF]->Bind( m_pContext.Get() );
 	RENDER_DEPTH = 1u;
 }
 
@@ -185,6 +192,11 @@ void Graphics::BeginRenderSceneToTexture()
 {
 	// Bind new render target
 	m_pBackBuffer->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+}
+
+void Graphics::BindRenderTarget()
+{
+	m_pRenderTarget->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
 }
 
 void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA )
