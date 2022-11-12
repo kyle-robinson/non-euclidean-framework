@@ -234,6 +234,9 @@
     <ClInclude Include="Objects\StencilCubeInv.h">
       <Filter>Header Files\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\Blender.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics\Shaders.cpp">

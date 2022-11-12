@@ -209,6 +209,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Graphics\Blender.h" />
     <ClInclude Include="Graphics\ConstantBuffer.h" />
     <ClInclude Include="Graphics\DepthStencil.h" />
     <ClInclude Include="Graphics\Graphics.h" />

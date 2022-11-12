@@ -38,6 +38,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pDepthStencil = std::make_shared<Bind::DepthStencil>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
 	m_pViewport = std::make_shared<Bind::Viewport>( m_pContext.Get(), m_viewWidth, m_viewHeight );
+	m_pBlender = std::make_shared<Bind::Blender>( m_pDevice.Get() );
     
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SOLID, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SOLID ) );
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SKYSPHERE, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SKYSPHERE ) );
@@ -49,6 +50,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 
 	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+	m_pBlender->Bind( m_pContext.Get() );
 	RENDER_DEPTH = 1u;
 }
 

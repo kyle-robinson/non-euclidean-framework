@@ -4,6 +4,7 @@
 
 enum class Side;
 #include "Quad.h"
+#include "Blender.h"
 #include "Shaders.h"
 #include "Sampler.h"
 #include "Viewport.h"
@@ -70,6 +71,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Device> m_pDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pContext;
 
+	std::shared_ptr<Bind::Blender> m_pBlender;
 	std::shared_ptr<Bind::Viewport> m_pViewport;
 	std::shared_ptr<Bind::BackBuffer> m_pBackBuffer;
 	std::shared_ptr<Bind::RenderTarget> m_pRenderTarget;
