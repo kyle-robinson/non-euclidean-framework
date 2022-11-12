@@ -48,7 +48,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 
 	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-	RENDER_DEPTH = 2u;
+	RENDER_DEPTH = 1u;
 }
 
 bool Graphics::InitializeShaders()

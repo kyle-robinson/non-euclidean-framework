@@ -236,6 +236,7 @@
     <ClInclude Include="Objects\Cube.h" />
     <ClInclude Include="Objects\Light.h" />
     <ClInclude Include="Objects\Quad.h" />
+    <ClInclude Include="Objects\Face.h" />
     <ClInclude Include="Objects\StencilCube.h" />
     <ClInclude Include="Resources\Resource.h" />
     <ClInclude Include="Utility\COMException.h" />
@@ -298,6 +299,7 @@
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="Input\MousePicking.cpp" />
+    <ClCompile Include="Objects\StencilCube.cpp" />
     <ClCompile Include="Utility\ThreadManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="Model\Colour.cpp" />
@@ -311,7 +313,7 @@
     <ClCompile Include="Objects\Cube.cpp" />
     <ClCompile Include="Objects\Light.cpp" />
     <ClCompile Include="Objects\Quad.cpp" />
-    <ClCompile Include="Objects\StencilCube.cpp" />
+    <ClCompile Include="Objects\Face.cpp" />
     <ClCompile Include="Utility\DDSTextureLoader.cpp" />
     <ClCompile Include="Utility\ErrorLogger.cpp" />
     <ClCompile Include="Utility\stdafx.cpp">
