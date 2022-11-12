@@ -30,21 +30,21 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
             camera.Initialize( XMFLOAT3( 0.0f, 0.0f, 0.0f ), width, height );
             m_stencilCameras.emplace( (Side)i, std::move( camera ) );
         }
-        m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -3.0f ) );
+        m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -5.0f ) );
         
-        m_stencilCameras.at( Side::BACK ).SetPosition( XMFLOAT3( 0.0f, 0.0f, 3.0f ) );
+        m_stencilCameras.at( Side::BACK ).SetPosition( XMFLOAT3( 0.0f, 0.0f, 5.0f ) );
         m_stencilCameras.at( Side::BACK ).SetRotation( XMFLOAT3( 0.0f, -XM_PI, 0.0f ) );
         
-        m_stencilCameras.at( Side::LEFT ).SetPosition( XMFLOAT3( 3.0f, 0.0f, 0.0f ) );
+        m_stencilCameras.at( Side::LEFT ).SetPosition( XMFLOAT3( 5.0f, 0.0f, 0.0f ) );
         m_stencilCameras.at( Side::LEFT ).SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
         
-        m_stencilCameras.at( Side::RIGHT ).SetPosition( XMFLOAT3( -3.0f, 0.0f, 0.0f ) );
+        m_stencilCameras.at( Side::RIGHT ).SetPosition( XMFLOAT3( -5.0f, 0.0f, 0.0f ) );
         m_stencilCameras.at( Side::RIGHT ).SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
         
-        m_stencilCameras.at( Side::TOP ).SetPosition( XMFLOAT3( 0.0f, 3.0f, 0.0f ) );
+        m_stencilCameras.at( Side::TOP ).SetPosition( XMFLOAT3( 0.0f, 5.0f, 0.0f ) );
         m_stencilCameras.at( Side::TOP ).SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
         
-        m_stencilCameras.at( Side::BOTTOM ).SetPosition( XMFLOAT3( 0.0f, -3.0f, 0.0f ) );
+        m_stencilCameras.at( Side::BOTTOM ).SetPosition( XMFLOAT3( 0.0f, -5.0f, 0.0f ) );
         m_stencilCameras.at( Side::BOTTOM ).SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
 
         // Initialize constant buffers
@@ -121,65 +121,6 @@ void Application::Update()
 
 void Application::Render()
 {
-#pragma region RTT_CUBE_INV
-    std::function<void( uint32_t i, uint32_t j )> RenderCubeInvStencils = std::function( [&]( uint32_t i, uint32_t j ) -> void
-    {
-        // Adjust side value to account for inverse cube
-        if ( i % 2 == 0 )
-            i += 1u;
-        else
-            i -= 1u;
-
-        // Render RTT cube
-        graphics.BeginFrameCubeInv( (Side)i, j );
-        Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i ) : m_camera;
-
-        graphics.UpdateRenderStateSkysphere();
-        m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-    
-        // Update constant buffers
-        /*m_light.UpdateCB( camera );
-        m_mapping.UpdateCB();
-        m_cube.UpdateCB();
-
-        // Draw cube with stencil view
-        graphics.UpdateRenderStateCube();
-        m_cube.UpdateBuffers( m_cbMatrices, camera );
-        if ( j > 0 )
-            m_cube.SetTexture( graphics.GetCubeInvBuffer( (Side)i, j - 1 )->GetShaderResourceView() );
-        graphics.GetContext()->VSSetConstantBuffers( 0u, 1u, m_cbMatrices.GetAddressOf() );
-        graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_cube.GetCB() );
-        graphics.GetContext()->PSSetConstantBuffers( 2u, 1u, m_light.GetCB() );
-        graphics.GetContext()->PSSetConstantBuffers( 3u, 1u, m_mapping.GetCB() );
-        if ( j == 0 )
-            m_cube.Draw( graphics.GetContext() );
-        else
-            m_cube.DrawRTT( graphics.GetContext() );*/
-
-        // Draw light object
-        graphics.UpdateRenderStateTexture();
-        m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-    } );
-
-    // Offload rtt rendering to separate threads
-    uint32_t start = 0u, end = 1u;
-    uint32_t threadCount = CAMERA_COUNT;
-    for ( uint32_t t = 0u; t < threadCount; ++t )
-    {
-        ThreadManager::CreateThread( [=]() -> void
-        {
-            ThreadManager::Lock();
-            for ( uint32_t i = start; i < end; ++i )
-                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                    RenderCubeInvStencils( i, j );
-            ThreadManager::Unlock();
-        } );
-        ++start;
-        ++end;
-    }
-    ThreadManager::WaitForAllThreads();
-#pragma endregion
-
 #pragma region RTT_CUBE
     std::function<void( uint32_t i, uint32_t j )> RenderCubeStencils = std::function( [&]( uint32_t i, uint32_t j ) -> void
     {
@@ -196,7 +137,7 @@ void Application::Render()
         // Draw face with stencil view
         graphics.UpdateRenderStateObject();
         if ( j > 0 )
-            graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeBuffer( (Side)i, j - 1 )->GetShaderResourceViewPtr() );
+            graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeBuffer( (Side)i, j - 1u )->GetShaderResourceViewPtr() );
         else if ( j == 0 )
             graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
 
@@ -206,7 +147,7 @@ void Application::Render()
         case Side::FRONT: m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) ); break;
         case Side::BACK: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) ); break;
         case Side::LEFT: m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) ); break;
-        case Side::RIGHT:  m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) ); break;
+        case Side::RIGHT: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) ); break;
         case Side::TOP: m_face.SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) ); break;
         case Side::BOTTOM: m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) ); break;
         }
@@ -216,8 +157,60 @@ void Application::Render()
         graphics.UpdateRenderStateTexture();
         m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
     } );
+#pragma endregion
 
+#pragma region RTT_CUBE_INV
+    std::function<void( uint32_t i, uint32_t j )> RenderCubeInvStencils = std::function( [&]( uint32_t i, uint32_t j ) -> void
+    {
+        // Adjust side value to account for inverse cube
+        uint32_t i_inv = i;
+        if ( i % 2u == 0u )
+            i_inv = i + 1u;
+        else
+            i_inv = i - 1u;
+
+        // Render RTT room face
+        graphics.BeginFrameCubeInv( (Side)i_inv, j );
+        Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i_inv ) : m_camera;
+
+        graphics.UpdateRenderStateSkysphere();
+        m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+
+        // Render RTT cube
+        graphics.UpdateRenderStateObject();
+        for ( uint32_t x = 0u; x < CAMERA_COUNT; x++ )
+            m_stencilCube.SetTexture( (Side)x, graphics.GetCubeBuffer( (Side)x, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, camera );
+
+        // Draw light object
+        graphics.UpdateRenderStateTexture();
+        m_light.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+    } );
+#pragma endregion
+
+#pragma region RTT_THREADING
     // Offload rtt rendering to separate threads
+    uint32_t start = 0u, end = 1u;
+    uint32_t threadCount = CAMERA_COUNT;
+    for ( uint32_t t = 0u; t < threadCount; ++t )
+    {
+        ThreadManager::CreateThread( [=]() -> void
+        {
+            ThreadManager::Lock();
+            for ( uint32_t i = start; i < end; ++i )
+            {
+                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+                {
+                    RenderCubeStencils( i, j );
+                }
+            }
+            ThreadManager::Unlock();
+        } );
+        ++start;
+        ++end;
+    }
+    ThreadManager::WaitForAllThreads();
+
     start = 0u, end = 1u;
     for ( uint32_t t = 0u; t < threadCount; ++t )
     {
@@ -225,8 +218,12 @@ void Application::Render()
         {
             ThreadManager::Lock();
             for ( uint32_t i = start; i < end; ++i )
+            {
                 for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                    RenderCubeStencils( i, j );
+                {
+                    RenderCubeInvStencils( i, j );
+                }
+            }
             ThreadManager::Unlock();
         } );
         ++start;
@@ -248,13 +245,12 @@ void Application::Render()
     // Draw stencil cube inverse
     graphics.UpdateRenderStateObject();
     for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-        m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1 )->GetShaderResourceView() );
+        m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
     m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
     // Draw stencil cube
-    graphics.UpdateRenderStateObject();
     for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-        m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1 )->GetShaderResourceView() );
+        m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
     m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
     // Draw light object

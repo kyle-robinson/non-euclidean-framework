@@ -43,9 +43,15 @@ bool StencilCube::Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pDevi
     return true;
 }
 
-void StencilCube::SetTexture( Side side, ID3D11ShaderResourceView* pTexture )
+void StencilCube::SetTexture( Side side, ID3D11ShaderResourceView* pTexture ) noexcept
 {
     m_pTextures.at( side ) = pTexture;
+}
+
+void StencilCube::SetScale( float x, float y, float z ) noexcept
+{
+    for ( uint32_t i = 0u; i < 6u; i++ )
+        m_pFaces.at( (Side)i )->SetScale( x, y, z );
 }
 
 void StencilCube::Draw( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_matrix, Camera& pCamera )
