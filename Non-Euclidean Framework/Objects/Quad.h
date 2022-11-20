@@ -8,6 +8,7 @@
 struct VertexPP
 {
 	XMFLOAT2 Position;
+	XMFLOAT2 TexCoord;
 };
 
 class Quad

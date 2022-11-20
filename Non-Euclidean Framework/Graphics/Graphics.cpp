@@ -40,6 +40,13 @@ void Graphics::InitializeDirectX( HWND hWnd )
 			renderTargets.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
 		m_pCubeInvBuffers.emplace( (Side)i, renderTargets );
 	}
+	for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+	{
+		std::vector<std::shared_ptr<Bind::RenderTarget>> renderTargets;
+		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
+			renderTargets.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
+		m_pCubeInvRecursiveBuffers.emplace( (Side)i, renderTargets );
+	}
 
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pDepthStencil = std::make_shared<Bind::DepthStencil>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
@@ -120,6 +127,7 @@ bool Graphics::InitializeShaders()
 		D3D11_INPUT_ELEMENT_DESC layoutPP[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
 		// Create the quad shaders
@@ -166,6 +174,13 @@ void Graphics::BeginFrameCubeInv( Side side, uint32_t index )
     m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
 }
 
+void Graphics::BeginFrameCubeInvRecursive( Side side, uint32_t index )
+{
+	// Clear render target/depth stencil
+	m_pCubeInvRecursiveBuffers.at( side ).at( index )->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
+    m_pDepthStencil->ClearDepthStencil( m_pContext.Get() );
+}
+
 void Graphics::UpdateRenderStateSkysphere()
 {
 	// Set render state for skysphere
@@ -205,12 +220,13 @@ void Graphics::BindRenderTarget()
 	m_pRenderTarget->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
 }
 
-void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA )
+void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA, ID3D11Buffer* const* cbNonEuclidean )
 {
 	// Render fullscreen texture to new render target
 	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderPP, m_pixelShaderPP );
-	m_pContext->PSSetConstantBuffers( 0u, 1u, cbMotionBlur );	
-	m_pContext->PSSetConstantBuffers( 1u, 1u, cbFXAA );	
+	m_pContext->VSSetConstantBuffers( 0u, 1u, cbNonEuclidean );
+	m_pContext->PSSetConstantBuffers( 1u, 1u, cbMotionBlur );
+	m_pContext->PSSetConstantBuffers( 2u, 1u, cbFXAA );
 	m_quad.SetupBuffers( m_pContext.Get() );
 	m_pContext->PSSetShaderResources( 0u, 1u, m_pRenderTarget->GetShaderResourceViewPtr() );
 	m_pContext->PSSetShaderResources( 1u, 1u, m_pDepthStencil->GetShaderResourceViewPtr() );
@@ -227,6 +243,7 @@ void Graphics::EndFrame()
 		{
 			m_pCubeBuffers.at( (Side)i ).at( j )->BindNull( m_pContext.Get() );
 			m_pCubeInvBuffers.at( (Side)i ).at( j )->BindNull( m_pContext.Get() );
+			m_pCubeInvRecursiveBuffers.at( (Side)i ).at( j )->BindNull( m_pContext.Get() );
 		}
 	}
 	m_pBackBuffer->BindNull( m_pContext.Get() );

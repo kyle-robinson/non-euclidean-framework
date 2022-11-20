@@ -172,10 +172,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\FXAA.h" />
     <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\Mapping.h" />
-    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\MotionBlur.h" />
-    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\PostProcessing.h" />
     <ClInclude Include="..\External\imgui\imconfig.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -243,6 +240,10 @@
     <ClInclude Include="Objects\StencilCube.h" />
     <ClInclude Include="Objects\StencilCubeInv.h" />
     <ClInclude Include="Resources\Resource.h" />
+    <ClInclude Include="Systems\FXAA.h" />
+    <ClInclude Include="Systems\MotionBlur.h" />
+    <ClInclude Include="Systems\NonEuclidean.h" />
+    <ClInclude Include="Systems\PostProcessing.h" />
     <ClInclude Include="Utility\COMException.h" />
     <ClInclude Include="Utility\DDSTextureLoader.h" />
     <ClInclude Include="Utility\ErrorLogger.h" />
@@ -255,10 +256,7 @@
     <ClInclude Include="Window\WindowContainer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\FXAA.cpp" />
     <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\Mapping.cpp" />
-    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\MotionBlur.cpp" />
-    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\PostProcessing.cpp" />
     <ClCompile Include="..\External\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -305,6 +303,10 @@
     <ClCompile Include="Input\MousePicking.cpp" />
     <ClCompile Include="Objects\StencilCube.cpp" />
     <ClCompile Include="Objects\StencilCubeInv.cpp" />
+    <ClCompile Include="Systems\FXAA.cpp" />
+    <ClCompile Include="Systems\MotionBlur.cpp" />
+    <ClCompile Include="Systems\NonEuclidean.cpp" />
+    <ClCompile Include="Systems\PostProcessing.cpp" />
     <ClCompile Include="Utility\ThreadManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="Model\Colour.cpp" />

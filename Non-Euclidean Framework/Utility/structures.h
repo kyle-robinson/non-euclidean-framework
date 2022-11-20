@@ -57,6 +57,26 @@ struct FXAA_CB
 	FXAAData FXAA;
 };
 
+// Non-Euclidean Space
+struct NonEuclideanData
+{
+	NonEuclideanData()
+		: CurveScale( 1.33f )
+		, UseHyperbolic( FALSE )
+		, UseElliptic( FALSE )
+	{}
+
+	FLOAT CurveScale;
+	BOOL UseHyperbolic;
+	BOOL UseElliptic;
+	FLOAT Padding;
+};
+
+struct NonEuclidean_CB
+{
+	NonEuclideanData NonEuclidean;
+};
+
 // Materials
 struct MaterialData
 {

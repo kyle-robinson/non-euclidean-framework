@@ -210,16 +210,7 @@
     <ClInclude Include="Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\FXAA.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\Mapping.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\MotionBlur.h">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\PostProcessing.h">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="Objects\Face.h">
@@ -242,6 +233,18 @@
     </ClInclude>
     <ClInclude Include="Graphics\Stencil.h">
       <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\FXAA.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\MotionBlur.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\PostProcessing.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\NonEuclidean.h">
+      <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -344,16 +347,7 @@
     <ClCompile Include="WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\PostProcessing.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\MotionBlur.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\Mapping.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Advanced-Graphics-and-Real-Time-Rendering\DX11 Advanced Rendering\FrameworkDX11\Systems\FXAA.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="Objects\Face.cpp">
@@ -367,6 +361,18 @@
     </ClCompile>
     <ClCompile Include="Objects\StencilCubeInv.cpp">
       <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\PostProcessing.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\MotionBlur.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\FXAA.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\NonEuclidean.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

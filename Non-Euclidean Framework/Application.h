@@ -13,6 +13,7 @@
 #include "MotionBlur.h"
 #include "StencilCube.h"
 #include "ImGuiManager.h"
+#include "NonEuclidean.h"
 #include "StencilCubeInv.h"
 #include "PostProcessing.h"
 #include "WindowContainer.h"
@@ -37,11 +38,13 @@ private:
 	StencilCube m_stencilCube;
 	StencilCubeInv m_stencilCubeInv;
 	RenderableGameObject m_objSkysphere;
+	StencilCubeInv m_stencilCubeInvRecursive;
 	std::unordered_map<Side, Camera> m_stencilCameras;
 
 	// Systems
 	FXAA m_fxaa;
 	MotionBlur m_motionBlur;
+	NonEuclidean m_nonEuclidean;
 	PostProcessing m_postProcessing;
 
 	// Data

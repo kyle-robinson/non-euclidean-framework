@@ -26,12 +26,12 @@ struct _FXAA
 };
 
 // Constant Buffers
-cbuffer MotionBlurData : register( b0 )
+cbuffer MotionBlurData : register( b1 )
 {
     _MotionBlur MotionBlur;
 }
 
-cbuffer FXAAData : register( b1 )
+cbuffer FXAAData : register( b2 )
 {
     _FXAA FXAA;
 }
@@ -111,6 +111,12 @@ float4 DoFXAA( float2 texCoord )
 		return float4( result1.x, result1.y, result1.z, 1.0f );
 	else
 		return float4( result2.x, result2.y, result2.z, 1.0f );
+}
+
+float DotProduct( float4 u, float4 v )
+{
+    float curv = -1.0f;
+    return dot( u, v ) - ( ( curv < 0.0f ) ? 2.0f * u.w * v.w : 0.0f );
 }
 
 // Pixel Shader
