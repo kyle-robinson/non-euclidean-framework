@@ -7,8 +7,11 @@
 #include "Resource.h"
 
 #include "FXAA.h"
+#include "Cube.h"
+#include "Light.h"
 #include "Input.h"
 #include "Timer.h"
+#include "Mapping.h"
 #include "Shaders.h"
 #include "MotionBlur.h"
 #include "StencilCube.h"
@@ -32,7 +35,9 @@ public:
 	void SpawnControlWindow();
 private:
 	// Objects
+	Cube m_cube;
 	Face m_face;
+	Light m_light;
 	Camera m_camera;
 	ImGuiManager m_imgui;
 	StencilCube m_stencilCube;
@@ -43,6 +48,7 @@ private:
 
 	// Systems
 	FXAA m_fxaa;
+	Mapping m_mapping;
 	MotionBlur m_motionBlur;
 	NonEuclidean m_nonEuclidean;
 	PostProcessing m_postProcessing;
@@ -51,6 +57,7 @@ private:
 	Timer m_timer;
 	Input m_input;
 	bool m_bUseStaticCamera = true;
+	bool m_bUseRepeatingSpace = true;
 	XMFLOAT4X4 m_previousViewProjection;
 	ConstantBuffer<Matrices> m_cbMatrices;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;

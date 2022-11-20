@@ -33,8 +33,7 @@ public:
 	void BindRenderTarget();
 	void RenderSceneToTexture(
 		ID3D11Buffer* const* cbMotionBlur,
-		ID3D11Buffer* const* cbFXAA,
-		ID3D11Buffer* const* cbNonEuclidean );
+		ID3D11Buffer* const* cbFXAA );
 	void EndFrame();
 
 	inline UINT GetWidth() const noexcept { return m_viewWidth; }

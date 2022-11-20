@@ -55,28 +55,63 @@ struct _Mapping
     float2 Padding;
 };
 
+struct _NonEuclidean
+{
+    float CurveScale;
+    bool UseHyperbolic;
+    bool UseElliptic;
+    float Padding;
+};
+
 // Constant Buffers
-cbuffer MaterialProperties : register( b1 )
+cbuffer MaterialProperties : register( b0 )
 {
 	_Material Material;
 };
 
-cbuffer LightProperties : register( b2 )
+cbuffer LightProperties : register( b1 )
 {
     float4 CameraPosition;
     float4 GlobalAmbient;
     Light Lights[MAX_LIGHTS];
 };
 
-cbuffer MappingProperties : register( b3 )
+cbuffer MappingProperties : register( b2 )
 {
     _Mapping Mapping;
+}
+
+cbuffer NonEuclideanData : register( b3 )
+{
+    _NonEuclidean NonEuclidean;
+}
+
+// Math Functions
+float DotProduct( float4 u, float4 v )
+{
+    float curv = 0.0f;
+    if ( NonEuclidean.UseHyperbolic )
+        curv = 1.0f;
+    if ( NonEuclidean.UseElliptic )
+        curv = -1.0f;
+    return dot( u, v ) - ( ( curv < 0.0f ) ? 2.0f * u.w * v.w : 0.0f );
+}
+
+float4 Direction( float4 to, float4 from )
+{
+    float curv = 0.0f;
+    if ( NonEuclidean.UseHyperbolic )
+        curv = 1.0f;
+    if ( NonEuclidean.UseElliptic )
+        curv = -1.0f;
+    float dp = ( curv != 0.0f ) ? DotProduct( from, to ) : 1.0f;
+    return to - from * dp;
 }
 
 // Lighting Functions
 float4 DoDiffuse( Light light, float3 L, float3 N )
 {
-	float NdotL = max( 0.0f, dot( N, L ) );
+	float NdotL = max( 0.0f, DotProduct( float4( N, 0.0f ), float4( L, 0.0f ) ) );
 	return light.Color * NdotL;
 }
 
@@ -85,13 +120,13 @@ float4 DoSpecular( Light lightObject, float3 vertexToEye, float3 lightDirectionT
 	float3 lightDir = normalize( -lightDirectionToVertex );
 	vertexToEye = normalize( vertexToEye );
 
-	float lightIntensity = saturate( dot( Normal, lightDir ) );
+	float lightIntensity = saturate( DotProduct( float4( Normal, 0.0f ), float4( lightDir, 0.0f ) ) );
 	float4 specular = float4( 0.0f, 0.0f, 0.0f, 0.0f );
     
 	if ( lightIntensity > 0.0f )
 	{
 		float3  reflection = normalize( 2.0f * lightIntensity * Normal - lightDir );
-		specular = pow( saturate( dot( reflection, vertexToEye ) ), Material.SpecularPower );
+		specular = pow( saturate( DotProduct( float4( reflection, 0.0f ), float4( vertexToEye, 0.0f ) ) ), Material.SpecularPower );
 	}
 
 	return specular;
@@ -151,7 +186,8 @@ LightingResult ComputeLighting( float4 vertexPos, float3 N, float3 vertexToEye )
 float3x3 computeTBNMatrix( float3 unitNormal, float3 tangent )
 {
     float3 N = unitNormal;
-    float3 T = normalize( tangent - dot( tangent, N ) * N);
+    float3 tDot = DotProduct( float4( tangent, 0.0f ), float4( N, 0.0f ) );
+    float3 T = normalize( tangent - tDot * N );
     float3 B = cross( T, N );
     return float3x3( T, B, N );
 }
@@ -159,9 +195,14 @@ float3x3 computeTBNMatrix( float3 unitNormal, float3 tangent )
 float3x3 computeTBNMatrixB( float3 unitNormal, float3 tangent, float3 binorm )
 {
     float3 N = unitNormal;
-    float3 T = normalize( tangent - dot( tangent, N ) * N );
-    float3 B = normalize( binorm - dot( binorm, tangent ) * tangent );
-    return float3x3(T, B, N);
+    
+    float3 tDot = DotProduct( float4( tangent, 0.0f ), float4( N, 0.0f ) );
+    float3 T = normalize( tangent - tDot * N );
+    
+    float3 bDot = DotProduct( float4( binorm, 0.0f ), float4( tangent, 0.0f ) );
+    float3 B = normalize( binorm - bDot * tangent );
+    
+    return float3x3( T, B, N );
 }
 
 float3 NormalMapping( float2 texCoord, float3x3 TBN )
@@ -186,7 +227,7 @@ float2 ParallaxOcclusion( float2 texCoord, float3 normal, float3 toEye )
     float3 toEyeTS = -toEye;
     float2 parallaxLimit = Mapping.HeightScale * toEyeTS.xy; // parallax shift
     
-    int numSamples = (int) lerp( nMaxSamples, nMinSamples, abs( dot( toEyeTS, normal ) ) );
+    int numSamples = (int) lerp( nMaxSamples, nMinSamples, abs( DotProduct( float4( toEyeTS, 0.0f ), float4( normal, 0.0f ) ) ) );
     float zStep = 1.0f / (float) numSamples;
     float2 heightStep = zStep * parallaxLimit;
 
@@ -230,7 +271,7 @@ float2 ParallaxOcclusion( float2 texCoord, float3 normal, float3 toEye )
 
 float ParallaxSelfShadowing( float3 toLight, float2 texCoord, bool softShadow )
 {
-    float shadowFactor = 1;
+    float shadowFactor = 1.0f;
     int minLayers = 15;
     int maxLayers = 30;
 
@@ -239,18 +280,18 @@ float ParallaxSelfShadowing( float3 toLight, float2 texCoord, bool softShadow )
     float height = 1.0f - textureDisplacement.SampleGrad( samplerState, texCoord, dx, dy ).r;
     float parallaxScale = Mapping.HeightScale * ( 1.0f - height );
 
-    if ( dot( float3( 0.0f, 0.0f, 1.0f ), toLight ) > 0.0f )
+    if ( DotProduct( float4( 0.0f, 0.0f, 1.0f, 0.0f ), float4( toLight, 0.0f ) ) > 0.0f )
     {
         shadowFactor = 0.0f;
         float numSamplesUnderSurface = 0.0f;
-        float numLayers = lerp( maxLayers, minLayers, dot( float3( 0.0f, 0.0f, 1.0f ), toLight ) );
+        float numLayers = lerp( maxLayers, minLayers, DotProduct( float4( 0.0f, 0.0f, 1.0f, 0.0f ), float4( toLight, 0.0f ) ) );
 
         float layerHeight = height / numLayers;
         float2 texStep = parallaxScale * toLight.xy / numLayers;
 
         float currLayerHeight = height - layerHeight;
         float2 currTexCoord = texCoord + texStep;
-        float heightFromTex = 1.0 - textureDisplacement.SampleGrad( samplerState, currTexCoord, dx, dy ).r;
+        float heightFromTex = 1.0f - textureDisplacement.SampleGrad( samplerState, currTexCoord, dx, dy ).r;
         int stepIndex = 1;
         int numIter = 0;
 
@@ -309,8 +350,8 @@ float4 PS( PS_INPUT input ) : SV_TARGET
 	//float3x3 TBN = computeTBNMatrix( input.Normal, input.Tangent );
     float3x3 TBN = computeTBNMatrixB( input.Normal, input.Tangent, input.Binormal );
 
-    float3 vertexToLight = normalize( Lights[0].Position - input.WorldPosition ).xyz;
-    float3 vertexToEye = normalize( CameraPosition - input.WorldPosition ).xyz;
+    float3 vertexToLight = normalize( Direction( Lights[0].Position, input.WorldPosition ) ).xyz;
+    float3 vertexToEye = normalize( Direction( CameraPosition, input.WorldPosition ) ).xyz;
     float3 vertexToLightTS = mul( vertexToLight, TBN );
     float3 vertexToEyeTS = mul( vertexToEye, TBN );
 	
