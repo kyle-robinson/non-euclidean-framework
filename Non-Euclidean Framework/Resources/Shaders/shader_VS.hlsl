@@ -31,10 +31,10 @@ float4 Port( float3 ePoint )
     
     float scale = 4.0f;
     if ( NonEuclidean.UseHyperbolic ) // hyperbolic
-        return float4( p / d * sin( d ) * scale, -cos( d ) * scale );
+        return float4( p / d * sinh( d ) / scale, cosh( d ) / scale );
     
     if ( NonEuclidean.UseElliptic ) // elliptic
-        return float4( p / d * sinh( d ) / scale, cosh( d ) / scale );
+        return float4( p / d * sin( d ) * scale, -cos( d ) * scale );
     
     return float4( p, 1.0f ); // normal if not using anything
 }

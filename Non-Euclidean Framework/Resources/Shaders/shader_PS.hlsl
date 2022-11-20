@@ -91,9 +91,9 @@ float DotProduct( float4 u, float4 v )
 {
     float curv = 0.0f;
     if ( NonEuclidean.UseHyperbolic )
-        curv = 1.0f;
-    if ( NonEuclidean.UseElliptic )
         curv = -1.0f;
+    if ( NonEuclidean.UseElliptic )
+        curv = 1.0f;
     return dot( u, v ) - ( ( curv < 0.0f ) ? 2.0f * u.w * v.w : 0.0f );
 }
 
@@ -101,9 +101,9 @@ float4 Direction( float4 to, float4 from )
 {
     float curv = 0.0f;
     if ( NonEuclidean.UseHyperbolic )
-        curv = 1.0f;
-    if ( NonEuclidean.UseElliptic )
         curv = -1.0f;
+    if ( NonEuclidean.UseElliptic )
+        curv = 1.0f;
     float dp = ( curv != 0.0f ) ? DotProduct( from, to ) : 1.0f;
     return to - from * dp;
 }
