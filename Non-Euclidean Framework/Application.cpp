@@ -409,7 +409,7 @@ void Application::SpawnControlWindows()
             static XMFLOAT2 aspectRatio = m_fStencilAspect;
 
             ImGui::Text( "FOV" );
-            if ( ImGui::SliderFloat( "##Texture Border", &m_fStencilFov, 75.0f, 120.0f, "%1.f" ) )
+            if ( ImGui::SliderFloat( "##Texture Border", &fov, 75.0f, 120.0f, "%1.f" ) )
                 updateCamera = true;
 
             ImGui::Text( "Aspect Ratio" );
