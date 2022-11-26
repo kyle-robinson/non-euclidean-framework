@@ -40,12 +40,13 @@ private:
 	Light m_light;
 	Camera m_camera;
 	ImGuiManager m_imgui;
-	StencilCube m_stencilCube;
-	StencilCubeInv m_stencilCubeInv;
 	RenderableGameObject m_objSkysphere;
-	StencilCubeInv m_stencilCubeInvRecursive;
-	StencilCubeInv m_stencilCubeInvRecursiveEx;
-	std::unordered_map<Side, Camera> m_stencilCameras;
+
+	// Non-Euclidean Objects
+	StencilCube m_stencilCube; // recursive cube
+	StencilCubeInv m_stencilCubeInv; // inner room views
+	std::unordered_map<Side, Camera> m_stencilCameras; // camera views
+	std::vector<StencilCubeInv> m_stencilCubesInvRecursive; // room recursions
 
 	// Systems
 	FXAA m_fxaa;
