@@ -58,10 +58,12 @@ private:
 	// Data
 	Timer m_timer;
 	Input m_input;
+	float m_fTextureBorder = 0.05f;
 	bool m_bUseStaticCamera = true;
 	bool m_bUseRepeatingSpace = true;
 	XMFLOAT4X4 m_previousViewProjection;
 	ConstantBuffer<Matrices> m_cbMatrices;
+	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
 };
 

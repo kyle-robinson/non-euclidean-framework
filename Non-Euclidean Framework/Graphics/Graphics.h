@@ -26,7 +26,7 @@ public:
 
 	void UpdateRenderStateSkysphere();
 	void UpdateRenderStateCube();
-	void UpdateRenderStateObject();
+	void UpdateRenderStateObject( ID3D11Buffer* const* cbBorder );
 	void UpdateRenderStateTexture();
 	
 	void BeginRenderSceneToTexture();

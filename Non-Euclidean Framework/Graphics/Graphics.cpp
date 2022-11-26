@@ -44,10 +44,10 @@ void Graphics::InitializeDirectX( HWND hWnd )
 	for ( uint32_t i = 0u; i < RENDER_DEPTH + 1u; i++ ) // for each render depth
 	{
 		std::vector<std::unordered_map<Side, std::shared_ptr<Bind::RenderTarget>>> renderTargets_cameras;
-		for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ ) // for each camera view
+		for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ ) // for each camera view at that render depth
 		{
 			std::unordered_map<Side, std::shared_ptr<Bind::RenderTarget>> renderTargets_faces;
-			for ( uint32_t k = 0u; k < 6u; k++ ) // for each cube face
+			for ( uint32_t k = 0u; k < 6u; k++ ) // for each cube face in a given camera view at that render depth
 			{
 				renderTargets_faces.emplace( (Side)k, std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
 			}
@@ -55,26 +55,6 @@ void Graphics::InitializeDirectX( HWND hWnd )
 		}
 		m_pCubeInvRecursiveBuffers.push_back( std::move( renderTargets_cameras ) );
 	}
-
-	// for each of the 6 camera views
-	//for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
-	//{
-	//	for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-	//	{
-	//		std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> renderTargets_sides;
-	//		// for each render depth
-	//		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
-	//		{
-	//			std::vector<std::shared_ptr<Bind::RenderTarget>> renderTargets_faces;
-	//			// for each face on the cube at that depth
-	//			{
-	//				renderTargets_faces.push_back( std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight ) );
-	//			}
-	//			renderTargets_sides.emplace( (Side)j, renderTargets_faces );
-	//		}
-	//		m_pCubeInvRecursiveBuffers.push_back( renderTargets_sides );
-	//	}
-	//}
 
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pDepthStencil = std::make_shared<Bind::DepthStencil>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
@@ -223,11 +203,12 @@ void Graphics::UpdateRenderStateCube()
     Shaders::BindShaders( m_pContext.Get(), m_vertexShader, m_pixelShader );
 }
 
-void Graphics::UpdateRenderStateObject()
+void Graphics::UpdateRenderStateObject( ID3D11Buffer* const* cbBorder )
 {
 	// Set default render state for objects
     m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
     Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderBD );
+	m_pContext->PSSetConstantBuffers( 0u, 1u, cbBorder );
 }
 
 void Graphics::UpdateRenderStateTexture()

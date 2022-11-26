@@ -51,6 +51,9 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         HRESULT hr = m_cbMatrices.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'Matrices' constant buffer!" );
 
+        hr = m_cbTextureBorder.Initialize( graphics.GetDevice(), graphics.GetContext() );
+	    COM_ERROR_IF_FAILED( hr, "Failed to create 'Texture Border' constant buffer!" );
+
         // Initialize game objects
 	    hr = m_cube.InitializeMesh( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED(hr, "Failed to create 'cube' object!");
@@ -112,11 +115,13 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 
 void Application::CleanupDevice()
 {
+#ifdef _DEBUG
     // Usefult for finding dx memory leaks
     ID3D11Debug* debugDevice = nullptr;
-    graphics.GetDevice()->QueryInterface( __uuidof(ID3D11Debug), reinterpret_cast<void**>( &debugDevice ) );
+    graphics.GetDevice()->QueryInterface( __uuidof( ID3D11Debug ), reinterpret_cast<void**>( &debugDevice ) );
     debugDevice->ReportLiveDeviceObjects( D3D11_RLDO_DETAIL );
     if ( debugDevice ) debugDevice->Release();
+#endif
 }
 
 bool Application::ProcessMessages() noexcept
@@ -153,7 +158,7 @@ void Application::Render()
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
             // Draw face with stencil view
-            graphics.UpdateRenderStateObject();
+            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
             if ( j > 0 )
                 graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeBuffer( (Side)i, j - 1u )->GetShaderResourceViewPtr() );
             else if ( j == 0 )
@@ -192,7 +197,7 @@ void Application::Render()
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
             // Render RTT cube
-            graphics.UpdateRenderStateObject();
+            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
             m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, camera );
             graphics.GetCubeInvBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
         } );
@@ -216,7 +221,7 @@ void Application::Render()
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
             // Render RTT cube
-            graphics.UpdateRenderStateObject();
+            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
             i == 0 ?
                 m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, camera ) :
                 m_stencilCubesInvRecursive[i - 1u].Draw( graphics.GetContext(), m_cbMatrices, camera );
@@ -254,6 +259,11 @@ void Application::Render()
 
     if ( m_bUseRepeatingSpace )
     {
+        TextureBorder_CB tbData;
+        tbData.TextureBorder = m_fTextureBorder;
+        m_cbTextureBorder.data = tbData;
+        if ( !m_cbTextureBorder.ApplyChanges() ) return;
+
         // Determine whether to render recursive rooms
         static bool updateDepth = false;
         if ( RENDER_DEPTH == 0u )
@@ -263,7 +273,7 @@ void Application::Render()
         }
 
         // Draw stencil cube inverse
-        graphics.UpdateRenderStateObject();
+        graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
             m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
         m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
@@ -377,6 +387,11 @@ void Application::SpawnControlWindow()
             static int renderDepth = (int)RENDER_DEPTH;
 		    ImGui::SliderInt( "##Render Depth", &renderDepth, 0, 5 );
             RENDER_DEPTH = (uint32_t)renderDepth;
+
+            ImGui::Text( "Texture Border" );
+            static float textureBorder = m_fTextureBorder;
+		    ImGui::SliderFloat( "##Texture Border", &textureBorder, 0.00f, 0.10f, "%.2f" );
+            m_fTextureBorder = textureBorder;
         }
     }
     ImGui::End();

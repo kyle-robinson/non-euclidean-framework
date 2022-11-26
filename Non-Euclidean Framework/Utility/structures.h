@@ -182,4 +182,15 @@ struct Mapping_CB
 	MappingData MapData;
 };
 
+// Texture Border
+struct TextureBorder_CB
+{
+	TextureBorder_CB()
+		: TextureBorder( 0.05f )
+	{}
+
+	FLOAT TextureBorder;
+	XMFLOAT3 Padding;
+};
+
 #endif
