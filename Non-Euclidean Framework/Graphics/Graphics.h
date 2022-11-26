@@ -23,6 +23,7 @@ public:
 	void BeginFrameCube( Side side, uint32_t index );
 	void BeginFrameCubeInv( Side side, uint32_t index );
 	void BeginFrameCubeInvRecursive( Side side, uint32_t index );
+	void BeginFrameCubeInvRecursiveEx( Side side, uint32_t index );
 
 	void UpdateRenderStateSkysphere();
 	void UpdateRenderStateCube();
@@ -54,6 +55,10 @@ public:
 	inline Bind::RenderTarget* GetCubeInvRecursiveBuffer( Side side, uint32_t index ) { return &*m_pCubeInvRecursiveBuffers.at( side ).at( index ); }
 	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeInvRecursiveBufferSide( Side side ) const noexcept { return m_pCubeInvRecursiveBuffers.at( side ); }
 	inline std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> GetCubeInvRecursiveBufferAll( Side side ) const noexcept { return m_pCubeInvRecursiveBuffers; }
+
+	inline Bind::RenderTarget* GetCubeInvRecursiveBufferEx( Side side, uint32_t index ) { return &*m_pCubeInvRecursiveBuffersEx.at( side ).at( index ); }
+	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeInvRecursiveBufferSideEx( Side side ) const noexcept { return m_pCubeInvRecursiveBuffersEx.at( side ); }
+	inline std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> GetCubeInvRecursiveBufferAllEx( Side side ) const noexcept { return m_pCubeInvRecursiveBuffersEx; }
 
 private:
 	void InitializeDirectX( HWND hWnd );
@@ -93,8 +98,9 @@ private:
 	std::unordered_map<Bind::Rasterizer::Type, std::shared_ptr<Bind::Rasterizer>> m_pRasterizerStates;
 
 	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeBuffers; // vector of depth textures for each face of cube
-	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeInvBuffers; // vector of depth textures for each face of room
-	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeInvRecursiveBuffers; // vector of depth textures for each face of room
+	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeInvBuffers; // vector of depth textures for each face of room (depth 0)
+	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeInvRecursiveBuffers; // vector of depth textures for each face of room (depth 1)
+	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeInvRecursiveBuffersEx; // vector of depth textures for each face of room (depth 2)
 };
 
 #endif

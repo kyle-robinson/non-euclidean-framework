@@ -26,17 +26,19 @@ float4 Port( float3 ePoint )
     float3 p = ePoint * NonEuclidean.CurveScale;
     float d = length( p );
     
-    if ( d < 0.0001f ) // revert to normal even is using non-euclidean space
+     // Revert to Euclidean if distance is too small
+    if ( d < 0.0001f )
         return float4( p, 1.0f );
     
     float scale = 4.0f;
-    if ( NonEuclidean.UseHyperbolic ) // hyperbolic
+    if ( NonEuclidean.UseHyperbolic )
         return float4( p / d * sinh( d ) / scale, cosh( d ) / scale );
     
-    if ( NonEuclidean.UseElliptic ) // elliptic
+    if ( NonEuclidean.UseElliptic )
         return float4( p / d * sin( d ) * scale, -cos( d ) * scale );
     
-    return float4( p, 1.0f ); // normal if not using anything
+    // Euclidean space
+    return float4( p, 1.0f );
 }
 
 // Vertex Shader

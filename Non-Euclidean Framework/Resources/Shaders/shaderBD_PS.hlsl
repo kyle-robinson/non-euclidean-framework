@@ -17,7 +17,9 @@ float4 PS( PS_INPUT input ) : SV_TARGET
     float3 sampleColor = textureObj.Sample( samplerState, input.TexCoord );
 
     // Set texture border colour
-    if ( input.TexCoord.x < 0.1f || input.TexCoord.y < 0.1f || input.TexCoord.x > 0.9f || input.TexCoord.y > 0.9f )
+    float borderOffset = 0.05f;
+    if ( input.TexCoord.x < borderOffset || input.TexCoord.y < borderOffset ||
+         input.TexCoord.x > ( 1.0f - borderOffset ) || input.TexCoord.y > ( 1.0f - borderOffset ) )
         sampleColor = float3( 0.1f, 0.1f, 0.1f );
 
     return float4( sampleColor, 1.0f );

@@ -44,6 +44,7 @@ private:
 	StencilCubeInv m_stencilCubeInv;
 	RenderableGameObject m_objSkysphere;
 	StencilCubeInv m_stencilCubeInvRecursive;
+	StencilCubeInv m_stencilCubeInvRecursiveEx;
 	std::unordered_map<Side, Camera> m_stencilCameras;
 
 	// Systems

@@ -70,6 +70,9 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         hr = m_stencilCubeInvRecursive.Initialize( graphics.GetContext(), graphics.GetDevice() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube inverse recursive' object!" );
 
+        hr = m_stencilCubeInvRecursiveEx.Initialize( graphics.GetContext(), graphics.GetDevice() );
+        COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube inverse recursive ex' object!" );
+
         // Initialize systems
         m_postProcessing.Initialize( graphics.GetDevice() );
 
@@ -215,6 +218,30 @@ void Application::Render()
         } );
 #pragma endregion
 
+#pragma region RTT_CUBE_INV_RECURSIVE_EX
+        std::function<void( uint32_t i, uint32_t j )> RenderCubeInvRecursiveStencilsEx = std::function( [&]( uint32_t i, uint32_t j ) -> void
+        {
+            // Adjust side value to account for inverse cube
+            uint32_t i_inv = i;
+            if ( i % 2u == 0u )
+                i_inv = i + 1u;
+            else
+                i_inv = i - 1u;
+
+            // Render RTT room face
+            graphics.BeginFrameCubeInvRecursiveEx( (Side)i_inv, j );
+            Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i_inv ) : m_camera;
+
+            graphics.UpdateRenderStateSkysphere();
+            m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+
+            // Render RTT cube
+            graphics.UpdateRenderStateObject();
+            m_stencilCubeInvRecursive.Draw( graphics.GetContext(), m_cbMatrices, camera );
+            graphics.GetCubeInvRecursiveBufferEx( (Side)i, j )->BindNull( graphics.GetContext() );
+        } );
+#pragma endregion
+
 #pragma region RTT_GENERATION
         // Generate cube geometry and render targets
         for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
@@ -230,6 +257,11 @@ void Application::Render()
         for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
             for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
                 RenderCubeInvRecursiveStencils( i, j );
+
+        // Generate recursive render targets inside inverse cube geometry
+        for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
+            for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+                RenderCubeInvRecursiveStencilsEx( i, j );
 #pragma endregion
     }
 
@@ -245,12 +277,16 @@ void Application::Render()
         // Draw stencil cube inverse
         graphics.UpdateRenderStateObject();
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+            m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+
+        for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
             m_stencilCubeInvRecursive.SetTexture( (Side)i, graphics.GetCubeInvRecursiveBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
         m_stencilCubeInvRecursive.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-            m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+            m_stencilCubeInvRecursiveEx.SetTexture( (Side)i, graphics.GetCubeInvRecursiveBufferEx( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        m_stencilCubeInvRecursiveEx.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
         // Draw stencil cube
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
