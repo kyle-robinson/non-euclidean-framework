@@ -28,6 +28,7 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         {
             Camera camera;
             camera.Initialize( XMFLOAT3( 0.0f, 0.0f, 0.0f ), width, height );
+            m_fStencilAspect = XMFLOAT2( 16.0f, 9.0f ); // standard ratio
             m_stencilCameras.emplace( (Side)i, std::move( camera ) );
         }
         m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -5.0f ) );
@@ -345,7 +346,7 @@ void Application::Render()
     if ( m_input.IsCursorEnabled() )
     {
         m_imgui.BeginRender();
-        SpawnControlWindow();
+        SpawnControlWindows();
         m_imgui.SpawnInstructionWindow();
         m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
         m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
@@ -372,7 +373,7 @@ void Application::Render()
 #pragma endregion
 }
 
-void Application::SpawnControlWindow()
+void Application::SpawnControlWindows()
 {
     if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
     {
@@ -382,10 +383,6 @@ void Application::SpawnControlWindow()
 
         if ( useRepeatingSpace )
         {
-            static bool useStaticCamera = m_bUseStaticCamera;
-            ImGui::Checkbox( "Static Camera?", &useStaticCamera );
-            m_bUseStaticCamera = useStaticCamera;
-
             ImGui::Text( "Render Depth" );
             static int renderDepth = (int)RENDER_DEPTH;
 		    ImGui::SliderInt( "##Render Depth", &renderDepth, 0, 5 );
@@ -398,4 +395,42 @@ void Application::SpawnControlWindow()
         }
     }
     ImGui::End();
+
+    if ( m_bUseRepeatingSpace )
+    {
+        if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+        {
+            static bool useStaticCamera = m_bUseStaticCamera;
+            ImGui::Checkbox( "Static Camera?", &useStaticCamera );
+            m_bUseStaticCamera = useStaticCamera;
+        
+            static bool updateCamera = false;
+            static float fov = m_fStencilFov;
+            static XMFLOAT2 aspectRatio = m_fStencilAspect;
+
+            ImGui::Text( "FOV" );
+            if ( ImGui::SliderFloat( "##Texture Border", &m_fStencilFov, 75.0f, 120.0f, "%1.f" ) )
+                updateCamera = true;
+
+            ImGui::Text( "Aspect Ratio" );
+            ImGui::PushItemWidth( 100.0f );
+            if ( ImGui::SliderFloat( "##Aspect Ratio X", &aspectRatio.x, 1.0f, 16.0f, "%1.f" ) )
+                updateCamera = true;
+            ImGui::SameLine();
+            if ( ImGui::SliderFloat( "##Aspect Ratio Y", &aspectRatio.y, 1.0f, 16.0f, "%1.f" ) )
+                updateCamera = true;
+            ImGui::PopItemWidth();
+
+            if ( updateCamera )
+            {
+                m_fStencilFov = fov;
+                m_fStencilAspect = aspectRatio;
+                for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+                    m_stencilCameras.at( (Side)i ).SetProjectionValues( m_fStencilFov,
+                        m_fStencilAspect.x / m_fStencilAspect.y, 0.01f, 100.0f );
+                updateCamera = false;
+            }
+        }
+        ImGui::End();
+    }
 }

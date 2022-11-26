@@ -32,7 +32,7 @@ public:
 	void Update();
 	void Render();
 
-	void SpawnControlWindow();
+	void SpawnControlWindows();
 private:
 	// Objects
 	Cube m_cube;
@@ -58,6 +58,8 @@ private:
 	// Data
 	Timer m_timer;
 	Input m_input;
+	XMFLOAT2 m_fStencilAspect;
+	float m_fStencilFov = 75.0f;
 	float m_fTextureBorder = 0.05f;
 	bool m_bUseStaticCamera = true;
 	bool m_bUseRepeatingSpace = true;
