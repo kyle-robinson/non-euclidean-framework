@@ -342,22 +342,25 @@ void Application::Render()
         m_postProcessing.Bind( graphics.GetContext(), graphics.GetRenderTarget() );
 
     // Render imgui windows
-    m_imgui.BeginRender();
-    SpawnControlWindow();
-    m_imgui.SpawnInstructionWindow();
-    m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
-    m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
-    m_postProcessing.SpawnControlWindow(
-        m_motionBlur.IsActive(),
-        m_fxaa.IsActive() );
-    if ( !m_bUseRepeatingSpace )
+    if ( m_input.IsCursorEnabled() )
     {
-        m_nonEuclidean.SpawnControlWindow();
-        m_mapping.SpawnControlWindow();
-        m_light.SpawnControlWindow();
-        m_cube.SpawnControlWindow();
+        m_imgui.BeginRender();
+        SpawnControlWindow();
+        m_imgui.SpawnInstructionWindow();
+        m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
+        m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
+        m_postProcessing.SpawnControlWindow(
+            m_motionBlur.IsActive(),
+            m_fxaa.IsActive() );
+        if ( !m_bUseRepeatingSpace )
+        {
+            m_nonEuclidean.SpawnControlWindow();
+            m_mapping.SpawnControlWindow();
+            m_light.SpawnControlWindow();
+            m_cube.SpawnControlWindow();
+        }
+        m_imgui.EndRender();
     }
-    m_imgui.EndRender();
 
     // Present frame
     graphics.EndFrame();
