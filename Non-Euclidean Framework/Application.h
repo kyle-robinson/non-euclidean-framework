@@ -22,6 +22,9 @@
 #include "WindowContainer.h"
 #include "RenderableGameObject.h"
 
+#include <dxtk/GeometricPrimitive.h>
+#include <dxtk/Effects.h>
+
 class Application : public WindowContainer
 {
 public:
@@ -59,14 +62,49 @@ private:
 	Timer m_timer;
 	Input m_input;
 	XMFLOAT2 m_fStencilAspect;
-	float m_fStencilFov = 75.0f;
+	float m_fStencilFov = 90.0f;
 	float m_fTextureBorder = 0.05f;
+	XMFLOAT4X4 m_previousViewProjection;
+
+	bool m_bDebugCubes = true;
 	bool m_bUseStaticCamera = true;
 	bool m_bUseRepeatingSpace = true;
-	XMFLOAT4X4 m_previousViewProjection;
+	bool m_bDrawCubeSkysphere = false;
+	bool m_bDrawCubeRecursion = false;
+
+	// Constant Buffers
 	ConstantBuffer<Matrices> m_cbMatrices;
 	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
+
+	// Textures
+	enum class Color
+	{
+		Red,
+		Orange,
+		Yellow,
+		Green,
+		Blue,
+		Purple,
+		Count
+	};
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
+	std::map<Color, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_pColorTextures;
+
+	// Toolkit Objects
+	enum class Object
+	{
+		Cylinder,
+		Cone,
+		Dodecahedron,
+		Icosahedron,
+		Octahedron,
+		Teapot,
+		Count
+	};
+	std::map<Object,
+		std::tuple<std::unique_ptr<BasicEffect>,
+		std::unique_ptr<GeometricPrimitive>,
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>>> m_pObjects;
 };
 
 #endif

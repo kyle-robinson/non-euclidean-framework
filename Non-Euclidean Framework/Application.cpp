@@ -2,10 +2,14 @@
 #include "Application.h"
 #include "ThreadManager.h"
 #include <imgui/imgui.h>
+#include <dxtk/SimpleMath.h>
+#include <dxtk/WICTextureLoader.h>
+#include <tuple>
 
 extern uint32_t RENDER_DEPTH;
 extern uint32_t CAMERA_COUNT;
 extern uint32_t THREAD_COUNT;
+using namespace DirectX::SimpleMath;
 
 bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 {
@@ -19,7 +23,7 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         if ( !graphics.Initialize( renderWindow.GetHWND(), width, height ) )
 		    return false;
 
-        // Initialize input 
+        // Initialize input
         m_camera.Initialize( XMFLOAT3( 0.0f, 0.0f, -3.0f ), width, height );
         m_input.Initialize( renderWindow, m_camera );
         m_imgui.Initialize( renderWindow.GetHWND(), graphics.GetDevice(), graphics.GetContext() );
@@ -28,24 +32,27 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         {
             Camera camera;
             camera.Initialize( XMFLOAT3( 0.0f, 0.0f, 0.0f ), width, height );
-            m_fStencilAspect = XMFLOAT2( 16.0f, 9.0f ); // standard ratio
+            m_fStencilAspect = XMFLOAT2( 1.0f, 1.0f ); // standard ratio
+            camera.SetAspectRatio( m_fStencilAspect.x / m_fStencilAspect.y );
             m_stencilCameras.emplace( (Side)i, std::move( camera ) );
         }
-        m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -5.0f ) );
-        
-        m_stencilCameras.at( Side::BACK ).SetPosition( XMFLOAT3( 0.0f, 0.0f, 5.0f ) );
+
+        static float cameraOffset = 8.0f;
+        m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -cameraOffset ) );
+
+        m_stencilCameras.at( Side::BACK ).SetPosition( XMFLOAT3( 0.0f, 0.0f, cameraOffset ) );
         m_stencilCameras.at( Side::BACK ).SetRotation( XMFLOAT3( 0.0f, -XM_PI, 0.0f ) );
-        
-        m_stencilCameras.at( Side::LEFT ).SetPosition( XMFLOAT3( 5.0f, 0.0f, 0.0f ) );
+
+        m_stencilCameras.at( Side::LEFT ).SetPosition( XMFLOAT3( cameraOffset, 0.0f, 0.0f ) );
         m_stencilCameras.at( Side::LEFT ).SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
-        
-        m_stencilCameras.at( Side::RIGHT ).SetPosition( XMFLOAT3( -5.0f, 0.0f, 0.0f ) );
+
+        m_stencilCameras.at( Side::RIGHT ).SetPosition( XMFLOAT3( -cameraOffset, 0.0f, 0.0f ) );
         m_stencilCameras.at( Side::RIGHT ).SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
-        
-        m_stencilCameras.at( Side::TOP ).SetPosition( XMFLOAT3( 0.0f, 5.0f, 0.0f ) );
+
+        m_stencilCameras.at( Side::TOP ).SetPosition( XMFLOAT3( 0.0f, cameraOffset, 0.0f ) );
         m_stencilCameras.at( Side::TOP ).SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
-        
-        m_stencilCameras.at( Side::BOTTOM ).SetPosition( XMFLOAT3( 0.0f, -5.0f, 0.0f ) );
+
+        m_stencilCameras.at( Side::BOTTOM ).SetPosition( XMFLOAT3( 0.0f, -cameraOffset, 0.0f ) );
         m_stencilCameras.at( Side::BOTTOM ).SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
 
         // Initialize constant buffers
@@ -103,6 +110,57 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         hr = CreateDDSTextureFromFile( graphics.GetDevice(), L"Resources\\Textures\\bricks_TEX.dds", nullptr, m_pTexture.GetAddressOf() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'diffuse' texture!" );
 
+        for ( uint32_t i = 0u; i < (uint32_t)Color::Count; i++ )
+		{
+            std::wstring texPath = L"Resources\\Textures\\";
+            switch ( (Color)i )
+            {
+				case Color::Red: texPath += L"red.jpg"; break;
+                case Color::Orange: texPath += L"orange.png"; break;
+				case Color::Yellow: texPath += L"yellow.png"; break;
+				case Color::Green: texPath += L"green.png"; break;
+				case Color::Blue: texPath += L"blue.png"; break;
+				case Color::Purple: texPath += L"purple.png"; break;
+			}
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
+			hr = CreateWICTextureFromFile( graphics.GetDevice(), texPath.c_str(), nullptr, textureView.GetAddressOf() );
+			m_pColorTextures.emplace( (Color)i, std::move( textureView ) );
+			COM_ERROR_IF_FAILED( hr, "Failed to create 'color' texture!" );
+
+		}
+
+        // Initialize toolkit components
+        for ( uint32_t i = 0u; i < (uint32_t)Object::Count; i++ )
+        {
+            std::unique_ptr<BasicEffect> pEffect;
+            std::unique_ptr<GeometricPrimitive> pObject;
+            Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
+
+            pEffect = std::make_unique<BasicEffect>( graphics.GetDevice() );
+            pEffect->SetTextureEnabled( true );
+            pEffect->SetPerPixelLighting( true );
+            pEffect->SetLightingEnabled( true );
+            pEffect->SetLightEnabled( 0, true );
+            pEffect->SetLightDiffuseColor( 0, Colors::White );
+            pEffect->SetLightDirection( 0, -Vector3::UnitZ );
+            pEffect->SetView( m_camera.GetViewMatrix() );
+            pEffect->SetProjection( m_camera.GetProjectionMatrix() );
+            pEffect->SetTexture( m_pColorTextures[(Color)i].Get() );
+
+            switch ( (Object)i )
+            {
+            case Object::Cylinder: { pObject = GeometricPrimitive::CreateCylinder( graphics.GetContext() ); } break;
+            case Object::Cone: { pObject = GeometricPrimitive::CreateCone( graphics.GetContext() ); } break;
+            case Object::Dodecahedron: { pObject = GeometricPrimitive::CreateDodecahedron( graphics.GetContext() ); } break;
+            case Object::Icosahedron: { pObject = GeometricPrimitive::CreateIcosahedron( graphics.GetContext() ); } break;
+            case Object::Octahedron: { pObject = GeometricPrimitive::CreateOctahedron( graphics.GetContext() ); } break;
+            case Object::Teapot: { pObject = GeometricPrimitive::CreateTeapot( graphics.GetContext() ); } break;
+            }
+            pObject->CreateInputLayout( pEffect.get(), pInputLayout.ReleaseAndGetAddressOf() );
+
+            m_pObjects.emplace( (Object)i, std::make_tuple( std::move( pEffect ), std::move( pObject ), std::move( pInputLayout ) ) );
+        }
+
         RENDER_DEPTH = 1u;
     }
     catch ( COMException& exception )
@@ -155,27 +213,59 @@ void Application::Render()
             graphics.BeginFrameCube( (Side)i, j );
             Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i ) : m_camera;
 
-            graphics.UpdateRenderStateSkysphere();
-            m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-
-            // Draw face with stencil view
-            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-            if ( j > 0 )
-                graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeBuffer( (Side)i, j - 1u )->GetShaderResourceViewPtr() );
-            else if ( j == 0 )
-                graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
-
-            // Rotate face to point in direction of camera
-            switch ( (Side)i )
+            if ( m_bDrawCubeSkysphere )
             {
-            case Side::FRONT: m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) ); break;
-            case Side::BACK: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) ); break;
-            case Side::LEFT: m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) ); break;
-            case Side::RIGHT: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) ); break;
-            case Side::TOP: m_face.SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) ); break;
-            case Side::BOTTOM: m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) ); break;
+                graphics.UpdateRenderStateSkysphere();
+                m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
             }
-            m_face.Draw( m_cbMatrices, camera );
+
+            if ( m_bDrawCubeRecursion )
+            {
+                // Draw face with stencil view
+                graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+                if ( j > 0 )
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeBuffer( (Side)i, j - 1u )->GetShaderResourceViewPtr() );
+                else if ( j == 0 )
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+
+                // Rotate face to point in direction of camera
+                switch ( (Side)i )
+                {
+                case Side::FRONT: m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) ); break;
+                case Side::BACK: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) ); break;
+                case Side::LEFT: m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) ); break;
+                case Side::RIGHT: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) ); break;
+                case Side::TOP: m_face.SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) ); break;
+                case Side::BOTTOM: m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) ); break;
+                }
+                m_face.Draw( m_cbMatrices, camera );
+            }
+            else
+            {
+                // Draw toolkit objects
+                switch ( (Side)i )
+                {
+                case Side::FRONT:
+                    std::get<1>( m_pObjects[Object::Cylinder] )->Draw( std::get<0>( m_pObjects[Object::Cylinder] ).get(), std::get<2>( m_pObjects[Object::Cylinder] ).Get() );
+                    break;
+                case Side::BACK:
+                    std::get<1>( m_pObjects[Object::Cone] )->Draw( std::get<0>( m_pObjects[Object::Cone] ).get(), std::get<2>( m_pObjects[Object::Cone] ).Get() );
+                    break;
+                case Side::LEFT:
+                    std::get<1>( m_pObjects[Object::Dodecahedron] )->Draw( std::get<0>( m_pObjects[Object::Dodecahedron] ).get(), std::get<2>( m_pObjects[Object::Dodecahedron] ).Get() );
+                    break;
+                case Side::RIGHT:
+                    std::get<1>( m_pObjects[Object::Icosahedron] )->Draw( std::get<0>( m_pObjects[Object::Icosahedron] ).get(), std::get<2>( m_pObjects[Object::Icosahedron] ).Get() );
+                    break;
+                case Side::TOP:
+                    std::get<1>( m_pObjects[Object::Octahedron] )->Draw( std::get<0>( m_pObjects[Object::Octahedron] ).get(), std::get<2>( m_pObjects[Object::Octahedron] ).Get() );
+                    break;
+                case Side::BOTTOM:
+                    std::get<1>( m_pObjects[Object::Teapot] )->Draw( std::get<0>( m_pObjects[Object::Teapot] ).get(), std::get<2>( m_pObjects[Object::Teapot] ).Get() );
+                    break;
+                }
+            }
+
             graphics.GetCubeBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
         } );
 #pragma endregion
@@ -231,9 +321,10 @@ void Application::Render()
 
 #pragma region RTT_GENERATION
         // Generate cube geometry and render targets
-        for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
-            for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                RenderCubeStencils( i, j );
+        if ( !m_bDebugCubes )
+            for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
+                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+                    RenderCubeStencils( i, j );
 
         // Generate inverse cube geometry and render targets
         for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
@@ -254,7 +345,7 @@ void Application::Render()
 #pragma region MAIN_SCENE
     // Render normal scene
     graphics.BeginFrame();
-    
+
     graphics.UpdateRenderStateSkysphere();
     m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
 
@@ -292,7 +383,12 @@ void Application::Render()
 
         // Draw stencil cube
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-            m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        {
+            if ( m_bDebugCubes )
+                m_stencilCube.SetTexture( (Side)i, m_pColorTextures[(Color)i].Get() );
+            else
+                m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+        }
         m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
         if ( updateDepth )
@@ -375,6 +471,25 @@ void Application::Render()
 
 void Application::SpawnControlWindows()
 {
+    if ( ImGui::Begin( "Stencil Cube Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    {
+        static bool debugCubes = m_bDebugCubes;
+        ImGui::Checkbox( "Debug Cubes?", &debugCubes );
+        m_bDebugCubes = debugCubes;
+
+        if ( !debugCubes )
+        {
+            static bool cubeSkysphere = m_bDrawCubeSkysphere;
+            ImGui::Checkbox( "Draw Skysphere?", &cubeSkysphere );
+            m_bDrawCubeSkysphere = cubeSkysphere;
+
+            static bool useRecursion = m_bDrawCubeRecursion;
+            ImGui::Checkbox( "Use Recursion?", &useRecursion );
+            m_bDrawCubeRecursion = useRecursion;
+        }
+    }
+    ImGui::End();
+
     if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
     {
         static bool useRepeatingSpace = m_bUseRepeatingSpace;
@@ -398,12 +513,12 @@ void Application::SpawnControlWindows()
 
     if ( m_bUseRepeatingSpace )
     {
-        if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+        if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
         {
             static bool useStaticCamera = m_bUseStaticCamera;
             ImGui::Checkbox( "Static Camera?", &useStaticCamera );
             m_bUseStaticCamera = useStaticCamera;
-        
+
             static bool updateCamera = false;
             static float fov = m_fStencilFov;
             static XMFLOAT2 aspectRatio = m_fStencilAspect;

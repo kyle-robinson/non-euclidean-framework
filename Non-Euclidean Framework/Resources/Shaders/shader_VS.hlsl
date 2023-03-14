@@ -25,18 +25,18 @@ float4 Port( float3 ePoint )
 {
     float3 p = ePoint * NonEuclidean.CurveScale;
     float d = length( p );
-    
+
      // Revert to Euclidean if distance is too small
     if ( d < 0.0001f )
         return float4( p, 1.0f );
-    
+
     float scale = 4.0f;
     if ( NonEuclidean.UseHyperbolic )
         return float4( p / d * sinh( d ) / scale, cosh( d ) / scale );
-    
+
     if ( NonEuclidean.UseElliptic )
         return float4( p / d * sin( d ) * scale, -cos( d ) * scale );
-    
+
     // Euclidean space
     return float4( p, 1.0f );
 }
@@ -76,20 +76,18 @@ VS_OUTPUT VS( VS_INPUT input )
 
 	// convert from model to world space
     if ( NonEuclidean.UseHyperbolic || NonEuclidean.UseElliptic )
+    {
 	    output.Normal = mul( Port( input.Normal ), World ).xyz;
-    else
-	    output.Normal = mul( float4( input.Normal, 1.0f ), World ).xyz;
-	
-    if ( NonEuclidean.UseHyperbolic || NonEuclidean.UseElliptic )
         output.Tangent = mul( Port( input.Tangent ), World ).xyz;
-    else
-        output.Tangent = mul( float4( input.Tangent, 1.0f ), World ).xyz;
-	
-    if ( NonEuclidean.UseHyperbolic || NonEuclidean.UseElliptic )
         output.Binormal = mul( Port( input.Binormal ), World ).xyz;
+    }
     else
+    {
+	    output.Normal = mul( float4( input.Normal, 1.0f ), World ).xyz;
+        output.Tangent = mul( float4( input.Tangent, 1.0f ), World ).xyz;
         output.Binormal = mul( float4( input.Binormal, 1.0f ), World ).xyz;
+    }
 
-	output.TexCoord = input.TexCoord;
+    output.TexCoord = input.TexCoord;
     return output;
 }

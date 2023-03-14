@@ -41,9 +41,15 @@ public:
 	void AdjustRotation( const XMVECTOR& rot ) noexcept;
 	void AdjustRotation( FLOAT x, FLOAT y, FLOAT z ) noexcept;
 
+	inline const float& GetAspectRatio() const noexcept { return aspectRatio; }
 	inline const float& GetFoVDegrees() const noexcept { return fovDegrees; }
 	inline const float& GetNearZ() const noexcept { return nearZ; }
 	inline const float& GetFarZ() const noexcept { return farZ; }
+
+	inline void SetAspectRatio( FLOAT aspect ) noexcept { aspectRatio = aspect; UpdateProjectionValues(); }
+	inline void SetFovDegrees( FLOAT fov ) noexcept { fovDegrees = fov; UpdateProjectionValues(); }
+	inline void SetNearZ( FLOAT nearPlane ) noexcept { nearZ = nearPlane; UpdateProjectionValues(); }
+	inline void SetFarZ( FLOAT farPlane ) noexcept { farZ = farPlane; UpdateProjectionValues(); }
 
 	void UpdateMatrix();
 
@@ -52,15 +58,17 @@ public:
 	inline void SetCameraSpeed( FLOAT newSpeed ) noexcept { cameraSpeed = newSpeed; };
 	inline void UpdateCameraSpeed( FLOAT updateSpeed ) noexcept { cameraSpeed += updateSpeed; };
 
-	void MoveForward( FLOAT dt ) noexcept;
-	void MoveBackward( FLOAT dt ) noexcept;
-	void MoveLeft( FLOAT dt ) noexcept;
-	void MoveRight( FLOAT dt ) noexcept;
+	void MoveForward( FLOAT dt, BOOL omitY = true ) noexcept;
+	void MoveBackward( FLOAT dt, BOOL omitY = true ) noexcept;
+	void MoveLeft( FLOAT dt, BOOL omitY = true ) noexcept;
+	void MoveRight( FLOAT dt, BOOL omitY = true ) noexcept;
 	void MoveUp( FLOAT dt ) noexcept;
 	void MoveDown( FLOAT dt ) noexcept;
 
 private:
+	void UpdateProjectionValues();
 	void UpdateDirectionVectors();
+
 	const XMVECTOR DEFAULT_FORWARD_VECTOR = XMVectorSet( 0.0f, 0.0f, 1.0f, 0.0f );
 	const XMVECTOR DEFAULT_UP_VECTOR = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
 	const XMVECTOR DEFAULT_BACKWARD_VECTOR = XMVectorSet( 0.0f, 0.0f, -1.0f, 0.0f );

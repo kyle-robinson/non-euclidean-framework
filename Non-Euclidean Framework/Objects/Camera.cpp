@@ -20,6 +20,12 @@ void Camera::SetProjectionValues( FLOAT fovDegrees, FLOAT aspectRatio, FLOAT nea
 	projection = XMMatrixPerspectiveFovLH( fovRadians, aspectRatio, nearZ, farZ );
 }
 
+void Camera::UpdateProjectionValues()
+{
+	float fovRadians = ( fovDegrees / 360.0f ) * XM_2PI;
+	projection = XMMatrixPerspectiveFovLH( fovRadians, aspectRatio, nearZ, farZ );
+}
+
 // DIRECTION VECTORS
 const XMVECTOR& Camera::GetForwardVector( BOOL omitY ) noexcept
 {
@@ -47,24 +53,24 @@ const XMVECTOR& Camera::GetUpVector() noexcept
 }
 
 // CAMERA MOVEMENT
-void Camera::MoveForward( FLOAT dt ) noexcept
+void Camera::MoveForward( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetForwardVector() * GetCameraSpeed() * dt );
+	AdjustPosition( GetForwardVector( omitY ) * GetCameraSpeed() * dt );
 }
 
-void Camera::MoveBackward( FLOAT dt ) noexcept
+void Camera::MoveBackward( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetBackwardVector() * GetCameraSpeed() * dt );
+	AdjustPosition( GetBackwardVector( omitY ) * GetCameraSpeed() * dt );
 }
 
-void Camera::MoveLeft( FLOAT dt ) noexcept
+void Camera::MoveLeft( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetLeftVector() * GetCameraSpeed() * dt );
+	AdjustPosition( GetLeftVector( omitY ) * GetCameraSpeed() * dt );
 }
 
-void Camera::MoveRight( FLOAT dt ) noexcept
+void Camera::MoveRight( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetRightVector() * GetCameraSpeed() * dt );
+	AdjustPosition( GetRightVector( omitY ) * GetCameraSpeed() * dt );
 }
 
 void Camera::MoveUp( FLOAT dt ) noexcept
