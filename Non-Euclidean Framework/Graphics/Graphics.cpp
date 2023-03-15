@@ -69,10 +69,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 		m_pStencilStates.at( (Side)i ).emplace( Bind::Stencil::Type::OFF, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::OFF ) );
 		m_pStencilStates.at( (Side)i ).emplace( Bind::Stencil::Type::MASK, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::MASK ) );
 		m_pStencilStates.at( (Side)i ).emplace( Bind::Stencil::Type::WRITE, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::WRITE ) );
-		//m_pStencilStates.emplace( (Side)i, Bind::Stencil::Type::OFF, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::OFF ) );
-		//m_pStencilStates.emplace( (Side)i, Bind::Stencil::Type::MASK, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::MASK ) );
-		//m_pStencilStates.emplace( (Side)i, Bind::Stencil::Type::WRITE, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::WRITE ) );
-		m_pStencilStates.at( (Side)i ).at( Bind::Stencil::Type::OFF )->Bind( m_pContext.Get(), i );
+		m_pStencilStates.at( (Side)i ).at( Bind::Stencil::Type::OFF )->Bind( m_pContext.Get() );
 	}
 
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SOLID, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SOLID ) );
@@ -86,7 +83,6 @@ void Graphics::InitializeDirectX( HWND hWnd )
 	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 	m_pBlenderStates[Bind::Blender::Type::BASIC]->Bind( m_pContext.Get() );
-	//m_pStencilStates[Bind::Stencil::Type::OFF]->Bind( m_pContext.Get() );
 	//RENDER_DEPTH = 1u;
 }
 
@@ -125,6 +121,20 @@ bool Graphics::InitializeShaders()
 		COM_ERROR_IF_FAILED( hr, "Failed to create object pixel shader!" );
 		hr = m_pixelShaderBD.Initialize( m_pDevice, L"Resources\\Shaders\\shaderBD_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create object border pixel shader!" );
+
+		// Define input layout for toolkit geometry
+		D3D11_INPUT_ELEMENT_DESC layoutOBJ_Inv[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		// Create the model shaders
+		hr = m_vertexShaderOBJInv.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_VS_Inv.hlsl", layoutOBJ_Inv, ARRAYSIZE( layoutOBJ_Inv ) );
+		COM_ERROR_IF_FAILED( hr, "Failed to create inverse object vertex shader!" );
+		hr = m_pixelShaderOBJInv.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_PS_Inv.hlsl" );
+		COM_ERROR_IF_FAILED( hr, "Failed to create inverse object pixel shader!" );
 
 		// Define input layout for textures
 		D3D11_INPUT_ELEMENT_DESC layoutTEX[] =
@@ -217,6 +227,13 @@ void Graphics::UpdateRenderStateObject( ID3D11Buffer* const* cbBorder )
     m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
     Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderBD );
 	m_pContext->PSSetConstantBuffers( 0u, 1u, cbBorder );
+}
+
+void Graphics::UpdateRenderStateObjectInverse()
+{
+	// Set default render state for objects
+	m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
+	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJInv, m_pixelShaderOBJInv );
 }
 
 void Graphics::UpdateRenderStateTexture()

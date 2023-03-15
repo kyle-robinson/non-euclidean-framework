@@ -5,6 +5,7 @@
 #include <DirectXCollision.h>
 #include "DDSTextureLoader.h"
 #include "Resource.h"
+#include "Geometry.h"
 
 #include "FXAA.h"
 #include "Cube.h"
@@ -22,8 +23,8 @@
 #include "WindowContainer.h"
 #include "RenderableGameObject.h"
 
-#include <dxtk/GeometricPrimitive.h>
-#include <dxtk/Effects.h>
+//#include <dxtk/GeometricPrimitive.h>
+//#include <dxtk/Effects.h>
 
 class Application : public WindowContainer
 {
@@ -37,13 +38,21 @@ public:
 
 	void SpawnControlWindows();
 private:
-	// Objects
-	Cube m_cube;
-	Face m_face;
+	// Scene
 	Light m_light;
 	Camera m_camera;
 	ImGuiManager m_imgui;
 	RenderableGameObject m_objSkysphere;
+
+	// Objects
+	Cube m_cube;
+	Face m_face;
+	Geometry m_cylinder;
+	Geometry m_cone;
+	Geometry m_dodecahedron;
+	Geometry m_icosahedron;
+	Geometry m_octahedron;
+	Geometry m_teapot;
 
 	// Non-Euclidean Objects
 	StencilCube m_stencilCube; // recursive cube
@@ -67,6 +76,7 @@ private:
 	XMFLOAT4X4 m_previousViewProjection;
 
 	bool m_bDebugCubes = true;
+	bool m_bUseStencils = true;
 	bool m_bUseStaticCamera = true;
 	bool m_bUseRepeatingSpace = true;
 	bool m_bDrawCubeSkysphere = false;
@@ -101,10 +111,10 @@ private:
 		Teapot,
 		Count
 	};
-	std::map<Object,
+	/*std::map<Object,
 		std::tuple<std::unique_ptr<BasicEffect>,
 		std::unique_ptr<GeometricPrimitive>,
-		Microsoft::WRL::ComPtr<ID3D11InputLayout>>> m_pObjects;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>>> m_pObjects;*/
 };
 
 #endif

@@ -67,7 +67,7 @@ bool Cube::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext 
 		// Create vertex buffer
 		HRESULT hr = m_vertexBuffer.Initialize( pDevice, vertices, ARRAYSIZE( vertices ) );
         COM_ERROR_IF_FAILED( hr, "Failed to create cube vertex buffer!" );
-		
+
 		// Create index buffer
         hr = m_indexBuffer.Initialize( pDevice, indices, ARRAYSIZE( indices ) );
         COM_ERROR_IF_FAILED( hr, "Failed to create cube index buffer!" );
@@ -127,7 +127,7 @@ void Cube::UpdateBuffers( ConstantBuffer<Matrices>& cb_vs_matrices, Camera& pCam
 	// Get the game object world transform
     XMMATRIX mGO = XMLoadFloat4x4( &m_World );
 	cb_vs_matrices.data.mWorld = XMMatrixTranspose( mGO );
-    
+
     // Store the view / projection in a constant buffer for the vertex shader to use
 	cb_vs_matrices.data.mView = XMMatrixTranspose( pCamera.GetViewMatrix() );
 	cb_vs_matrices.data.mProjection = XMMatrixTranspose( pCamera.GetProjectionMatrix() );

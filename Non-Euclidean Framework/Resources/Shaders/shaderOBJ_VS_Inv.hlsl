@@ -12,15 +12,15 @@ cbuffer ConstantBuffer : register( b0 )
 struct VS_INPUT
 {
     float3 Position : POSITION;
-    float2 TexCoord : TEXCOORD;
     float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD;
 };
 
 struct VS_OUTPUT
 {
     float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD;
     float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD;
 };
 
 VS_OUTPUT VS( VS_INPUT input )
