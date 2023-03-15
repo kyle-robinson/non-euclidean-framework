@@ -23,7 +23,7 @@ namespace Bind
 			try
 			{
 				CD3D11_DEPTH_STENCIL_DESC depthStencilStateDesc( CD3D11_DEFAULT{} );
-				
+
 				if ( type == Type::OFF )
 				{
 					depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
@@ -32,10 +32,12 @@ namespace Bind
 				{
 					depthStencilStateDesc.DepthEnable = FALSE;
 					depthStencilStateDesc.StencilEnable = TRUE;
-					depthStencilStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
-					depthStencilStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-					depthStencilStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-					depthStencilStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+
+					//depthStencilStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
+					//depthStencilStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+					//depthStencilStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+					//depthStencilStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+
 					depthStencilStateDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 					depthStencilStateDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 					depthStencilStateDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -45,10 +47,12 @@ namespace Bind
 				{
 					depthStencilStateDesc.StencilEnable = TRUE;
 					depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS; // Less_Equal
-					depthStencilStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS; // Never
-					depthStencilStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-					depthStencilStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-					depthStencilStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+
+					//depthStencilStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS; // Never
+					//depthStencilStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+					//depthStencilStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+					//depthStencilStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+
 					depthStencilStateDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
 					depthStencilStateDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 					depthStencilStateDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -64,9 +68,13 @@ namespace Bind
 				return;
 			}
 		}
+		void Clear( ID3D11DeviceContext* context, ID3D11DepthStencilView* dsv ) noexcept
+		{
+			context->ClearDepthStencilView( dsv, D3D11_CLEAR_STENCIL, 1.0f, 0u );
+		}
 		void Bind( ID3D11DeviceContext* context ) noexcept
 		{
-			context->OMSetDepthStencilState( pStencil.Get(), 0 );
+			context->OMSetDepthStencilState( pStencil.Get(), 0u );
 		}
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pStencil;

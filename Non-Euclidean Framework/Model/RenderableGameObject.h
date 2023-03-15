@@ -13,6 +13,7 @@ public:
 		ID3D11DeviceContext* context,
 		ConstantBuffer<Matrices>& cb_vs_vertexshader );
 	void Draw( const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix );
+	inline XMMATRIX GetWorldMatrix() const noexcept { return worldMatrix; }
 protected:
 	Model model;
 	void UpdateMatrix() override;

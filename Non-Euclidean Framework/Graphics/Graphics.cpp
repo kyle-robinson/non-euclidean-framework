@@ -17,7 +17,7 @@ bool Graphics::Initialize( HWND hWnd, UINT width, UINT height )
 
 	if ( !InitializeRTT() )
 		return false;
-	
+
 	return true;
 }
 
@@ -59,14 +59,22 @@ void Graphics::InitializeDirectX( HWND hWnd )
     m_pRenderTarget = std::make_shared<Bind::RenderTarget>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
     m_pDepthStencil = std::make_shared<Bind::DepthStencil>( m_pDevice.Get(), m_viewWidth, m_viewHeight );
 	m_pViewport = std::make_shared<Bind::Viewport>( m_pContext.Get(), m_viewWidth, m_viewHeight );
-	
+
 	m_pBlenderStates.emplace( Bind::Blender::Type::BASIC, std::make_shared<Bind::Blender>( m_pDevice.Get(), Bind::Blender::Type::BASIC ) );
 	m_pBlenderStates.emplace( Bind::Blender::Type::COLOR, std::make_shared<Bind::Blender>( m_pDevice.Get(), Bind::Blender::Type::COLOR ) );
 
-	m_pStencilStates.emplace( Bind::Stencil::Type::OFF, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::OFF ) );
-	m_pStencilStates.emplace( Bind::Stencil::Type::MASK, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::MASK ) );
-	m_pStencilStates.emplace( Bind::Stencil::Type::WRITE, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::WRITE ) );
-    
+	for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+	{
+		m_pStencilStates.emplace( (Side)i, std::unordered_map<Bind::Stencil::Type, std::shared_ptr<Bind::Stencil>>() );
+		m_pStencilStates.at( (Side)i ).emplace( Bind::Stencil::Type::OFF, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::OFF ) );
+		m_pStencilStates.at( (Side)i ).emplace( Bind::Stencil::Type::MASK, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::MASK ) );
+		m_pStencilStates.at( (Side)i ).emplace( Bind::Stencil::Type::WRITE, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::WRITE ) );
+		//m_pStencilStates.emplace( (Side)i, Bind::Stencil::Type::OFF, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::OFF ) );
+		//m_pStencilStates.emplace( (Side)i, Bind::Stencil::Type::MASK, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::MASK ) );
+		//m_pStencilStates.emplace( (Side)i, Bind::Stencil::Type::WRITE, std::make_shared<Bind::Stencil>( m_pDevice.Get(), Bind::Stencil::Type::WRITE ) );
+		m_pStencilStates.at( (Side)i ).at( Bind::Stencil::Type::OFF )->Bind( m_pContext.Get(), i );
+	}
+
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SOLID, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SOLID ) );
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::SKYSPHERE, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::SKYSPHERE ) );
     m_pRasterizerStates.emplace( Bind::Rasterizer::Type::WIREFRAME, std::make_shared<Bind::Rasterizer>( m_pDevice.Get(), Bind::Rasterizer::Type::WIREFRAME ) );
@@ -78,7 +86,7 @@ void Graphics::InitializeDirectX( HWND hWnd )
 	m_pSamplerStates[Bind::Sampler::Type::ANISOTROPIC]->Bind( m_pContext.Get() );
     m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 	m_pBlenderStates[Bind::Blender::Type::BASIC]->Bind( m_pContext.Get() );
-	m_pStencilStates[Bind::Stencil::Type::OFF]->Bind( m_pContext.Get() );
+	//m_pStencilStates[Bind::Stencil::Type::OFF]->Bind( m_pContext.Get() );
 	//RENDER_DEPTH = 1u;
 }
 
@@ -245,11 +253,11 @@ void Graphics::EndFrame()
 {
 	// Unbind render target
 	m_pRenderTarget->BindNull( m_pContext.Get() );
-	
+
 	for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
 		for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
 			m_pCubeBuffers.at( (Side)i ).at( j )->BindNull( m_pContext.Get() );
-	
+
 	for ( uint32_t i = 0u; i < RENDER_DEPTH + 1u; i++ )
 		for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
 			for ( uint32_t k = 0u; k < 6u; k++ )
