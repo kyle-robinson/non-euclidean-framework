@@ -14,7 +14,7 @@ struct _Material
     float4 Ambient;
     float4 Diffuse;
     float4 Specular;
-    
+
     float SpecularPower;
     bool UseTexture;
     float2 Padding;
@@ -25,12 +25,12 @@ struct Light
     float4 Position;
     float4 Direction;
     float4 Color;
-    
+
     float SpotAngle;
     float ConstantAttenuation;
     float LinearAttenuation;
     float QuadraticAttenuation;
-    
+
     float Intensity;
     int LightType;
     bool Enabled;
@@ -122,7 +122,7 @@ float4 DoSpecular( Light lightObject, float3 vertexToEye, float3 lightDirectionT
 
 	float lightIntensity = saturate( DotProduct( float4( Normal, 0.0f ), float4( lightDir, 0.0f ) ) );
 	float4 specular = float4( 0.0f, 0.0f, 0.0f, 0.0f );
-    
+
 	if ( lightIntensity > 0.0f )
 	{
 		float3  reflection = normalize( 2.0f * lightIntensity * Normal - lightDir );
@@ -167,11 +167,11 @@ LightingResult ComputeLighting( float4 vertexPos, float3 N, float3 vertexToEye )
 	{
 		LightingResult result = { { 0, 0, 0, 0 },{ 0, 0, 0, 0 } };
 
-		if ( !Lights[i].Enabled ) 
+		if ( !Lights[i].Enabled )
 			continue;
-		
+
 		result = DoPointLight( Lights[i], vertexToEye, vertexPos, N );
-		
+
 		totalResult.Diffuse += result.Diffuse;
 		totalResult.Specular += result.Specular;
 	}
@@ -195,13 +195,13 @@ float3x3 computeTBNMatrix( float3 unitNormal, float3 tangent )
 float3x3 computeTBNMatrixB( float3 unitNormal, float3 tangent, float3 binorm )
 {
     float3 N = unitNormal;
-    
+
     float3 tDot = DotProduct( float4( tangent, 0.0f ), float4( N, 0.0f ) );
     float3 T = normalize( tangent - tDot * N );
-    
+
     float3 bDot = DotProduct( float4( binorm, 0.0f ), float4( tangent, 0.0f ) );
     float3 B = normalize( binorm - bDot * tangent );
-    
+
     return float3x3( T, B, N );
 }
 
@@ -221,12 +221,12 @@ float2 SimpleParallax( float2 texCoord, float3 toEye )
 }
 
 float2 ParallaxOcclusion( float2 texCoord, float3 normal, float3 toEye )
-{    
+{
     int nMinSamples = 8;
     int nMaxSamples = 32;
     float3 toEyeTS = -toEye;
     float2 parallaxLimit = Mapping.HeightScale * toEyeTS.xy; // parallax shift
-    
+
     int numSamples = (int) lerp( nMaxSamples, nMinSamples, abs( DotProduct( float4( toEyeTS, 0.0f ), float4( normal, 0.0f ) ) ) );
     float zStep = 1.0f / (float) numSamples;
     float2 heightStep = zStep * parallaxLimit;
@@ -346,7 +346,7 @@ float4 PS( PS_INPUT input ) : SV_TARGET
 {
 	// vector/matrix setup
     input.Normal = normalize( input.Normal );
-	
+
 	//float3x3 TBN = computeTBNMatrix( input.Normal, input.Tangent );
     float3x3 TBN = computeTBNMatrixB( input.Normal, input.Tangent, input.Binormal );
 
@@ -354,7 +354,7 @@ float4 PS( PS_INPUT input ) : SV_TARGET
     float3 vertexToEye = normalize( Direction( CameraPosition, input.WorldPosition ) ).xyz;
     float3 vertexToLightTS = mul( vertexToLight, TBN );
     float3 vertexToEyeTS = mul( vertexToEye, TBN );
-	
+
 	// parallax
     if ( Mapping.UseParallaxMap )
     {
@@ -362,15 +362,15 @@ float4 PS( PS_INPUT input ) : SV_TARGET
             input.TexCoord = ParallaxOcclusion( input.TexCoord, input.Normal, vertexToEyeTS );
         else
             input.TexCoord = SimpleParallax( input.TexCoord, vertexToEyeTS );
-        
+
         if ( input.TexCoord.x > 1.0f || input.TexCoord.y > 1.0f || input.TexCoord.x < 0.0f || input.TexCoord.y < 0.0f )
             discard;
     }
-	
+
 	// normal
     if ( Mapping.UseNormalMap )
         input.Normal = NormalMapping( input.TexCoord, TBN );
-	
+
 	// lighting
     LightingResult lit = ComputeLighting( input.WorldPosition, normalize( input.Normal ), vertexToLight );
 
@@ -390,7 +390,7 @@ float4 PS( PS_INPUT input ) : SV_TARGET
     float shadowFactor = 1.0f;
     if ( Mapping.UseParallaxSelfShadowing )
         shadowFactor = ParallaxSelfShadowing( vertexToLightTS, input.TexCoord, Mapping.UseSoftShadow );
-	
+
     // final colour
 	float4 finalColor = ( emissive + ambient + diffuse * shadowFactor + specular * shadowFactor ) * textureColor;
 	return finalColor;

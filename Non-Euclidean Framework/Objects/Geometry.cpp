@@ -57,7 +57,8 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 	try
 	{
 		// Set position to world origin
-		DirectX::XMStoreFloat4x4( &m_World, DirectX::XMMatrixIdentity() );
+		//XMStoreFloat4x4( &m_World, XMMatrixIdentity() );
+		worldMatrix = XMMatrixIdentity();
 
 		HRESULT hr = m_vertexBuffer.Initialize( pDevice, &vertices[0], vertices.size() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create object vertex buffer!" );
@@ -72,6 +73,11 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 		// Setup constant buffer
 		hr = m_cbMaterial.Initialize( pDevice, pContext );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'Material' constant buffer!" );
+
+		SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
+		SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
+		SetScale( 1.0f, 1.0f );
+		UpdateMatrix();
 	}
 	catch ( COMException& exception )
 	{
@@ -84,41 +90,16 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 
 void Geometry::Update( float dt )
 {
-	static float cummulativeTime = 0;
-	cummulativeTime += dt;
-
-	DirectX::XMMATRIX mSpin = DirectX::XMMatrixRotationY( cummulativeTime );
-	DirectX::XMMATRIX mTranslate = DirectX::XMMatrixTranslation( m_position.x, m_position.y, m_position.z );
-	DirectX::XMMATRIX world = mTranslate;// * mSpin;
-	XMStoreFloat4x4( &m_World, world );
+	AdjustRotation( dt, 0.0f, dt );
 }
 
-void Geometry::UpdateCB()
+void Geometry::UpdateBuffers( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_matrices, Camera& pCamera )
 {
-	// Setup material data
-	MaterialData materialData;
-	materialData.Emissive = m_fEmissive;
-	materialData.Ambient = m_fAmbient;
-	materialData.Diffuse = m_fDiffuse;
-	materialData.Specular = m_fSpecular;
-	materialData.SpecularPower = m_fSpecularPower;
-	materialData.UseTexture = m_bUseTexture;
-
-	// Add to constant buffer
-	m_cbMaterial.data.Material = materialData;
-	if ( !m_cbMaterial.ApplyChanges() ) return;
-}
-
-void Geometry::UpdateBuffers( ConstantBuffer<Matrices>& cb_vs_matrices, Camera& pCamera )
-{
-	// Get the game object world transform
-    XMMATRIX mGO = XMLoadFloat4x4( &m_World );
-	cb_vs_matrices.data.mWorld = mGO;
-
-    // Store the view / projection in a constant buffer for the vertex shader to use
-	cb_vs_matrices.data.mView = pCamera.GetViewMatrix();
-	cb_vs_matrices.data.mProjection = pCamera.GetProjectionMatrix();
+	cb_vs_matrices.data.mWorld = XMMatrixTranspose( worldMatrix );
+	cb_vs_matrices.data.mView = XMMatrixTranspose( pCamera.GetViewMatrix() );
+	cb_vs_matrices.data.mProjection = XMMatrixTranspose( pCamera.GetProjectionMatrix() );
 	if ( !cb_vs_matrices.ApplyChanges() ) return;
+	pContext->VSSetConstantBuffers( 0u, 1u, cb_vs_matrices.GetAddressOf() );
 }
 
 void Geometry::Draw( ID3D11DeviceContext* pContext )

@@ -1,7 +1,5 @@
-#pragma pack_matrix( row_major )
-
 // Resources
-Texture2D textureObj : register( t0 );
+Texture2D txDiffuse : register( t0 );
 SamplerState samplerState : register( s0 );
 
 // Pixel Shader
@@ -10,10 +8,11 @@ struct PS_INPUT
     float4 Position : SV_POSITION;
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
+    float4 WorldPosition : POSITION_W;
 };
 
 float4 PS( PS_INPUT input ) : SV_TARGET
 {
-    float3 sampleColor = textureObj.Sample( samplerState, input.TexCoord );
-    return float4( sampleColor, 1.0f );
+    float4 textureColor = txDiffuse.Sample( samplerState, input.TexCoord );
+    return textureColor;
 }

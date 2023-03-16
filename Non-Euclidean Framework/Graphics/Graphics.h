@@ -45,10 +45,6 @@ public:
 	inline Bind::DepthStencil* GetDepthStencil() const noexcept { return &*m_pDepthStencil; }
 	inline Bind::Stencil* GetStencilState( Side side, Bind::Stencil::Type type ) const noexcept { return &*m_pStencilStates.at( side ).at( type ); }
 
-	inline Bind::RenderTarget* GetCubeBuffer( Side side, uint32_t index ) { return &*m_pCubeBuffers.at( side ).at( index ); }
-	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeBufferSide( Side side ) const noexcept { return m_pCubeBuffers.at( side ); }
-	inline std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> GetCubeBufferAll( Side side ) const noexcept { return m_pCubeBuffers; }
-
 	inline Bind::RenderTarget* GetCubeInvBuffer( Side side, uint32_t index ) { return &*m_pCubeInvBuffers.at( side ).at( index ); }
 	inline std::vector<std::shared_ptr<Bind::RenderTarget>> GetCubeInvBufferSide( Side side ) const noexcept { return m_pCubeInvBuffers.at( side ); }
 	inline std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> GetCubeInvBufferAll( Side side ) const noexcept { return m_pCubeInvBuffers; }
@@ -97,7 +93,6 @@ private:
 	std::unordered_map<Bind::Rasterizer::Type, std::shared_ptr<Bind::Rasterizer>> m_pRasterizerStates;
 
 	std::unordered_map<Side, std::unordered_map<Bind::Stencil::Type, std::shared_ptr<Bind::Stencil>>> m_pStencilStates; // stencils for each face of cube
-	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeBuffers; // depth textures for each face of cube
 	std::unordered_map<Side, std::vector<std::shared_ptr<Bind::RenderTarget>>> m_pCubeInvBuffers; // depth textures for each face of room (depth 0)
 	std::vector<std::vector<std::unordered_map<Side, std::shared_ptr<Bind::RenderTarget>>>> m_pCubeInvRecursiveBuffers; // depth textures for each face of room (depth 1-5)
 };

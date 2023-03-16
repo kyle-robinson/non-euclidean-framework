@@ -4,12 +4,10 @@
 #include <imgui/imgui.h>
 #include <dxtk/SimpleMath.h>
 #include <dxtk/WICTextureLoader.h>
-//#include <tuple>
 
 extern uint32_t RENDER_DEPTH;
 extern uint32_t CAMERA_COUNT;
 extern uint32_t THREAD_COUNT;
-using namespace DirectX::SimpleMath;
 
 bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 {
@@ -39,65 +37,48 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 
         static float cameraOffset = 8.0f;
         m_stencilCameras.at( Side::FRONT ).SetPosition( XMFLOAT3( 0.0f, 0.0f, -cameraOffset ) );
-
         m_stencilCameras.at( Side::BACK ).SetPosition( XMFLOAT3( 0.0f, 0.0f, cameraOffset ) );
         m_stencilCameras.at( Side::BACK ).SetRotation( XMFLOAT3( 0.0f, -XM_PI, 0.0f ) );
-
         m_stencilCameras.at( Side::LEFT ).SetPosition( XMFLOAT3( cameraOffset, 0.0f, 0.0f ) );
         m_stencilCameras.at( Side::LEFT ).SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
-
         m_stencilCameras.at( Side::RIGHT ).SetPosition( XMFLOAT3( -cameraOffset, 0.0f, 0.0f ) );
         m_stencilCameras.at( Side::RIGHT ).SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
-
         m_stencilCameras.at( Side::TOP ).SetPosition( XMFLOAT3( 0.0f, cameraOffset, 0.0f ) );
         m_stencilCameras.at( Side::TOP ).SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
-
         m_stencilCameras.at( Side::BOTTOM ).SetPosition( XMFLOAT3( 0.0f, -cameraOffset, 0.0f ) );
         m_stencilCameras.at( Side::BOTTOM ).SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
 
         // Initialize constant buffers
         HRESULT hr = m_cbMatrices.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'Matrices' constant buffer!" );
-
         hr = m_cbTextureBorder.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'Texture Border' constant buffer!" );
 
         // Initialize game objects
 	    hr = m_cube.InitializeMesh( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED(hr, "Failed to create 'cube' object!");
-
         hr = m_cylinder.CreateCylinder( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED(hr, "Failed to create 'cylinder' object!");
-
         hr = m_cone.CreateCone( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'cone' object!" );
-
         hr = m_dodecahedron.CreateDodecahedron( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'dodecahedron' object!" );
-
         hr = m_icosahedron.CreateIcosahedron( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'icosahedron' object!" );
-
         hr = m_octahedron.CreateOctahedron( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'octahedron' object!" );
-
         hr = m_teapot.CreateTeapot( graphics.GetDevice(), graphics.GetContext() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'teapot' object!" );
-
 
         // Create scene elements
         hr = m_light.Initialize( graphics.GetDevice(), graphics.GetContext(), m_cbMatrices );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'light' object!" );
-
         hr = m_face.Initialize( graphics.GetContext(), graphics.GetDevice() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'face' object!" );
-
         hr = m_stencilCube.Initialize( graphics.GetContext(), graphics.GetDevice() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube' object!" );
-
         hr = m_stencilCubeInv.Initialize( graphics.GetContext(), graphics.GetDevice() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube inverse' object!" );
-
         for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
         {
             StencilCubeInv cubeInv;
@@ -108,16 +89,12 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 
         // Initialize systems
         m_postProcessing.Initialize( graphics.GetDevice() );
-
         hr = m_mapping.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'mapping' system!" );
-
         hr = m_motionBlur.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'motion blur' system!" );
-
         hr = m_fxaa.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'FXAA' system!" );
-
         hr = m_nonEuclidean.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'Non-Euclidean' system!" );
 
@@ -148,39 +125,7 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 			COM_ERROR_IF_FAILED( hr, "Failed to create 'color' texture!" );
 		}
 
-        // Initialize toolkit components
-        /*for ( uint32_t i = 0u; i < (uint32_t)Object::Count; i++ )
-        {
-            std::unique_ptr<BasicEffect> pEffect;
-            std::unique_ptr<GeometricPrimitive> pObject;
-            Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
-
-            pEffect = std::make_unique<BasicEffect>( graphics.GetDevice() );
-            pEffect->SetTextureEnabled( true );
-            pEffect->SetPerPixelLighting( true );
-            pEffect->SetLightingEnabled( true );
-            pEffect->SetLightEnabled( 0, true );
-            pEffect->SetLightDiffuseColor( 0, Colors::White );
-            pEffect->SetLightDirection( 0, -Vector3::UnitZ );
-            pEffect->SetView( m_camera.GetViewMatrix() );
-            pEffect->SetProjection( m_camera.GetProjectionMatrix() );
-            pEffect->SetTexture( m_pColorTextures[(Color)i].Get() );
-
-            switch ( (Object)i )
-            {
-            case Object::Cylinder: { pObject = GeometricPrimitive::CreateCylinder( graphics.GetContext() ); } break;
-            case Object::Cone: { pObject = GeometricPrimitive::CreateCone( graphics.GetContext() ); } break;
-            case Object::Dodecahedron: { pObject = GeometricPrimitive::CreateDodecahedron( graphics.GetContext() ); } break;
-            case Object::Icosahedron: { pObject = GeometricPrimitive::CreateIcosahedron( graphics.GetContext() ); } break;
-            case Object::Octahedron: { pObject = GeometricPrimitive::CreateOctahedron( graphics.GetContext() ); } break;
-            case Object::Teapot: { pObject = GeometricPrimitive::CreateTeapot( graphics.GetContext() ); } break;
-            }
-            pObject->CreateInputLayout( pEffect.get(), pInputLayout.ReleaseAndGetAddressOf() );
-
-            m_pObjects.emplace( (Object)i, std::make_tuple( std::move( pEffect ), std::move( pObject ), std::move( pInputLayout ) ) );
-        }*/
-
-        RENDER_DEPTH = 1u;
+        RENDER_DEPTH = 0u;
     }
     catch ( COMException& exception )
 	{
@@ -214,6 +159,14 @@ void Application::Update()
     float dt = m_timer.GetDeltaTime(); // capped at 60 fps
     if ( dt == 0.0f ) return;
 
+    // Update objects
+    m_cylinder.Update( dt );
+    m_octahedron.Update( dt );
+    m_teapot.Update( dt );
+    m_dodecahedron.Update( dt );
+    m_icosahedron.Update( dt );
+    m_cone.Update( dt );
+
     // Update input
     m_input.Update( dt );
 
@@ -223,108 +176,16 @@ void Application::Update()
 
 void Application::Render()
 {
-    if ( m_bUseRepeatingSpace )
+    // Determine whether to render recursive rooms
+    static bool updateDepth = false;
+    if ( RENDER_DEPTH == 0u )
     {
-#pragma region RTT_CUBE
-        std::function<void( uint32_t i, uint32_t j )> RenderCubeStencils = std::function( [&]( uint32_t i, uint32_t j ) -> void
-        {
-            // Render RTT cube
-            graphics.BeginFrameCube( (Side)i, j );
-            Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i ) : m_camera;
+        updateDepth = true;
+        RENDER_DEPTH = 1u;
+    }
 
-            if ( m_bDrawCubeSkysphere )
-            {
-                graphics.UpdateRenderStateSkysphere();
-                m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
-            }
-
-            if ( m_bDrawCubeRecursion )
-            {
-                // Draw face with stencil view - mask pass
-                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-                graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-                if ( j > 0 )
-                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeBuffer( (Side)i, j - 1u )->GetShaderResourceViewPtr() );
-                else if ( j == 0 )
-                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
-
-                // Rotate face to point in direction of camera
-                switch ( (Side)i )
-                {
-                case Side::FRONT: m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) ); break;
-                case Side::BACK: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) ); break;
-                case Side::LEFT: m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) ); break;
-                case Side::RIGHT: m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) ); break;
-                case Side::TOP: m_face.SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) ); break;
-                case Side::BOTTOM: m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) ); break;
-                }
-                m_face.Draw( m_cbMatrices, camera );
-
-                // Draw inner geometry - draw pass
-                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
-                m_face.SetScale( 0.8f, 0.8f );
-                switch ( (Side)i )
-                {
-                case Side::FRONT: m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 2.5f ) ); break;
-                case Side::BACK: m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, -2.5f ) ); break;
-                case Side::LEFT: m_face.SetPosition( XMFLOAT3( -2.5f, 0.0f, 0.0f ) ); break;
-                case Side::RIGHT: m_face.SetPosition( XMFLOAT3( 2.5f, 0.0f, 0.0f ) ); break;
-                case Side::TOP: m_face.SetPosition( XMFLOAT3( 0.0f, -2.5f, 0.0f ) ); break;
-                case Side::BOTTOM: m_face.SetPosition( XMFLOAT3( 0.0f, 2.5f, 0.0f ) ); break;
-                }
-                m_face.Draw( m_cbMatrices, camera );
-
-                // Reset face properties
-                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
-                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
-                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
-
-                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Bind( graphics.GetContext() );
-                m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
-                m_face.SetScale( 1.0f, 1.0f );
-            }
-            /*else
-            {
-                // Draw toolkit objects
-                switch ( (Side)i )
-                {
-                case Side::FRONT:
-                    std::get<0>( m_pObjects[Object::Cylinder] )->SetView( m_camera.GetViewMatrix() );
-                    std::get<0>( m_pObjects[Object::Cylinder] )->SetProjection( m_camera.GetProjectionMatrix() );
-                    std::get<1>( m_pObjects[Object::Cylinder] )->Draw( std::get<0>( m_pObjects[Object::Cylinder] ).get(), std::get<2>( m_pObjects[Object::Cylinder] ).Get() );
-                    break;
-                case Side::BACK:
-                    std::get<0>( m_pObjects[Object::Cone] )->SetView( m_camera.GetViewMatrix() );
-                    std::get<0>( m_pObjects[Object::Cone] )->SetProjection( m_camera.GetProjectionMatrix() );
-                    std::get<1>( m_pObjects[Object::Cone] )->Draw( std::get<0>( m_pObjects[Object::Cone] ).get(), std::get<2>( m_pObjects[Object::Cone] ).Get() );
-                    break;
-                case Side::LEFT:
-                    std::get<0>( m_pObjects[Object::Dodecahedron] )->SetView( m_camera.GetViewMatrix() );
-                    std::get<0>( m_pObjects[Object::Dodecahedron] )->SetProjection( m_camera.GetProjectionMatrix() );
-                    std::get<1>( m_pObjects[Object::Dodecahedron] )->Draw( std::get<0>( m_pObjects[Object::Dodecahedron] ).get(), std::get<2>( m_pObjects[Object::Dodecahedron] ).Get() );
-                    break;
-                case Side::RIGHT:
-                    std::get<0>( m_pObjects[Object::Icosahedron] )->SetView( m_camera.GetViewMatrix() );
-                    std::get<0>( m_pObjects[Object::Icosahedron] )->SetProjection( m_camera.GetProjectionMatrix() );
-                    std::get<1>( m_pObjects[Object::Icosahedron] )->Draw( std::get<0>( m_pObjects[Object::Icosahedron] ).get(), std::get<2>( m_pObjects[Object::Icosahedron] ).Get() );
-                    break;
-                case Side::TOP:
-                    std::get<0>( m_pObjects[Object::Octahedron] )->SetView( m_camera.GetViewMatrix() );
-                    std::get<0>( m_pObjects[Object::Octahedron] )->SetProjection( m_camera.GetProjectionMatrix() );
-                    std::get<1>( m_pObjects[Object::Octahedron] )->Draw( std::get<0>( m_pObjects[Object::Octahedron] ).get(), std::get<2>( m_pObjects[Object::Octahedron] ).Get() );
-                    break;
-                case Side::BOTTOM:
-                    std::get<0>( m_pObjects[Object::Teapot] )->SetView( m_camera.GetViewMatrix() );
-                    std::get<0>( m_pObjects[Object::Teapot] )->SetProjection( m_camera.GetProjectionMatrix() );
-                    std::get<1>( m_pObjects[Object::Teapot] )->Draw( std::get<0>( m_pObjects[Object::Teapot] ).get(), std::get<2>( m_pObjects[Object::Teapot] ).Get() );
-                    break;
-                }
-            }*/
-
-            graphics.GetCubeBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
-        } );
-#pragma endregion
-
+    if ( m_bRepeatingSpace )
+    {
 #pragma region RTT_CUBE_INV
         std::function<void( uint32_t i, uint32_t j )> RenderCubeInvStencils = std::function( [&]( uint32_t i, uint32_t j ) -> void
         {
@@ -337,15 +198,15 @@ void Application::Render()
 
             // Render RTT room face
             graphics.BeginFrameCubeInv( (Side)i_inv, j );
-            Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)i_inv ) : m_camera;
+            Camera camera = m_bStaticCamera ? m_stencilCameras.at( (Side)i_inv ) : m_camera;
 
             graphics.UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
             // Render RTT cube
-            //graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-            //m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, camera );
-            //graphics.GetCubeInvBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
+            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+            m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, camera );
+            graphics.GetCubeInvBuffer( (Side)i, j )->BindNull( graphics.GetContext() );
         } );
 #pragma endregion
 
@@ -361,7 +222,7 @@ void Application::Render()
 
             // Render RTT room face
             graphics.BeginFrameCubeInvRecursive( i, j, (Side)k_inv );
-            Camera camera = m_bUseStaticCamera ? m_stencilCameras.at( (Side)k_inv ) : m_camera;
+            Camera camera = m_bStaticCamera ? m_stencilCameras.at( (Side)k_inv ) : m_camera;
 
             graphics.UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
@@ -375,18 +236,13 @@ void Application::Render()
 #pragma endregion
 
 #pragma region RTT_GENERATION
-        // Generate cube geometry and render targets
-        if ( !m_bDebugCubes )
-            for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
-                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                    RenderCubeStencils( i, j );
-
         // Generate inverse cube geometry and render targets
         for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
             for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
                 RenderCubeInvStencils( i, j );
 
-        if ( RENDER_DEPTH > 0u )
+        //if ( RENDER_DEPTH > 0u )
+        if ( !updateDepth )
         {
             // Generate recursive render targets inside inverse cube geometry
             for ( uint32_t i = 0u; i < RENDER_DEPTH; ++i ) // current render depth
@@ -404,50 +260,222 @@ void Application::Render()
     graphics.UpdateRenderStateSkysphere();
     m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
 
-    if ( m_bUseRepeatingSpace )
+    m_light.UpdateCB( m_camera );
+    graphics.GetContext()->PSSetConstantBuffers( 1u, 1u, m_light.GetCB() );
+
+    if ( m_bRepeatingSpace )
     {
         TextureBorder_CB tbData;
         tbData.TextureBorder = m_fTextureBorder;
         m_cbTextureBorder.data = tbData;
         if ( !m_cbTextureBorder.ApplyChanges() ) return;
 
-        // Determine whether to render recursive rooms
-        static bool updateDepth = false;
-        if ( RENDER_DEPTH == 0u )
-        {
-            updateDepth = true;
-            RENDER_DEPTH = 1u;
-        }
-
-        // Draw stencil cube inverse
+        // Draw stencil cube inverse - room
         graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-        for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
-            m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
-
-        if ( !updateDepth )
+        if ( m_bRTTRoom )
         {
-            for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
+            for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
             {
-                for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
-                    for ( uint32_t k = 0u; k < 6u; k++ )
-                        m_stencilCubesInvRecursive[i].SetTexture( (Side)k, graphics.GetCubeInvRecursiveBuffer( i, j, (Side)k )->GetShaderResourceView() );
-                m_stencilCubesInvRecursive[i].Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+            }
+            if ( updateDepth )
+            {
+                m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+            }
+            else
+            {
+                for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
+                {
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        for ( uint32_t k = 0u; k < 6u; k++ )
+                            m_stencilCubesInvRecursive[i].SetTexture( (Side)k, graphics.GetCubeInvRecursiveBuffer( i, j, (Side)k )->GetShaderResourceView() );
+                    m_stencilCubesInvRecursive[i].Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                }
+            }
+        }
+        else if ( m_bStencilRoom )
+        {
+            for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+            {
+                // Reset face properties
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
+
+				graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
+                graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+
+				m_pTexture = nullptr;
+				graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+
+                switch ( (Side)i )
+                {
+                case Side::FRONT:
+                    // Stencil Mask
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 5.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Stencil overwrite
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+
+                    // Back Wall in stencil
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 15.0f ) );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceViewPtr() );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Colour cube in stencil
+                    m_stencilCube.SetPosition( 0.0f, 0.0f, 10.0f );
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        m_stencilCube.SetTexture( (Side)j, m_pColorTextures[(Color)j].Get() );
+                    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+
+                    // Stencil cube in stencil
+                    //m_pTexture = nullptr;
+                    //graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+                    //graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+                    //m_face.SetScale( 1.0f, 1.0f );
+                    //m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 9.0f ) );
+                    //m_face.Draw( m_cbMatrices, m_camera );
+                    //graphics.UpdateRenderStateObjectInverse();
+                    //m_cylinder.SetPosition( XMFLOAT3( 0.0f, 0.0f, 10.0f ) );
+                    //m_cylinder.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
+                    //m_cylinder.Draw( graphics.GetContext() );
+                    break;
+                case Side::BACK:
+                    // Stencil Mask
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, -5.0f ) );
+                    m_face.SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Stencil overwrite
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+
+                    // Back Wall in stencil
+                    m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, -15.0f ) );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceViewPtr() );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Colour cube in stencil
+                    m_stencilCube.SetPosition( 0.0f, 0.0f, -10.0f );
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        m_stencilCube.SetTexture( (Side)j, m_pColorTextures[(Color)j].Get() );
+                    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    break;
+                case Side::LEFT:
+                    // Stencil Mask
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( -5.0f, 0.0f, 0.0f ) );
+                    m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Stencil overwrite
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+
+                    // Back Wall in stencil
+                    m_face.SetPosition( XMFLOAT3( -15.0f, 0.0f, 0.0f ) );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceViewPtr() );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Colour cube in stencil
+                    m_stencilCube.SetPosition( -10.0f, 0.0f, 0.0f );
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        m_stencilCube.SetTexture( (Side)j, m_pColorTextures[(Color)j].Get() );
+                    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    break;
+                case Side::RIGHT:
+                    // Stencil Mask
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( 5.0f, 0.0f, 0.0f ) );
+                    m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Stencil overwrite
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+
+                    // Back Wall in stencil
+                    m_face.SetPosition( XMFLOAT3( 15.0f, 0.0f, 0.0f ) );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceViewPtr() );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Colour cube in stencil
+                    m_stencilCube.SetPosition( 10.0f, 0.0f, 0.0f );
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        m_stencilCube.SetTexture( (Side)j, m_pColorTextures[(Color)j].Get() );
+                    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    break;
+                case Side::TOP:
+                    // Stencil Mask
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( 0.0f, 5.0f, 0.0f ) );
+                    m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Stencil overwrite
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+
+                    // Back Wall in stencil
+                    m_face.SetPosition( XMFLOAT3( 0.0f, 15.0f, 0.0f ) );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceViewPtr() );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Colour cube in stencil
+                    m_stencilCube.SetPosition( 0.0f, 10.0f, 0.0f );
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        m_stencilCube.SetTexture( (Side)j, m_pColorTextures[(Color)j].Get() );
+                    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    break;
+                case Side::BOTTOM:
+                    // Stencil Mask
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetPosition( XMFLOAT3( 0.0f, -5.0f, 0.0f ) );
+                    m_face.SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Stencil overwrite
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+
+                    // Back Wall in stencil
+                    m_face.SetPosition( XMFLOAT3( 0.0f, -15.0f, 0.0f ) );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceViewPtr() );
+                    m_face.Draw( m_cbMatrices, m_camera );
+
+                    // Colour cube in stencil
+                    m_stencilCube.SetPosition( 0.0f, -10.0f, 0.0f );
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        m_stencilCube.SetTexture( (Side)j, m_pColorTextures[(Color)j].Get() );
+                    m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    break;
+                }
+
+                // Reset face properties
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
+
+                //m_cylinder.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
+                m_stencilCube.SetPosition( 0.0f, 0.0f, 0.0f );
+                m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
+                m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
+                m_face.SetScale( 1.0f, 1.0f );
+                graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Bind( graphics.GetContext() );
             }
         }
 
         // Draw stencil cube
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
         {
-            if ( m_bDebugCubes )
+            if ( m_bColourCube )
             {
                 m_stencilCube.SetTexture( (Side)i, m_pColorTextures[(Color)i].Get() );
-                m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
             }
-            else if ( m_bUseStencils )
+            else if ( m_bStencilCube )
             {
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
                 graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+
                 m_pTexture = nullptr;
                 graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
 
@@ -460,7 +488,7 @@ void Application::Render()
                     m_face.Draw( m_cbMatrices, m_camera );
                     graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObjectInverse();
-                    m_cylinder.UpdateBuffers( m_cbMatrices, m_camera );
+                    m_cylinder.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
                     m_cylinder.Draw( graphics.GetContext() );
                     break;
 
@@ -470,27 +498,27 @@ void Application::Render()
                     m_face.Draw( m_cbMatrices, m_camera );
                     graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObjectInverse();
-                    m_cone.UpdateBuffers( m_cbMatrices, m_camera );
+                    m_cone.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
                     m_cone.Draw( graphics.GetContext() );
                     break;
 
                 case Side::LEFT:
-                    m_face.SetPosition( XMFLOAT3( 1.0f, 0.0f, 0.0f ) );
-                    m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
-                    m_face.Draw( m_cbMatrices, m_camera );
-                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
-                    graphics.UpdateRenderStateObjectInverse();
-                    m_dodecahedron.UpdateBuffers( m_cbMatrices, m_camera );
-                    m_dodecahedron.Draw( graphics.GetContext() );
-                    break;
-
-                case Side::RIGHT:
                     m_face.SetPosition( XMFLOAT3( -1.0f, 0.0f, 0.0f ) );
                     m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
                     m_face.Draw( m_cbMatrices, m_camera );
                     graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObjectInverse();
-                    m_icosahedron.UpdateBuffers( m_cbMatrices, m_camera );
+                    m_dodecahedron.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
+                    m_dodecahedron.Draw( graphics.GetContext() );
+                    break;
+
+                case Side::RIGHT:
+                    m_face.SetPosition( XMFLOAT3( 1.0f, 0.0f, 0.0f ) );
+                    m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
+                    m_face.Draw( m_cbMatrices, m_camera );
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+                    graphics.UpdateRenderStateObjectInverse();
+                    m_icosahedron.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
                     m_icosahedron.Draw( graphics.GetContext() );
                     break;
 
@@ -500,7 +528,7 @@ void Application::Render()
                     m_face.Draw( m_cbMatrices, m_camera );
                     graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObjectInverse();
-                    m_octahedron.UpdateBuffers( m_cbMatrices, m_camera );
+                    m_octahedron.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
                     m_octahedron.Draw( graphics.GetContext() );
                     break;
 
@@ -510,7 +538,7 @@ void Application::Render()
                     m_face.Draw( m_cbMatrices, m_camera );
                     graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObjectInverse();
-                    m_teapot.UpdateBuffers( m_cbMatrices, m_camera );
+                    m_teapot.UpdateBuffers( graphics.GetContext(), m_cbMatrices, m_camera );
                     m_teapot.Draw( graphics.GetContext() );
                     break;
                 }
@@ -519,31 +547,12 @@ void Application::Render()
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
-
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Bind( graphics.GetContext() );
-                m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
-                m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
-                m_face.SetScale( 1.0f, 1.0f );
-            }
-            else
-            {
-                m_stencilCube.SetTexture( (Side)i, graphics.GetCubeBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-                m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
             }
         }
 
-        // Draw face with stencilled cylinder
-        /*graphics.GetStencilState( Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-        m_face.SetPosition( 0.0f, 0.0f, 0.0f );
-        m_face.SetScale( 1.0f, 1.0f );
-        m_face.Draw( m_cbMatrices, m_camera );
-
-        graphics.GetStencilState( Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
-        m_face.SetScale( 0.8f, 0.8f );
-        m_face.SetPosition( 0.0f, 0.0f, 2.5f );
-        m_face.Draw( m_cbMatrices, m_camera );
-
-        graphics.GetStencilState( Bind::Stencil::Type::OFF )->Bind( graphics.GetContext() );*/
+        if ( m_bColourCube )
+            m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
 
         if ( updateDepth )
         {
@@ -603,13 +612,13 @@ void Application::Render()
         m_postProcessing.SpawnControlWindow(
             m_motionBlur.IsActive(),
             m_fxaa.IsActive() );
-        if ( !m_bUseRepeatingSpace )
+        if ( !m_bRepeatingSpace )
         {
             m_nonEuclidean.SpawnControlWindow();
             m_mapping.SpawnControlWindow();
-            m_light.SpawnControlWindow();
             m_cube.SpawnControlWindow();
         }
+        m_light.SpawnControlWindow();
         m_imgui.EndRender();
     }
 
@@ -625,37 +634,41 @@ void Application::Render()
 
 void Application::SpawnControlWindows()
 {
-    if ( ImGui::Begin( "Stencil Cube Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
-    {
-        static bool debugCubes = m_bDebugCubes;
-        ImGui::Checkbox( "Debug Cubes?", &debugCubes );
-        m_bDebugCubes = debugCubes;
-
-        if ( !debugCubes )
-        {
-            static bool useStencils = m_bUseStencils;
-            ImGui::Checkbox( "Use Stencils?", &useStencils );
-            m_bUseStencils = useStencils;
-
-            if ( !useStencils )
-            {
-                static bool cubeSkysphere = m_bDrawCubeSkysphere;
-                ImGui::Checkbox( "Draw Skysphere?", &cubeSkysphere );
-                m_bDrawCubeSkysphere = cubeSkysphere;
-
-                static bool useRecursion = m_bDrawCubeRecursion;
-                ImGui::Checkbox( "Use Recursion?", &useRecursion );
-                m_bDrawCubeRecursion = useRecursion;
-            }
-        }
-    }
-    ImGui::End();
-
     if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
     {
-        static bool useRepeatingSpace = m_bUseRepeatingSpace;
+        ImGui::Text( "Cube Type: " );
+        ImGui::SameLine();
+        static int cubeGroup = 0;
+        if ( ImGui::RadioButton( "Colour##Cube", &cubeGroup, 0 ) )
+        {
+            m_bColourCube = true;
+            m_bStencilCube = false;
+        }
+        ImGui::SameLine();
+        if ( ImGui::RadioButton( "Stencil##Cube", &cubeGroup, 1 ) )
+        {
+            m_bColourCube = false;
+            m_bStencilCube = true;
+        }
+
+        ImGui::Text( "Room Type: " );
+        ImGui::SameLine();
+        static int roomGroup = 0;
+        if ( ImGui::RadioButton( "RTT##Room", &roomGroup, 0 ) )
+        {
+            m_bRTTRoom = true;
+            m_bStencilRoom = false;
+        }
+        ImGui::SameLine();
+        if ( ImGui::RadioButton( "Stencil##Room", &roomGroup, 1 ) )
+        {
+            m_bRTTRoom = false;
+            m_bStencilRoom = true;
+        }
+
+        static bool useRepeatingSpace = m_bRepeatingSpace;
         ImGui::Checkbox( "Repeating Space?", &useRepeatingSpace );
-        m_bUseRepeatingSpace = useRepeatingSpace;
+        m_bRepeatingSpace = useRepeatingSpace;
 
         if ( useRepeatingSpace )
         {
@@ -672,13 +685,13 @@ void Application::SpawnControlWindows()
     }
     ImGui::End();
 
-    if ( m_bUseRepeatingSpace )
+    if ( m_bRepeatingSpace )
     {
         if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
         {
-            static bool useStaticCamera = m_bUseStaticCamera;
+            static bool useStaticCamera = m_bStaticCamera;
             ImGui::Checkbox( "Static Camera?", &useStaticCamera );
-            m_bUseStaticCamera = useStaticCamera;
+            m_bStaticCamera = useStaticCamera;
 
             static bool updateCamera = false;
             static float fov = m_fStencilFov;

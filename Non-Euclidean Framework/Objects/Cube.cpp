@@ -62,7 +62,7 @@ bool Cube::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext 
 	try
 	{
 		// Set position to world origin
-		DirectX::XMStoreFloat4x4( &m_World, DirectX::XMMatrixIdentity() );
+		XMStoreFloat4x4( &m_World, XMMatrixIdentity() );
 
 		// Create vertex buffer
 		HRESULT hr = m_vertexBuffer.Initialize( pDevice, vertices, ARRAYSIZE( vertices ) );
@@ -73,13 +73,13 @@ bool Cube::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext 
         COM_ERROR_IF_FAILED( hr, "Failed to create cube index buffer!" );
 
 		// Load and setup textures
-		hr = DirectX::CreateDDSTextureFromFile( pDevice, L"Resources\\Textures\\bricks_TEX.dds", nullptr, m_pTextureDiffuse.GetAddressOf() );
+		hr = CreateDDSTextureFromFile( pDevice, L"Resources\\Textures\\bricks_TEX.dds", nullptr, m_pTextureDiffuse.GetAddressOf() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'diffuse' texture!" );
 
-		hr = DirectX::CreateDDSTextureFromFile( pDevice, L"Resources\\Textures\\bricks_NORM.dds", nullptr, m_pTextureNormal.GetAddressOf() );
+		hr = CreateDDSTextureFromFile( pDevice, L"Resources\\Textures\\bricks_NORM.dds", nullptr, m_pTextureNormal.GetAddressOf() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'normal' texture!" );
 
-		hr = DirectX::CreateDDSTextureFromFile( pDevice, L"Resources\\Textures\\bricks_DISP.dds", nullptr, m_pTextureDisplacement.GetAddressOf() );
+		hr = CreateDDSTextureFromFile( pDevice, L"Resources\\Textures\\bricks_DISP.dds", nullptr, m_pTextureDisplacement.GetAddressOf() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'displacement' texture!" );
 
 		// Setup constant buffer
@@ -100,9 +100,9 @@ void Cube::Update( float dt )
 	static float cummulativeTime = 0;
 	cummulativeTime += dt;
 
-	DirectX::XMMATRIX mSpin = DirectX::XMMatrixRotationY( cummulativeTime );
-	DirectX::XMMATRIX mTranslate = DirectX::XMMatrixTranslation( m_position.x, m_position.y, m_position.z );
-	DirectX::XMMATRIX world = mTranslate;// * mSpin;
+	XMMATRIX mSpin = XMMatrixRotationY( cummulativeTime );
+	XMMATRIX mTranslate = XMMatrixTranslation( m_position.x, m_position.y, m_position.z );
+	XMMATRIX world = mTranslate;// * mSpin;
 	XMStoreFloat4x4( &m_World, world );
 }
 
