@@ -19,16 +19,16 @@ bool StencilCubeInv::Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pD
 
         // Update face positions
         m_pFaces.at( Side::FRONT )->SetPosition( XMFLOAT3( 0.0f, 0.0f, 5.0f ) );
-        
+
         m_pFaces.at( Side::BACK )->SetPosition( XMFLOAT3( 0.0f, 0.0f, -5.0f ) );
         m_pFaces.at( Side::BACK )->SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) );
-        
+
         m_pFaces.at( Side::LEFT )->SetPosition( XMFLOAT3( -5.0f, 0.0f, 0.0f ) );
         m_pFaces.at( Side::LEFT )->SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
 
         m_pFaces.at( Side::RIGHT )->SetPosition( XMFLOAT3( 5.0f, 0.0f, 0.0f ) );
         m_pFaces.at( Side::RIGHT )->SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
-        
+
         m_pFaces.at( Side::TOP )->SetPosition( XMFLOAT3( 0.0f, -5.0f, 0.0f ) );
         m_pFaces.at( Side::TOP )->SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
 
@@ -46,6 +46,22 @@ bool StencilCubeInv::Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pD
 void StencilCubeInv::SetTexture( Side side, ID3D11ShaderResourceView* pTexture )
 {
     m_pTextures.at( side ) = pTexture;
+}
+
+void StencilCubeInv::SetPosition( float x, float y, float z ) noexcept
+{
+    for ( uint32_t i = 0u; i < 6u; i++ )
+    {
+        switch ( (Side)i )
+        {
+        case Side::FRONT: m_pFaces.at( (Side)i )->SetPosition( x, y, z + 5.0f ); break;
+        case Side::BACK: m_pFaces.at( (Side)i )->SetPosition( x, y, z - 5.0f ); break;
+        case Side::LEFT: m_pFaces.at( (Side)i )->SetPosition( x - 5.0f, y, z ); break;
+        case Side::RIGHT: m_pFaces.at( (Side)i )->SetPosition( x + 5.0f, y, z ); break;
+        case Side::TOP: m_pFaces.at( (Side)i )->SetPosition( x, y - 5.0f, z ); break;
+        case Side::BOTTOM: m_pFaces.at( (Side)i )->SetPosition( x, y + 5.0f, z ); break;
+        }
+    }
 }
 
 void StencilCubeInv::Draw( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_matrix, Camera& pCamera )
