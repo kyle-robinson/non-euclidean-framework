@@ -237,19 +237,21 @@ void Application::Render()
 #pragma endregion
 
 #pragma region RTT_GENERATION
-        // Generate inverse cube geometry and render targets
-        for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
-            for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
-                RenderCubeInvStencils( i, j );
-
-        //if ( RENDER_DEPTH > 0u )
-        if ( !updateDepth )
+        if ( !m_bStencilRoom )
         {
-            // Generate recursive render targets inside inverse cube geometry
-            for ( uint32_t i = 0u; i < RENDER_DEPTH; ++i ) // current render depth
-                for ( uint32_t j = 0u; j < CAMERA_COUNT; ++j ) // current camera view
-                    for ( uint32_t k = 0u; k < 6u; ++k ) // determine cube side
-                        RenderCubeInvRecursiveStencils( i, j, k );
+            // Generate inverse cube geometry and render targets
+            for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
+                for ( uint32_t j = 0u; j < RENDER_DEPTH; ++j )
+                    RenderCubeInvStencils( i, j );
+
+            if ( !updateDepth )
+            {
+                // Generate recursive render targets inside inverse cube geometry
+                for ( uint32_t i = 0u; i < RENDER_DEPTH; ++i ) // current render depth
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; ++j ) // current camera view
+                        for ( uint32_t k = 0u; k < 6u; ++k ) // determine cube side
+                            RenderCubeInvRecursiveStencils( i, j, k );
+            }
         }
 #pragma endregion
     }
@@ -271,30 +273,34 @@ void Application::Render()
         if ( !m_cbTextureBorder.ApplyChanges() ) return;
 
 #pragma region TEXTURE_BINDING
-        // Draw stencil cube inverse - room
-        graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-        for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
+        if ( !m_bStencilRoom )
         {
-            m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
-        }
-        if ( updateDepth )
-        {
-            m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
-        }
-        else
-        {
-            for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
+            // Draw stencil cube inverse - room
+            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+            for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
             {
-                for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
-                    for ( uint32_t k = 0u; k < 6u; k++ )
-                        m_stencilCubesInvRecursive[i].SetTexture( (Side)k, graphics.GetCubeInvRecursiveBuffer( i, j, (Side)k )->GetShaderResourceView() );
+                m_stencilCubeInv.SetTexture( (Side)i, graphics.GetCubeInvBuffer( (Side)i, RENDER_DEPTH - 1u )->GetShaderResourceView() );
+            }
+            if ( updateDepth )
+            {
                 if ( m_bRTTRoom )
-                    m_stencilCubesInvRecursive[i].Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    m_stencilCubeInv.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+            }
+            else
+            {
+                for ( uint32_t i = 0u; i < RENDER_DEPTH; i++ )
+                {
+                    for ( uint32_t j = 0u; j < CAMERA_COUNT; j++ )
+                        for ( uint32_t k = 0u; k < 6u; k++ )
+                            m_stencilCubesInvRecursive[i].SetTexture( (Side)k, graphics.GetCubeInvRecursiveBuffer( i, j, (Side)k )->GetShaderResourceView() );
+                    if ( m_bRTTRoom )
+                        m_stencilCubesInvRecursive[i].Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                }
             }
         }
 #pragma endregion
 #pragma region STENCIL_ROOM
-        if ( m_bStencilRoom )
+        if ( m_bStencilRoom || m_bStencilRTTRoom )
         {
             for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
             {
@@ -303,21 +309,20 @@ void Application::Render()
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
 
-                //m_cylinder.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
                 m_stencilCube.SetPosition( 0.0f, 0.0f, 0.0f );
                 m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
                 m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
                 m_face.SetScale( 1.0f, 1.0f );
 
-				graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-                graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-
 				m_pTexture = nullptr;
 				graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
 
-                // Room/cube creation
-                std::function<void( Side sideToRender, Side sideToOcclude )> CreateStencilRoom = [=]( Side sideToRender, Side sideToOcclude ) -> void
+                // Create 1st room with stencil mask and the other rooms with RTT
+                std::function<void( Side sideToRender, Side sideToOcclude )> CreateStencilRTTRoom = [&]( Side sideToRender, Side sideToOcclude ) -> void
                 {
+				    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
+                    graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+
                     // Stencil Mask - stencil view
                     XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
                     XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };
@@ -347,10 +352,9 @@ void Application::Render()
                     }
 
                     // Stencil overwrite - walls inside stencil
-                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
-                    for ( uint32_t i = 0u; i < 6u; i++ )
+                    for ( uint32_t face = 0u; face < 6u; face++ )
                     {
-                        if ( sideToOcclude == (Side)i )
+                        if ( sideToOcclude == (Side)face )
                             continue;
 
                         XMFLOAT3 positionCopy = position;
@@ -359,7 +363,7 @@ void Application::Render()
                         // Target side
                         // - looking at the front stencil wall would mean that the target inside wall would be the front wall within the stencil view
                         // - likewise, if I'm looking up at the top stencil, the target view would be the first RTT texture at the backmost face in the stencil view
-                        if ( sideToRender == (Side)i )
+                        if ( sideToRender == (Side)face )
                         {
                             switch ( sideToRender )
                             {
@@ -378,7 +382,7 @@ void Application::Render()
                         {
                             if ( sideToRender == Side::FRONT || sideToRender == Side::BACK )
                             {
-                                switch ( (Side)i )
+                                switch ( (Side)face )
                                 {
                                 case Side::LEFT:   positionCopy.x -= 5.0f; rotationCopy.y = -XM_PIDIV2; break;
                                 case Side::RIGHT:  positionCopy.x += 5.0f; rotationCopy.y = XM_PIDIV2;  break;
@@ -388,7 +392,7 @@ void Application::Render()
                             }
                             else if ( sideToRender == Side::LEFT || sideToRender == Side::RIGHT )
                             {
-                                switch ( (Side)i )
+                                switch ( (Side)face )
                                 {
                                 case Side::FRONT:  positionCopy.z += 5.0f; rotationCopy.y = 0.0f;       break;
                                 case Side::BACK:   positionCopy.z -= 5.0f; rotationCopy.y = XM_PI;      break;
@@ -399,7 +403,7 @@ void Application::Render()
                             else if ( sideToRender == Side::TOP || sideToRender == Side::BOTTOM )
                             {
                                 rotationCopy.x = 0.0f;
-                                switch ( (Side)i )
+                                switch ( (Side)face )
                                 {
                                 case Side::FRONT:  positionCopy.z += 5.0f; rotationCopy.y = 0.0f;       break;
                                 case Side::BACK:   positionCopy.z -= 5.0f; rotationCopy.y = XM_PI;      break;
@@ -409,8 +413,9 @@ void Application::Render()
                             }
                         }
 
+                        graphics.GetStencilState( (Side)face, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
                         // Flip textures for top and bottom walls
-                        Side textureSide = (Side)i;
+                        Side textureSide = (Side)face;
                         if ( textureSide == Side::TOP )
                             textureSide = Side::BOTTOM;
                         else if ( textureSide == Side::BOTTOM )
@@ -427,9 +432,9 @@ void Application::Render()
                             {
                                 for ( uint32_t k = 0u; k < 6u; k++ )
                                 {
-                                    if ( i < m_stencilCubesInvRecursive.size() - 1 )
+                                    if ( face < m_stencilCubesInvRecursive.size() - 1 )
                                     {
-                                        m_stencilCubesInvRecursive[i].SetTexture( (Side)k, graphics.GetCubeInvRecursiveBuffer( i, j, (Side)k )->GetShaderResourceView() );
+                                        m_stencilCubesInvRecursive[face].SetTexture( (Side)k, graphics.GetCubeInvRecursiveBuffer( face, j, (Side)k )->GetShaderResourceView() );
                                     }
                                 }
                             }
@@ -448,14 +453,84 @@ void Application::Render()
                     m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
                 };
 
+                // Create rooms entirely with stencils
+                std::function<void( Side side )> CreateStencilRoom = [&]( Side side ) -> void
+                {
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
+                    graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+
+                    // Stencil Mask - stencil view
+                    XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+                    XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_face.SetRotation( rotation );
+                    if ( side == Side::FRONT )
+                    {
+                        for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
+                        {
+                            // Stencil walls
+                            graphics.GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
+                            m_pTexture = nullptr;
+                            graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+                            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+                            position.z += 5.0f;
+                            m_face.SetPosition( position );
+                            m_face.Draw( m_cbMatrices, m_camera );
+                            position.z += 5.0f;
+                        }
+                        position.z = 0.0f;
+                        for ( uint32_t j = RENDER_DEPTH; j > 0; j-- )
+                        {
+                            // Colour cubes in stencil
+                            graphics.GetStencilState( (Side)j, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+                            position.z = 10.0f * j;
+                            m_stencilCube.SetPosition( position.x, position.y, position.z );
+                            for ( uint32_t k = 0u; k < 6u; k++ )
+                                m_stencilCube.SetTexture( (Side)k, m_pColorTextures[(Color)k].Get() );
+                            m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                        }
+                    }
+                };
+
+                // Call correct lambda function to generate cubes/rooms
                 switch ( (Side)i )
                 {
-                case Side::FRONT: CreateStencilRoom( Side::FRONT, Side::BACK ); break;
-                case Side::BACK: CreateStencilRoom( Side::BACK, Side::FRONT ); break;
-                case Side::LEFT: CreateStencilRoom( Side::LEFT, Side::RIGHT ); break;
-                case Side::RIGHT: CreateStencilRoom( Side::RIGHT, Side::LEFT ); break;
-                case Side::TOP: CreateStencilRoom( Side::TOP, Side::BOTTOM ); break;
-                case Side::BOTTOM: CreateStencilRoom( Side::BOTTOM, Side::TOP ); break;
+                case Side::FRONT:
+                    if ( m_bStencilRTTRoom )
+                        CreateStencilRTTRoom( Side::FRONT, Side::BACK );
+                    else if ( m_bStencilRoom )
+                        CreateStencilRoom( Side::FRONT );
+                    break;
+                case Side::BACK:
+                    if ( m_bStencilRTTRoom )
+                        CreateStencilRTTRoom( Side::BACK, Side::FRONT );
+                    else if ( m_bStencilRoom )
+                        CreateStencilRoom( Side::BACK );
+                    break;
+                case Side::LEFT:
+                    if ( m_bStencilRTTRoom )
+                        CreateStencilRTTRoom( Side::LEFT, Side::RIGHT );
+                    else if ( m_bStencilRoom )
+                        CreateStencilRoom( Side::LEFT );
+                    break;
+                case Side::RIGHT:
+                    if ( m_bStencilRTTRoom )
+                        CreateStencilRTTRoom( Side::RIGHT, Side::LEFT );
+                    else if ( m_bStencilRoom )
+                        CreateStencilRoom( Side::RIGHT );
+                    break;
+                case Side::TOP:
+                    if ( m_bStencilRTTRoom )
+                        CreateStencilRTTRoom( Side::TOP, Side::BOTTOM );
+                    else if ( m_bStencilRoom )
+                        CreateStencilRoom( Side::TOP );
+                    break;
+                case Side::BOTTOM:
+                    if ( m_bStencilRTTRoom )
+                        CreateStencilRTTRoom( Side::BOTTOM, Side::TOP );
+                    else if ( m_bStencilRoom )
+                        CreateStencilRoom( Side::BOTTOM );
+                    break;
                 }
 
                 // Reset face properties
@@ -473,7 +548,7 @@ void Application::Render()
         }
 #pragma endregion
 #pragma region STENCIL_CUBE
-        // Draw stencil cube
+        // Draw center stencil cube
         for ( uint32_t i = 0u; i < CAMERA_COUNT; i++ )
         {
             if ( m_bColourCube )
@@ -669,12 +744,21 @@ void Application::SpawnControlWindows()
         {
             m_bRTTRoom = true;
             m_bStencilRoom = false;
+            m_bStencilRTTRoom = false;
         }
         ImGui::SameLine();
-        if ( ImGui::RadioButton( "Stencil##Room", &roomGroup, 1 ) )
+        if ( ImGui::RadioButton( "Stencil RTT##Room", &roomGroup, 1 ) )
+        {
+            m_bRTTRoom = false;
+            m_bStencilRoom = false;
+            m_bStencilRTTRoom = true;
+        }
+        ImGui::SameLine();
+        if ( ImGui::RadioButton( "Stencil##Room", &roomGroup, 2 ) )
         {
             m_bRTTRoom = false;
             m_bStencilRoom = true;
+            m_bStencilRTTRoom = false;
         }
 
         static bool useRepeatingSpace = m_bRepeatingSpace;

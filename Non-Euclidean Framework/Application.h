@@ -74,6 +74,7 @@ private:
 
 	bool m_bRTTRoom = true;
 	bool m_bStencilRoom = false;
+	bool m_bStencilRTTRoom = false;
 
 	bool m_bColourCube = true;
 	bool m_bStencilCube = false;
