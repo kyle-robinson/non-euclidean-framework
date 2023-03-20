@@ -454,83 +454,118 @@ void Application::Render()
                 };
 
                 // Create rooms entirely with stencils
-                std::function<void( Side side )> CreateStencilRoom = [&]( Side side ) -> void
+                std::function<void()> CreateStencilRoom = [&]() -> void
                 {
-                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-                    graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-
                     // Stencil Mask - stencil view
+                    m_face.SetScale( 5.0f, 5.0f );
+                    m_pTexture = nullptr;
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+                    graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+                    //graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
+
+                    // First stencil walls
                     XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
                     XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };
-                    m_face.SetScale( 5.0f, 5.0f );
-                    m_face.SetRotation( rotation );
-                    if ( side == Side::FRONT )
+                    switch ( (Side)i )
                     {
+                    case Side::FRONT:  position.z = 5.0f;  break;
+                    case Side::BACK:   position.z = -5.0f; rotation.y = XM_PI;      break;
+                    case Side::LEFT:   position.x = -5.0f; rotation.y = -XM_PIDIV2; break;
+                    case Side::RIGHT:  position.x = 5.0f;  rotation.y = XM_PIDIV2;  break;
+                    case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; break;
+                    case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  break;
+                    }
+                    m_face.SetPosition( position );
+                    m_face.SetRotation( rotation );
+                    m_face.Draw( m_cbMatrices, m_camera );
+                    if ( !updateDepth )
+                    {
+                        // Recursive stencil walls
                         for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
                         {
-                            // Stencil walls
                             graphics.GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-                            m_pTexture = nullptr;
-                            graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
-                            graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-                            position.z += 5.0f;
-                            m_face.SetPosition( position );
-                            m_face.Draw( m_cbMatrices, m_camera );
-                            position.z += 5.0f;
-                        }
-                        position.z = 0.0f;
-                        for ( uint32_t j = RENDER_DEPTH; j > 0; j-- )
-                        {
-                            // Colour cubes in stencil
-                            graphics.GetStencilState( (Side)j, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
-                            position.z = 10.0f * j;
-                            m_stencilCube.SetPosition( position.x, position.y, position.z );
-                            for ( uint32_t k = 0u; k < 6u; k++ )
-                                m_stencilCube.SetTexture( (Side)k, m_pColorTextures[(Color)k].Get() );
-                            m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                            for ( uint32_t k = 0; k < 6; k++ ) // each wall at current render depth
+                            {
+                                if ( (Side)i == Side::FRONT && (Side)k == Side::BACK
+                                    || (Side)i == Side::BACK && (Side)k == Side::FRONT
+                                    || (Side)i == Side::LEFT && (Side)k == Side::RIGHT
+                                    || (Side)i == Side::RIGHT && (Side)k == Side::LEFT
+                                    || (Side)i == Side::TOP && (Side)k == Side::BOTTOM
+                                    || (Side)i == Side::BOTTOM && (Side)k == Side::TOP )
+                                    continue;
+
+                                //if ( j == RENDER_DEPTH - 1 && (Side)i == (Side)k )
+                                //    continue;
+
+                                //XMFLOAT3 posCopy = position;
+                                XMFLOAT3 depthPos = { 0.0f, 0.0f, 0.0f };
+                                rotation = { 0.0f, 0.0f, 0.0f };
+                                switch ( (Side)i )
+                                {
+                                case Side::FRONT:  depthPos.z += 10.0f * ( j + 1 ); break;
+                                case Side::BACK:   depthPos.z -= 10.0f * ( j + 1 ); break;
+                                case Side::LEFT:   depthPos.x -= 10.0f * ( j + 1 ); break;
+                                case Side::RIGHT:  depthPos.x += 10.0f * ( j + 1 ); break;
+                                case Side::TOP:    depthPos.y += 10.0f * ( j + 1 ); break;
+                                case Side::BOTTOM: depthPos.y -= 10.0f * ( j + 1 ); break;
+                                }
+                                switch ( (Side)k )
+                                {
+                                case Side::FRONT:  depthPos.z += 5.0f; break;
+                                case Side::BACK:   depthPos.z -= 5.0f; rotation.y = XM_PI;      break;
+                                case Side::LEFT:   depthPos.x -= 5.0f; rotation.y = -XM_PIDIV2; break;
+                                case Side::RIGHT:  depthPos.x += 5.0f; rotation.y = XM_PIDIV2;  break;
+                                case Side::TOP:    depthPos.y += 5.0f; rotation.x = -XM_PIDIV2; break;
+                                case Side::BOTTOM: depthPos.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
+                                }
+                                m_face.SetPosition( depthPos );
+                                m_face.SetRotation( rotation );
+                                m_face.Draw( m_cbMatrices, m_camera );
+                            }
                         }
                     }
+
+                    // Colour cubes in stencil
+                    for ( uint32_t j = RENDER_DEPTH; j > 0; j-- )
+                    {
+                        graphics.GetStencilState( (Side)j, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+                        XMFLOAT3 cubePos = { 0.0f, 0.0f, 0.0f };
+                        switch ( (Side)i )
+                        {
+                        case Side::FRONT:  cubePos.z = 10.0f * j;  break;
+                        case Side::BACK:   cubePos.z = -10.0f * j; break;
+                        case Side::LEFT:   cubePos.x = -10.0f * j; break;
+                        case Side::RIGHT:  cubePos.x = 10.0f * j;  break;
+                        case Side::TOP:    cubePos.y = 10.0f * j;  break;
+                        case Side::BOTTOM: cubePos.y = -10.0f * j; break;
+                        }
+                        //position.z = 10.0f * j;
+                        m_stencilCube.SetPosition( cubePos.x, cubePos.y, cubePos.z );
+                        for ( uint32_t k = 0u; k < 6u; k++ )
+                            m_stencilCube.SetTexture( (Side)k, m_pColorTextures[(Color)k].Get() );
+                        m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                    }
+
+                    //graphics.UpdateRenderStateSkysphere();
+                    //m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
                 };
 
                 // Call correct lambda function to generate cubes/rooms
-                switch ( (Side)i )
+                if ( m_bStencilRoom )
                 {
-                case Side::FRONT:
-                    if ( m_bStencilRTTRoom )
-                        CreateStencilRTTRoom( Side::FRONT, Side::BACK );
-                    else if ( m_bStencilRoom )
-                        CreateStencilRoom( Side::FRONT );
-                    break;
-                case Side::BACK:
-                    if ( m_bStencilRTTRoom )
-                        CreateStencilRTTRoom( Side::BACK, Side::FRONT );
-                    else if ( m_bStencilRoom )
-                        CreateStencilRoom( Side::BACK );
-                    break;
-                case Side::LEFT:
-                    if ( m_bStencilRTTRoom )
-                        CreateStencilRTTRoom( Side::LEFT, Side::RIGHT );
-                    else if ( m_bStencilRoom )
-                        CreateStencilRoom( Side::LEFT );
-                    break;
-                case Side::RIGHT:
-                    if ( m_bStencilRTTRoom )
-                        CreateStencilRTTRoom( Side::RIGHT, Side::LEFT );
-                    else if ( m_bStencilRoom )
-                        CreateStencilRoom( Side::RIGHT );
-                    break;
-                case Side::TOP:
-                    if ( m_bStencilRTTRoom )
-                        CreateStencilRTTRoom( Side::TOP, Side::BOTTOM );
-                    else if ( m_bStencilRoom )
-                        CreateStencilRoom( Side::TOP );
-                    break;
-                case Side::BOTTOM:
-                    if ( m_bStencilRTTRoom )
-                        CreateStencilRTTRoom( Side::BOTTOM, Side::TOP );
-                    else if ( m_bStencilRoom )
-                        CreateStencilRoom( Side::BOTTOM );
-                    break;
+                    CreateStencilRoom();
+                }
+                else if ( m_bStencilRTTRoom )
+                {
+                    switch ( (Side)i )
+                    {
+                    case Side::FRONT:  CreateStencilRTTRoom( Side::FRONT, Side::BACK ); break;
+                    case Side::BACK:   CreateStencilRTTRoom( Side::BACK, Side::FRONT ); break;
+                    case Side::LEFT:   CreateStencilRTTRoom( Side::LEFT, Side::RIGHT ); break;
+                    case Side::RIGHT:  CreateStencilRTTRoom( Side::RIGHT, Side::LEFT ); break;
+                    case Side::TOP:    CreateStencilRTTRoom( Side::TOP, Side::BOTTOM ); break;
+                    case Side::BOTTOM: CreateStencilRTTRoom( Side::BOTTOM, Side::TOP ); break;
+                    }
                 }
 
                 // Reset face properties
