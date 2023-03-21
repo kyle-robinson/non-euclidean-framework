@@ -98,6 +98,7 @@ private:
 		Count
 	};
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
+	std::map<Side, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_pWallTextures;
 	std::map<Color, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_pColorTextures;
 };
 

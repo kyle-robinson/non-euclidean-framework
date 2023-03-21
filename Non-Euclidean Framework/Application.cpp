@@ -121,9 +121,27 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 			}
             Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
 			hr = CreateWICTextureFromFile( graphics.GetDevice(), texPath.c_str(), nullptr, textureView.GetAddressOf() );
-			m_pColorTextures.emplace( (Color)i, std::move( textureView ) );
 			COM_ERROR_IF_FAILED( hr, "Failed to create 'color' texture!" );
+			m_pColorTextures.emplace( (Color)i, std::move( textureView ) );
 		}
+
+        for ( uint32_t i = 0u; i < 6u; i++ )
+        {
+            std::wstring texPath = L"Resources\\Textures\\";
+            switch ( (Side)i )
+            {
+            case Side::FRONT: texPath += L"crate.dds"; break;
+            case Side::BACK: texPath += L"darkdirt.dds"; break;
+            case Side::LEFT: texPath += L"lightdirt.dds"; break;
+            case Side::RIGHT: texPath += L"stone.dds"; break;
+            case Side::TOP: texPath += L"grass.dds"; break;
+            case Side::BOTTOM: texPath += L"snow.dds"; break;
+            }
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
+            hr = CreateDDSTextureFromFile( graphics.GetDevice(), texPath.c_str(), nullptr, textureView.GetAddressOf() );
+            COM_ERROR_IF_FAILED( hr, "Failed to create 'wall' texture!" );
+            m_pWallTextures.emplace( (Side)i, std::move( textureView ) );
+        }
 
         RENDER_DEPTH = 0u;
     }
@@ -460,33 +478,31 @@ void Application::Render()
                     m_face.SetScale( 5.0f, 5.0f );
                     graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
 
                     // First stencil walls
                     XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
                     XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };
-                    std::string texPath = "Resources/Textures/";
                     switch ( (Side)i )
                     {
-                    case Side::FRONT:  position.z = 5.0f;  texPath += "crate.dds";  break;
-                    case Side::BACK:   position.z = -5.0f; rotation.y = XM_PI;      texPath += "darkdirt.dds"; break;
-                    case Side::LEFT:   position.x = -5.0f; rotation.y = -XM_PIDIV2; texPath += "lightdirt.dds"; break;
-                    case Side::RIGHT:  position.x = 5.0f;  rotation.y = XM_PIDIV2;  texPath += "stone.dds"; break;
-                    case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; texPath += "grass.dds"; break;
-                    case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  texPath += "snow.dds"; break;
+                    case Side::FRONT:  position.z = 5.0f;  break;
+                    case Side::BACK:   position.z = -5.0f; rotation.y = XM_PI;      break;
+                    case Side::LEFT:   position.x = -5.0f; rotation.y = -XM_PIDIV2; break;
+                    case Side::RIGHT:  position.x = 5.0f;  rotation.y = XM_PIDIV2;  break;
+                    case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; break;
+                    case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  break;
                     }
-                    ID3D11ShaderResourceView* pTexture = nullptr;
-                    CreateDDSTextureFromFile( graphics.GetDevice(), StringConverter::StringToWide( texPath ).c_str(), nullptr, &pTexture );
-                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, &pTexture );
                     m_face.SetPosition( position );
                     m_face.SetRotation( rotation );
                     m_face.Draw( m_cbMatrices, m_camera );
                     if ( updateDepth ) return;
 
                     // Recursive stencil walls
-                    for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
+                    //for ( uint32_t j = RENDER_DEPTH; j > 0; j-- )
+                    for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
                     {
                         graphics.GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-                        for ( uint32_t k = 0; k < 6; k++ ) // each wall at current render depth
+                        for ( uint32_t k = 0u; k < 6u; k++ ) // each wall at current render depth
                         {
                             if ( (Side)i == Side::FRONT && (Side)k == Side::BACK
                                 || (Side)i == Side::BACK && (Side)k == Side::FRONT
@@ -521,8 +537,8 @@ void Application::Render()
                             m_face.Draw( m_cbMatrices, m_camera );
 
                             // For each face at that current render depth
-                            graphics.GetStencilState( (Side)k, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
-                            for ( uint32_t l = 0; l < 6u; l++ )
+                            graphics.GetStencilState( (Side)j, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+                            for ( uint32_t l = 0u; l < 6u; l++ )
                             {
                                 if ( (Side)l == Side::FRONT && (Side)k == Side::BACK
                                     || (Side)l == Side::BACK && (Side)k == Side::FRONT
@@ -551,6 +567,7 @@ void Application::Render()
                                 case Side::TOP:    depthCopy.y += 5.0f; rotation.x = -XM_PIDIV2; break;
                                 case Side::BOTTOM: depthCopy.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
                                 }
+                                graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pWallTextures[(Side)l].GetAddressOf() );
                                 m_face.SetPosition( depthCopy );
                                 m_face.SetRotation( rotation );
                                 m_face.Draw( m_cbMatrices, m_camera );
@@ -572,6 +589,26 @@ void Application::Render()
                         case Side::TOP:    cubePos.y = 10.0f * j;  break;
                         case Side::BOTTOM: cubePos.y = -10.0f * j; break;
                         }
+
+                        // For each cube at that current render depth
+                        for ( uint32_t k = 0; k < 6u; k++ )
+                        {
+                            XMFLOAT3 cubePosCopy = cubePos;
+                            switch ( (Side)k )
+                            {
+                            case Side::FRONT:  cubePosCopy.z += 10.0f; break;
+                            case Side::BACK:   cubePosCopy.z -= 10.0f; break;
+                            case Side::LEFT:   cubePosCopy.x -= 10.0f; break;
+                            case Side::RIGHT:  cubePosCopy.x += 10.0f; break;
+                            case Side::TOP:    cubePosCopy.y += 10.0f; break;
+                            case Side::BOTTOM: cubePosCopy.y -= 10.0f; break;
+                            }
+                            m_stencilCube.SetPosition( cubePosCopy.x, cubePosCopy.y, cubePosCopy.z );
+                            for ( uint32_t l = 0u; l < 6u; l++ )
+                                m_stencilCube.SetTexture( (Side)l, m_pColorTextures[(Color)l].Get() );
+                            m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
+                        }
+
                         m_stencilCube.SetPosition( cubePos.x, cubePos.y, cubePos.z );
                         for ( uint32_t k = 0u; k < 6u; k++ )
                             m_stencilCube.SetTexture( (Side)k, m_pColorTextures[(Color)k].Get() );
