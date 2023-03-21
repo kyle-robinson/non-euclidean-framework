@@ -10,6 +10,10 @@ class Input : public WindowContainer
 public:
 	void Initialize( RenderWindow& window, Camera& pCamera );
 	void Update( float dt );
+	
+	inline void EnableCollisions() noexcept { m_bCollisions = true; }
+	inline void DisableCollisions() noexcept { m_bCollisions = false; }
+	inline bool IsCollisionsActive() const noexcept { return m_bCollisions; }
 
 private:
 	void UpdateMouse( float dt );
@@ -17,6 +21,7 @@ private:
 	void UpdateCameraCollisions();
 
 	Camera* m_pCamera;
+	bool m_bCollisions = true;
 };
 
 #endif

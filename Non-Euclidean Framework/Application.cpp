@@ -104,7 +104,7 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         m_objSkysphere.SetInitialScale( 50.0f, 50.0f, 50.0f );
 
         // Initialize Textures
-        hr = CreateDDSTextureFromFile( graphics.GetDevice(), L"Resources\\Textures\\bricks_TEX.dds", nullptr, m_pTexture.GetAddressOf() );
+        hr = CreateWICTextureFromFile( graphics.GetDevice(), L"Resources\\Textures\\light_TEX.jpg", nullptr, m_pTexture.GetAddressOf() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'diffuse' texture!" );
 
         for ( uint32_t i = 0u; i < (uint32_t)Color::Count; i++ )
@@ -117,7 +117,7 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 				case Color::Yellow: texPath += L"yellow.png"; break;
 				case Color::Green: texPath += L"green.png"; break;
 				case Color::Blue: texPath += L"blue.png"; break;
-				case Color::Purple: texPath += L"purple.png"; break;
+				case Color::Purple: texPath += L"purple.jpg"; break;
 			}
             Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
 			hr = CreateWICTextureFromFile( graphics.GetDevice(), texPath.c_str(), nullptr, textureView.GetAddressOf() );
@@ -139,7 +139,7 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 void Application::CleanupDevice()
 {
 #ifdef _DEBUG
-    // Usefult for finding dx memory leaks
+    // Useful for finding dx memory leaks
     ID3D11Debug* debugDevice = nullptr;
     graphics.GetDevice()->QueryInterface( __uuidof( ID3D11Debug ), reinterpret_cast<void**>( &debugDevice ) );
     debugDevice->ReportLiveDeviceObjects( D3D11_RLDO_DETAIL );
@@ -314,8 +314,8 @@ void Application::Render()
                 m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
                 m_face.SetScale( 1.0f, 1.0f );
 
-				m_pTexture = nullptr;
-				graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+				ID3D11ShaderResourceView* pTexture = nullptr;
+				graphics.GetContext()->PSSetShaderResources( 0u, 1u, &pTexture );
 
                 // Create 1st room with stencil mask and the other rooms with RTT
                 std::function<void( Side sideToRender, Side sideToOcclude )> CreateStencilRTTRoom = [&]( Side sideToRender, Side sideToOcclude ) -> void
@@ -458,67 +458,100 @@ void Application::Render()
                 {
                     // Stencil Mask - stencil view
                     m_face.SetScale( 5.0f, 5.0f );
-                    m_pTexture = nullptr;
-                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+                    graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
                     graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-                    //graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
 
                     // First stencil walls
                     XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
                     XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };
+                    std::string texPath = "Resources/Textures/";
                     switch ( (Side)i )
                     {
-                    case Side::FRONT:  position.z = 5.0f;  break;
-                    case Side::BACK:   position.z = -5.0f; rotation.y = XM_PI;      break;
-                    case Side::LEFT:   position.x = -5.0f; rotation.y = -XM_PIDIV2; break;
-                    case Side::RIGHT:  position.x = 5.0f;  rotation.y = XM_PIDIV2;  break;
-                    case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; break;
-                    case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  break;
+                    case Side::FRONT:  position.z = 5.0f;  texPath += "crate.dds";  break;
+                    case Side::BACK:   position.z = -5.0f; rotation.y = XM_PI;      texPath += "darkdirt.dds"; break;
+                    case Side::LEFT:   position.x = -5.0f; rotation.y = -XM_PIDIV2; texPath += "lightdirt.dds"; break;
+                    case Side::RIGHT:  position.x = 5.0f;  rotation.y = XM_PIDIV2;  texPath += "stone.dds"; break;
+                    case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; texPath += "grass.dds"; break;
+                    case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  texPath += "snow.dds"; break;
                     }
+                    ID3D11ShaderResourceView* pTexture = nullptr;
+                    CreateDDSTextureFromFile( graphics.GetDevice(), StringConverter::StringToWide( texPath ).c_str(), nullptr, &pTexture );
+                    graphics.GetContext()->PSSetShaderResources( 0u, 1u, &pTexture );
                     m_face.SetPosition( position );
                     m_face.SetRotation( rotation );
                     m_face.Draw( m_cbMatrices, m_camera );
-                    if ( !updateDepth )
+                    if ( updateDepth ) return;
+
+                    // Recursive stencil walls
+                    for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
                     {
-                        // Recursive stencil walls
-                        for ( uint32_t j = 0; j < RENDER_DEPTH; j++ )
+                        graphics.GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
+                        for ( uint32_t k = 0; k < 6; k++ ) // each wall at current render depth
                         {
-                            graphics.GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
-                            for ( uint32_t k = 0; k < 6; k++ ) // each wall at current render depth
+                            if ( (Side)i == Side::FRONT && (Side)k == Side::BACK
+                                || (Side)i == Side::BACK && (Side)k == Side::FRONT
+                                || (Side)i == Side::LEFT && (Side)k == Side::RIGHT
+                                || (Side)i == Side::RIGHT && (Side)k == Side::LEFT
+                                || (Side)i == Side::TOP && (Side)k == Side::BOTTOM
+                                || (Side)i == Side::BOTTOM && (Side)k == Side::TOP )
+                                continue;
+
+                            XMFLOAT3 depthPos = { 0.0f, 0.0f, 0.0f };
+                            rotation = { 0.0f, 0.0f, 0.0f };
+                            switch ( (Side)i )
                             {
-                                if ( (Side)i == Side::FRONT && (Side)k == Side::BACK
-                                    || (Side)i == Side::BACK && (Side)k == Side::FRONT
-                                    || (Side)i == Side::LEFT && (Side)k == Side::RIGHT
-                                    || (Side)i == Side::RIGHT && (Side)k == Side::LEFT
-                                    || (Side)i == Side::TOP && (Side)k == Side::BOTTOM
-                                    || (Side)i == Side::BOTTOM && (Side)k == Side::TOP )
+                            case Side::FRONT:  depthPos.z += 10.0f * ( j + 1 ); break;
+                            case Side::BACK:   depthPos.z -= 10.0f * ( j + 1 ); break;
+                            case Side::LEFT:   depthPos.x -= 10.0f * ( j + 1 ); break;
+                            case Side::RIGHT:  depthPos.x += 10.0f * ( j + 1 ); break;
+                            case Side::TOP:    depthPos.y += 10.0f * ( j + 1 ); break;
+                            case Side::BOTTOM: depthPos.y -= 10.0f * ( j + 1 ); break;
+                            }
+                            switch ( (Side)k )
+                            {
+                            case Side::FRONT:  depthPos.z += 5.0f; break;
+                            case Side::BACK:   depthPos.z -= 5.0f; rotation.y = XM_PI;      break;
+                            case Side::LEFT:   depthPos.x -= 5.0f; rotation.y = -XM_PIDIV2; break;
+                            case Side::RIGHT:  depthPos.x += 5.0f; rotation.y = XM_PIDIV2;  break;
+                            case Side::TOP:    depthPos.y += 5.0f; rotation.x = -XM_PIDIV2; break;
+                            case Side::BOTTOM: depthPos.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
+                            }
+                            m_face.SetPosition( depthPos );
+                            m_face.SetRotation( rotation );
+                            m_face.Draw( m_cbMatrices, m_camera );
+
+                            // For each face at that current render depth
+                            graphics.GetStencilState( (Side)k, Bind::Stencil::Type::WRITE )->Bind( graphics.GetContext() );
+                            for ( uint32_t l = 0; l < 6u; l++ )
+                            {
+                                if ( (Side)l == Side::FRONT && (Side)k == Side::BACK
+                                    || (Side)l == Side::BACK && (Side)k == Side::FRONT
+                                    || (Side)l == Side::LEFT && (Side)k == Side::RIGHT
+                                    || (Side)l == Side::RIGHT && (Side)k == Side::LEFT
+                                    || (Side)l == Side::TOP && (Side)k == Side::BOTTOM
+                                    || (Side)l == Side::BOTTOM && (Side)k == Side::TOP )
                                     continue;
 
-                                //if ( j == RENDER_DEPTH - 1 && (Side)i == (Side)k )
-                                //    continue;
-
-                                //XMFLOAT3 posCopy = position;
-                                XMFLOAT3 depthPos = { 0.0f, 0.0f, 0.0f };
-                                rotation = { 0.0f, 0.0f, 0.0f };
-                                switch ( (Side)i )
-                                {
-                                case Side::FRONT:  depthPos.z += 10.0f * ( j + 1 ); break;
-                                case Side::BACK:   depthPos.z -= 10.0f * ( j + 1 ); break;
-                                case Side::LEFT:   depthPos.x -= 10.0f * ( j + 1 ); break;
-                                case Side::RIGHT:  depthPos.x += 10.0f * ( j + 1 ); break;
-                                case Side::TOP:    depthPos.y += 10.0f * ( j + 1 ); break;
-                                case Side::BOTTOM: depthPos.y -= 10.0f * ( j + 1 ); break;
-                                }
+                                XMFLOAT3 depthCopy = depthPos;
                                 switch ( (Side)k )
                                 {
-                                case Side::FRONT:  depthPos.z += 5.0f; break;
-                                case Side::BACK:   depthPos.z -= 5.0f; rotation.y = XM_PI;      break;
-                                case Side::LEFT:   depthPos.x -= 5.0f; rotation.y = -XM_PIDIV2; break;
-                                case Side::RIGHT:  depthPos.x += 5.0f; rotation.y = XM_PIDIV2;  break;
-                                case Side::TOP:    depthPos.y += 5.0f; rotation.x = -XM_PIDIV2; break;
-                                case Side::BOTTOM: depthPos.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
+                                case Side::FRONT:  depthCopy.z += 5.0f; break;
+                                case Side::BACK:   depthCopy.z -= 5.0f; break;
+                                case Side::LEFT:   depthCopy.x -= 5.0f; break;
+                                case Side::RIGHT:  depthCopy.x += 5.0f; break;
+                                case Side::TOP:    depthCopy.y += 5.0f; break;
+                                case Side::BOTTOM: depthCopy.y -= 5.0f; break;
                                 }
-                                m_face.SetPosition( depthPos );
+                                switch ( (Side)l )
+                                {
+                                case Side::FRONT:  depthCopy.z += 5.0f; rotation = XMFLOAT3();   break;
+                                case Side::BACK:   depthCopy.z -= 5.0f; rotation.y = XM_PI;      break;
+                                case Side::LEFT:   depthCopy.x -= 5.0f; rotation.y = -XM_PIDIV2; break;
+                                case Side::RIGHT:  depthCopy.x += 5.0f; rotation.y = XM_PIDIV2;  break;
+                                case Side::TOP:    depthCopy.y += 5.0f; rotation.x = -XM_PIDIV2; break;
+                                case Side::BOTTOM: depthCopy.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
+                                }
+                                m_face.SetPosition( depthCopy );
                                 m_face.SetRotation( rotation );
                                 m_face.Draw( m_cbMatrices, m_camera );
                             }
@@ -539,15 +572,11 @@ void Application::Render()
                         case Side::TOP:    cubePos.y = 10.0f * j;  break;
                         case Side::BOTTOM: cubePos.y = -10.0f * j; break;
                         }
-                        //position.z = 10.0f * j;
                         m_stencilCube.SetPosition( cubePos.x, cubePos.y, cubePos.z );
                         for ( uint32_t k = 0u; k < 6u; k++ )
                             m_stencilCube.SetTexture( (Side)k, m_pColorTextures[(Color)k].Get() );
                         m_stencilCube.Draw( graphics.GetContext(), m_cbMatrices, m_camera );
                     }
-
-                    //graphics.UpdateRenderStateSkysphere();
-                    //m_objSkysphere.Draw( m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix() );
                 };
 
                 // Call correct lambda function to generate cubes/rooms
@@ -573,7 +602,6 @@ void Application::Render()
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( graphics.GetContext(), graphics.GetDepthStencil()->GetDepthStencilView() );
 
-                //m_cylinder.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
                 m_stencilCube.SetPosition( 0.0f, 0.0f, 0.0f );
                 m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
                 m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
@@ -595,8 +623,8 @@ void Application::Render()
                 graphics.GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( graphics.GetContext() );
                 graphics.UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
 
-                m_pTexture = nullptr;
-                graphics.GetContext()->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+                ID3D11ShaderResourceView* pTexture = nullptr;
+                graphics.GetContext()->PSSetShaderResources( 0u, 1u, &pTexture );
 
                 switch ( (Side)i )
                 {
@@ -822,6 +850,12 @@ void Application::SpawnControlWindows()
             static bool useStaticCamera = m_bStaticCamera;
             ImGui::Checkbox( "Static Camera?", &useStaticCamera );
             m_bStaticCamera = useStaticCamera;
+
+            static bool useCollisions = m_input.IsCollisionsActive();
+            ImGui::Checkbox( "World Collisions?", &useCollisions );
+            useCollisions ?
+                m_input.EnableCollisions() :
+                m_input.DisableCollisions();
 
             static bool updateCamera = false;
             static float fov = m_fStencilFov;

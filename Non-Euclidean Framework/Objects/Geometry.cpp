@@ -49,7 +49,7 @@ bool Geometry::CreateTeapot( ID3D11Device* pDevice, ID3D11DeviceContext* pContex
 	// Create geometry
 	SetPosition( XMFLOAT3( 0.0f, 5.0f, 0.0f ) );
 	GeometricPrimitive::CreateTeapot( vertices, indices );
-	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\purple.png" );
+	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\purple.jpg" );
 }
 
 bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext, std::wstring texPath )

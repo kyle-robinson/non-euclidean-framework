@@ -16,7 +16,8 @@ void Input::Update( float dt )
 {
     UpdateMouse( dt );
     UpdateKeyboard( dt );
-    UpdateCameraCollisions();
+    if ( m_bCollisions )
+        UpdateCameraCollisions();
 }
 
 void Input::UpdateMouse( float dt )
@@ -70,8 +71,8 @@ void Input::UpdateKeyboard( float dt )
     if ( keyboard.KeyIsPressed( 'A' ) ) m_pCamera->MoveLeft( dt, TRUE );
     if ( keyboard.KeyIsPressed( 'S' ) ) m_pCamera->MoveBackward( dt, TRUE );
     if ( keyboard.KeyIsPressed( 'D' ) ) m_pCamera->MoveRight( dt, TRUE );
-    //if ( keyboard.KeyIsPressed( VK_SPACE ) ) m_pCamera->MoveUp( dt );
-    //if ( keyboard.KeyIsPressed( VK_CONTROL ) ) m_pCamera->MoveDown( dt );
+    if ( keyboard.KeyIsPressed( VK_SPACE ) ) m_pCamera->MoveUp( dt );
+    if ( keyboard.KeyIsPressed( VK_CONTROL ) ) m_pCamera->MoveDown( dt );
 
     // Camera speed
     m_pCamera->SetCameraSpeed( 2.5f );
