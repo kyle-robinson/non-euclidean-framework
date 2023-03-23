@@ -70,6 +70,12 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{d3d47228-5abd-46b6-ad24-71859b580a5f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Levels">
+      <UniqueIdentifier>{0ca55a6f-11fc-492f-915a-149e1ca99f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Levels">
+      <UniqueIdentifier>{fadde10e-e4c5-4021-b487-4054e3312b90}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\Viewport.h">
@@ -249,6 +255,21 @@
     <ClInclude Include="Objects\Geometry.h">
       <Filter>Header Files\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="Levels\LevelStateMachine.h">
+      <Filter>Header Files\Levels</Filter>
+    </ClInclude>
+    <ClInclude Include="Levels\LevelContainer.h">
+      <Filter>Header Files\Levels</Filter>
+    </ClInclude>
+    <ClInclude Include="Levels\Level1.h">
+      <Filter>Header Files\Levels</Filter>
+    </ClInclude>
+    <ClInclude Include="Levels\Level2.h">
+      <Filter>Header Files\Levels</Filter>
+    </ClInclude>
+    <ClInclude Include="Levels\Level3.h">
+      <Filter>Header Files\Levels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics\Shaders.cpp">
@@ -379,6 +400,21 @@
     </ClCompile>
     <ClCompile Include="Objects\Geometry.cpp">
       <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Levels\Level1.cpp">
+      <Filter>Source Files\Levels</Filter>
+    </ClCompile>
+    <ClCompile Include="Levels\LevelStateMachine.cpp">
+      <Filter>Source Files\Levels</Filter>
+    </ClCompile>
+    <ClCompile Include="Levels\Level2.cpp">
+      <Filter>Source Files\Levels</Filter>
+    </ClCompile>
+    <ClCompile Include="Levels\Level3.cpp">
+      <Filter>Source Files\Levels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui\imgui_tables.cpp">
+      <Filter>Resource Files\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

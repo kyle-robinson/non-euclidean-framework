@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(IncludePath);$(VC_IncludePath);$(SolutionDir)/External;$(WindowsSDK_IncludePath);$(ProjectDir)/;$(ProjectDir)/Graphics;$(ProjectDir)/Model;$(ProjectDir)/Input;$(ProjectDir)/Systems;$(ProjectDir)/Objects;$(ProjectDir)/Utility;$(ProjectDir)/Window;$(ProjectDir)/Resources</IncludePath>
+    <IncludePath>$(IncludePath);$(VC_IncludePath);$(SolutionDir)/External;$(WindowsSDK_IncludePath);$(ProjectDir)/;$(ProjectDir)/Graphics;$(ProjectDir)/Model;$(ProjectDir)/Levels;$(ProjectDir)/Input;$(ProjectDir)/Systems;$(ProjectDir)/Objects;$(ProjectDir)/Utility;$(ProjectDir)/Window;$(ProjectDir)/Resources</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)\External\lib;$(SolutionDir)\External\lib\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)\External\lib;$(SolutionDir)\External\lib\x64\Release;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(IncludePath);$(VC_IncludePath);$(SolutionDir)/External;$(WindowsSDK_IncludePath);$(ProjectDir)/;$(ProjectDir)/Graphics;$(ProjectDir)/Model;$(ProjectDir)/Input;$(ProjectDir)/Systems;$(ProjectDir)/Objects;$(ProjectDir)/Utility;$(ProjectDir)/Window;$(ProjectDir)/Resources</IncludePath>
+    <IncludePath>$(IncludePath);$(VC_IncludePath);$(SolutionDir)/External;$(WindowsSDK_IncludePath);$(ProjectDir)/;$(ProjectDir)/Graphics;$(ProjectDir)/Model;$(ProjectDir)/Levels;$(ProjectDir)/Input;$(ProjectDir)/Systems;$(ProjectDir)/Objects;$(ProjectDir)/Utility;$(ProjectDir)/Window;$(ProjectDir)/Resources</IncludePath>
     <MultiProcFXC>true</MultiProcFXC>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -224,6 +224,11 @@
     <ClInclude Include="Input\Keyboard.h" />
     <ClInclude Include="Input\Mouse.h" />
     <ClInclude Include="Input\MousePicking.h" />
+    <ClInclude Include="Levels\Level1.h" />
+    <ClInclude Include="Levels\Level2.h" />
+    <ClInclude Include="Levels\Level3.h" />
+    <ClInclude Include="Levels\LevelContainer.h" />
+    <ClInclude Include="Levels\LevelStateMachine.h" />
     <ClInclude Include="Model\Colour.h" />
     <ClInclude Include="Model\GameObject.h" />
     <ClInclude Include="Model\GameObject3D.h" />
@@ -287,6 +292,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\External\imgui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\External\imgui\imgui_widgets.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -301,6 +310,10 @@
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="Input\MousePicking.cpp" />
+    <ClCompile Include="Levels\Level1.cpp" />
+    <ClCompile Include="Levels\Level2.cpp" />
+    <ClCompile Include="Levels\Level3.cpp" />
+    <ClCompile Include="Levels\LevelStateMachine.cpp" />
     <ClCompile Include="Objects\Geometry.cpp" />
     <ClCompile Include="Objects\StencilCube.cpp" />
     <ClCompile Include="Objects\StencilCubeInv.cpp" />
