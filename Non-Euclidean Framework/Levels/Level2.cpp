@@ -589,7 +589,7 @@ void Level2::Update( const float dt )
 
 void Level2::SpawnWindows()
 {
-    if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+    if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         ImGui::Text( "Room Type: " );
         ImGui::SameLine();
@@ -627,7 +627,7 @@ void Level2::SpawnWindows()
     }
     ImGui::End();
 
-    if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+    if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         static bool useStaticCamera = m_bStaticCamera;
         ImGui::Checkbox( "Static Camera?", &useStaticCamera );

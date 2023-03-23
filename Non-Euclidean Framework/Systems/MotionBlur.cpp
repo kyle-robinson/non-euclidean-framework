@@ -33,8 +33,8 @@ void MotionBlur::UpdateCB()
 
 void MotionBlur::SpawnControlWindow( bool usingFXAA )
 {
-	ImGui::Begin( "Post-Processing", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove );
-	
+	ImGui::Begin( "Post-Processing", FALSE, ImGuiWindowFlags_AlwaysAutoResize );
+
 	static bool useMotionBlur = m_bUseMotionBlur;
 	if ( usingFXAA )
 	{

@@ -32,7 +32,7 @@ void NonEuclidean::UpdateCB()
 
 void NonEuclidean::SpawnControlWindow()
 {
-	if ( ImGui::Begin( "Non-Euclidean Space", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+	if ( ImGui::Begin( "Non-Euclidean Space", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
 	{
 		static bool useHyperbolic = m_bUseHyperbolic;
 		static bool useElliptic = m_bUseElliptic;

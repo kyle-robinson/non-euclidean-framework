@@ -162,7 +162,7 @@ void Cube::DrawRTT( ID3D11DeviceContext* pContext )
 
 void Cube::SpawnControlWindow()
 {
-	if ( ImGui::Begin( "Material Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+	if ( ImGui::Begin( "Material Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
 	{
 		ImGui::Text( "Emission Color" );
 		ImGui::SliderFloat4( "##Emission", &m_fEmissive.x, 0.0f, 1.0f, "%.1f" );

@@ -76,7 +76,7 @@ void Light::UpdateCB( Camera& camera )
 
 void Light::SpawnControlWindow()
 {
-    if ( ImGui::Begin( "Light Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+    if ( ImGui::Begin( "Light Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         ImGui::Checkbox( "Attached To Camera?", &m_bAttachedToCamera );
         ImGui::NewLine();

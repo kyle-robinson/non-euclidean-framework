@@ -35,7 +35,7 @@ void Mapping::UpdateCB()
 
 void Mapping::SpawnControlWindow()
 {
-	if ( ImGui::Begin( "Texture Mapping", FALSE, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove ) )
+	if ( ImGui::Begin( "Texture Mapping", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
 	{
 		// normal & parallax mapping
 		static int activeMappingTechnique = 2;

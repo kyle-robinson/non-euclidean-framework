@@ -26,8 +26,7 @@ WindowContainer::WindowContainer()
 extern LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-    if ( ImGui_ImplWin32_WndProcHandler( hWnd, uMsg, wParam, lParam ) )
-        return true;
+    ImGui_ImplWin32_WndProcHandler( hWnd, uMsg, wParam, lParam );
     const auto& imio = ImGui::GetIO();
 
     switch( uMsg )
@@ -174,9 +173,6 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
     }
     case WM_RBUTTONDOWN:
     {
-        if ( imio.WantCaptureMouse )
-			return 0;
-
         int x = LOWORD( lParam );
         int y = HIWORD( lParam );
         mouse.OnRightPressed( x, y );
@@ -184,9 +180,6 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
     }
     case WM_RBUTTONUP:
     {
-        if ( imio.WantCaptureMouse )
-			return 0;
-
 		int x = LOWORD( lParam );
 		int y = HIWORD( lParam );
 		mouse.OnRightReleased( x, y );
@@ -251,27 +244,6 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
         }
         return DefWindowProc( hWnd, uMsg, wParam, lParam );
     }
-    // Window Resize Event
-    case WM_SIZE:
-	{
-		RECT windowRect = { 0,0 };
-		if ( GetClientRect( renderWindow.GetHWND(), &windowRect ) )
-		{
-			windowSize = {
-                static_cast<float>( windowRect.right - windowRect.left ),
-                static_cast<float>( windowRect.bottom - windowRect.top )
-            };
-
-			if ( windowSize.x < 500 )
-				windowSize.x = 1260;
-
-			if ( windowSize.y < 400 )
-				windowSize.y = 500;
-
-			return DefWindowProc( hWnd, uMsg, wParam, lParam );;
-		}
-	}
-
     default:
         return DefWindowProc( hWnd, uMsg, wParam, lParam );
     }

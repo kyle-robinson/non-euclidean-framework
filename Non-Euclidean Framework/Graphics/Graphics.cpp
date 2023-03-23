@@ -249,7 +249,7 @@ void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Bu
 	m_quad.SetupBuffers( m_pContext.Get() );
 	m_pContext->PSSetShaderResources( 0u, 1u, m_pRenderTarget->GetShaderResourceViewPtr() );
 	m_pContext->PSSetShaderResources( 1u, 1u, m_pDepthStencil->GetShaderResourceViewPtr() );
-	Bind::Rasterizer::DrawSolid( m_pContext.Get(), m_quad.GetIndexBuffer().IndexCount() ); // always draw as solid
+	//Bind::Rasterizer::DrawSolid( m_pContext.Get(), m_quad.GetIndexBuffer().IndexCount() ); // always draw as solid
 }
 
 void Graphics::EndFrame()

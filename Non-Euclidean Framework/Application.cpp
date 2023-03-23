@@ -21,7 +21,8 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         // Initialize input
         m_camera.Initialize( XMFLOAT3( 0.0f, 0.0f, -3.0f ), width, height );
         m_input.Initialize( renderWindow, m_camera );
-        m_imgui.Initialize( renderWindow.GetHWND(), graphics.GetDevice(), graphics.GetContext() );
+        if ( !m_imgui.Initialize( renderWindow.GetHWND(), graphics.GetDevice(), graphics.GetContext() ) )
+            return false;
 
         // Initialize systems
         m_postProcessing.Initialize( graphics.GetDevice() );
@@ -111,22 +112,25 @@ void Application::Render()
 
     // Render scene to texture
     graphics.BeginRenderSceneToTexture();
-    ( m_motionBlur.IsActive() || m_fxaa.IsActive() ) ?
-        graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB() ) :
-        m_postProcessing.Bind( graphics.GetContext(), graphics.GetRenderTarget() );
+    //( m_motionBlur.IsActive() || m_fxaa.IsActive() ) ?
+    //    graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB() ) :
+    //    m_postProcessing.Bind( graphics.GetContext(), graphics.GetRenderTarget() );
+
+    graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB() );
 
     // Render imgui windows
     if ( m_input.IsCursorEnabled() )
     {
         m_imgui.BeginRender();
+        m_imgui.InstructionWindow();
+        m_imgui.SceneWindow( graphics.GetWidth(), graphics.GetHeight(), graphics.GetRenderTarget()->GetShaderResourceView(), &m_input );
         SpawnLevelChangerWindow();
         m_stateMachine.SpawnWindows();
-        m_imgui.SpawnInstructionWindow();
-        m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
-        m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
-        m_postProcessing.SpawnControlWindow(
-            m_motionBlur.IsActive(),
-            m_fxaa.IsActive() );
+        //m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
+        //m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
+        //m_postProcessing.SpawnControlWindow(
+        //    m_motionBlur.IsActive(),
+        //    m_fxaa.IsActive() );
         m_imgui.EndRender();
     }
 
