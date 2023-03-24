@@ -43,6 +43,7 @@ public:
 	inline ID3D11DeviceContext* GetContext() const noexcept { return m_pContext.Get(); }
 	inline Bind::RenderTarget* GetRenderTarget() const noexcept { return &*m_pRenderTarget; }
 	inline Bind::DepthStencil* GetDepthStencil() const noexcept { return &*m_pDepthStencil; }
+	inline Bind::Rasterizer* GetRasterizerState( Bind::Rasterizer::Type type ) const noexcept { return &*m_pRasterizerStates.at( type ); }
 	inline Bind::Stencil* GetStencilState( Side side, Bind::Stencil::Type type ) const noexcept { return &*m_pStencilStates.at( side ).at( type ); }
 
 	inline Bind::RenderTarget* GetCubeInvBuffer( Side side, uint32_t index ) { return &*m_pCubeInvBuffers.at( side ).at( index ); }

@@ -155,8 +155,6 @@ void ImGuiManager::PostProcessingWindow( FXAA* pFxaa, MotionBlur* pMotionBlur ) 
                 pMotionBlur->SetNumSamples( numSamples );
         }
 
-        ImGui::SameLine();
-
         // FXAA
         if ( useMotionBlur )
         {

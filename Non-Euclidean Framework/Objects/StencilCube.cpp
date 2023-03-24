@@ -50,6 +50,7 @@ void StencilCube::SetTexture( Side side, ID3D11ShaderResourceView* pTexture ) no
 
 void StencilCube::SetPosition( float x, float y, float z ) noexcept
 {
+    position = XMFLOAT3( x, y, z );
     for ( uint32_t i = 0u; i < 6u; i++ )
     {
         switch ( (Side)i )

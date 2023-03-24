@@ -5,6 +5,7 @@
 #include "Face.h"
 #include "Geometry.h"
 #include "StencilCube.h"
+#include "StencilCubeInv.h"
 #include "LevelContainer.h"
 
 /// <summary>
@@ -31,18 +32,17 @@ public:
 
 private:
 	Face m_face;
-	StencilCube m_stencilCube;
+	std::vector<StencilCube> m_stencilCubes;
+	StencilCubeInv m_stencilCubeInv;
 	float m_fTextureBorder = 0.05f;
 
-	Geometry m_cylinder;
-	Geometry m_cone;
-	Geometry m_dodecahedron;
-	Geometry m_icosahedron;
-	Geometry m_octahedron;
-	Geometry m_teapot;
+	enum GeometryType { Cylinder, Cone, Dodecahedron, Icosahedron, Octahedron, Teapot, Count };
+	std::map<GeometryType, Geometry> m_geometries;
+	std::vector<int> m_randomNums;
 
 	ConstantBuffer<Matrices> m_cbMatrices;
 	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
 };
 
 #endif
