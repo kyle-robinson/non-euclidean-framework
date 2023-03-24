@@ -13,6 +13,7 @@ public:
 	inline XMFLOAT3 GetPosition() const noexcept { return position; }
 	void SetScale( float x, float y, float z ) noexcept;
 	void Draw( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_matrix, Camera& pCamera );
+	void DrawFace( Side side, ConstantBuffer<Matrices>& cb_vs_matrix, Camera& pCamera );
 private:
 	XMFLOAT3 position;
 	std::unordered_map<Side, std::shared_ptr<Face>> m_pFaces;

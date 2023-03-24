@@ -79,3 +79,8 @@ void StencilCube::Draw( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>&
         m_pFaces.at( (Side)i )->Draw( cb_vs_matrix, pCamera );
     }
 }
+
+void StencilCube::DrawFace( Side side, ConstantBuffer<Matrices>& cb_vs_matrix, Camera& pCamera )
+{
+    m_pFaces.at( side )->Draw( cb_vs_matrix, pCamera );
+}

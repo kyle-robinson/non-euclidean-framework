@@ -2,7 +2,6 @@
 #ifndef LEVEL1_H
 #define LEVEL1_H
 
-#include "Face.h"
 #include "Geometry.h"
 #include "StencilCube.h"
 #include "StencilCubeInv.h"
@@ -31,7 +30,6 @@ public:
 	inline std::string GetLevelName() { return m_sLevelName; };
 
 private:
-	Face m_face;
 	std::vector<StencilCube> m_stencilCubes;
 	StencilCubeInv m_stencilCubeInv;
 	float m_fTextureBorder = 0.05f;

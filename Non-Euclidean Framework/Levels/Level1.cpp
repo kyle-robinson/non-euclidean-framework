@@ -5,6 +5,13 @@
 #include <numeric>
 #include <dxtk/WICTextureLoader.h>
 
+// Function to calculate distance
+float Distance( XMFLOAT3 pos1, XMFLOAT3 pos2 )
+{
+    // Calculating distance
+    return sqrt( pow( pos2.x - pos1.x, 2 ) + pow( pos2.y - pos1.y, 2 ) + pow( pos2.z - pos1.z, 2 ) * 1.0f );
+}
+
 void Level1::OnCreate()
 {
 	try
@@ -23,12 +30,10 @@ void Level1::OnCreate()
         COM_ERROR_IF_FAILED( hr, "Failed to create 'Texture Border' constant buffer!" );
 
         // Create scene elements
-        hr = m_face.Initialize( m_gfx->GetContext(), m_gfx->GetDevice() );
-        COM_ERROR_IF_FAILED( hr, "Failed to create 'face' object!" );
         hr = m_stencilCubeInv.Initialize( m_gfx->GetContext(), m_gfx->GetDevice() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube inverse' object!" );
 
-        for ( uint32_t i = 1; i <= 9; i++ )
+        for ( uint32_t i = 0; i < 9; i++ )
         {
             StencilCube* stencilCube = new StencilCube();
             hr = stencilCube->Initialize( m_gfx->GetContext(), m_gfx->GetDevice() );
@@ -90,7 +95,24 @@ void Level1::RenderFrame()
     m_stencilCubeInv.Draw( context, m_cbMatrices, *m_camera );
     m_gfx->GetRasterizerState( Bind::Rasterizer::Type::SOLID )->Bind( context );
 
+    // Order cubes based on distance from camera for rendering
+    std::multimap<float, StencilCube> stencilCubesMap;
+    for ( int i = 0; i < m_stencilCubes.size(); i++ )
+    {
+        float distToCam = Distance( m_camera->GetPositionFloat3(), m_stencilCubes[i].GetPosition() );
+        stencilCubesMap.emplace( distToCam, m_stencilCubes[i] );
+    }
+    int it = 0;
+    for ( const auto& cube : stencilCubesMap )
+    {
+        m_stencilCubes[it] = cube.second;
+        it++;
+    }
+    // Invert vector to correctly order cubes
+    std::reverse( m_stencilCubes.begin(), m_stencilCubes.end() );
+
     // Draw center stencil cube
+    int stencilIdx = 0;
     for ( uint32_t i = 0; i < m_stencilCubes.size(); i++ )
     {
         std::queue<int> randomNums;
@@ -101,50 +123,16 @@ void Level1::RenderFrame()
         {
             m_gfx->GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( context );
             m_gfx->UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
-
             ID3D11ShaderResourceView* pTexture = nullptr;
             context->PSSetShaderResources( 0u, 1u, &pTexture );
+            m_stencilCubes[i].DrawFace( (Side)j, m_cbMatrices, *m_camera );
 
-            XMFLOAT3 position = m_stencilCubes[i].GetPosition();
-            switch ( (Side)j )
-            {
-            case Side::FRONT:
-                m_face.SetPosition( position.x, position.y, position.z - 1.0f );
-                m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
-                break;
-
-            case Side::BACK:
-                m_face.SetPosition( position.x, position.y, position.z + 1.0f );
-                m_face.SetRotation( XMFLOAT3( 0.0f, XM_PI, 0.0f ) );
-                break;
-
-            case Side::LEFT:
-                m_face.SetPosition( position.x - 1.0f, position.y, position.z );
-                m_face.SetRotation( XMFLOAT3( 0.0f, XM_PIDIV2, 0.0f ) );
-                break;
-
-            case Side::RIGHT:
-                m_face.SetPosition( position.x + 1.0f, position.y, position.z );
-                m_face.SetRotation( XMFLOAT3( 0.0f, -XM_PIDIV2, 0.0f ) );
-                break;
-
-            case Side::TOP:
-                m_face.SetPosition( position.x, position.y + 1.0f, position.z );
-                m_face.SetRotation( XMFLOAT3( XM_PIDIV2, 0.0f, 0.0f ) );
-                break;
-
-            case Side::BOTTOM:
-                m_face.SetPosition( position.x, position.y - 1.0f, position.z );
-                m_face.SetRotation( XMFLOAT3( -XM_PIDIV2, 0.0f, 0.0f ) );
-                break;
-            }
-
-            m_face.Draw( m_cbMatrices, *m_camera );
             m_gfx->GetStencilState( (Side)j, Bind::Stencil::Type::WRITE )->Bind( context );
             m_gfx->UpdateRenderStateObjectInverse();
             int random = randomNums.front();
             randomNums.pop();
-            m_geometries[(GeometryType)random].UpdateBuffers(context, m_cbMatrices, *m_camera );
+            m_geometries[(GeometryType)random].SetPosition( m_stencilCubes[i].GetPosition() );
+            m_geometries[(GeometryType)random].UpdateBuffers( context, m_cbMatrices, *m_camera );
             m_geometries[(GeometryType)random].Draw( context );
 
             // Reset face properties
@@ -152,6 +140,7 @@ void Level1::RenderFrame()
             m_gfx->GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Clear( context, m_gfx->GetDepthStencil()->GetDepthStencilView() );
             m_gfx->GetStencilState( (Side)j, Bind::Stencil::Type::WRITE )->Clear( context, m_gfx->GetDepthStencil()->GetDepthStencilView() );
             m_gfx->GetStencilState( (Side)j, Bind::Stencil::Type::OFF )->Bind( context );
+            stencilIdx++;
         }
 
         if ( !randomNums.empty() )
