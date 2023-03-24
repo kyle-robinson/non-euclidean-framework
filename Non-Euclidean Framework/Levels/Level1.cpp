@@ -17,11 +17,15 @@ void Level1::OnCreate()
 	try
 	{
         // Initialize random functions
-        std::random_device rd; // obtain a random number from hardware
-        std::mt19937 rng( rd() ); // seed the generator
-        m_randomNums.resize( GeometryType::Count );
-        std::iota( std::begin( m_randomNums ), std::end( m_randomNums ), 0 ); // fill the vector
-        std::shuffle( std::begin( m_randomNums ), std::end( m_randomNums ), rng );
+        for ( int i = 0; i < 9; i++ ) // 9 == no. of cubes in scene
+        {
+            std::random_device rd; // obtain a random number from hardware
+            std::mt19937 rng( rd() ); // seed the generator
+            m_randomNums.push_back( std::vector<int>() );
+            m_randomNums.at( i ).resize( GeometryType::Count );
+            std::iota( std::begin( m_randomNums.at( i ) ), std::end( m_randomNums.at( i ) ), 0 ); // fill the vector
+            std::shuffle( std::begin( m_randomNums.at( i ) ), std::end( m_randomNums.at( i ) ), rng );
+        }
 
         // Initialize constant buffers
         HRESULT hr = m_cbMatrices.Initialize( m_gfx->GetDevice(), m_gfx->GetContext() );
@@ -97,10 +101,12 @@ void Level1::RenderFrame()
 
     // Order cubes based on distance from camera for rendering
     std::multimap<float, StencilCube> stencilCubesMap;
+    std::multimap<float, std::vector<int>> randomNums;
     for ( int i = 0; i < m_stencilCubes.size(); i++ )
     {
         float distToCam = Distance( m_camera->GetPositionFloat3(), m_stencilCubes[i].GetPosition() );
         stencilCubesMap.emplace( distToCam, m_stencilCubes[i] );
+        randomNums.emplace( distToCam, m_randomNums[i] );
     }
     int it = 0;
     for ( const auto& cube : stencilCubesMap )
@@ -108,16 +114,23 @@ void Level1::RenderFrame()
         m_stencilCubes[it] = cube.second;
         it++;
     }
+    it = 0;
+    for ( const auto& num : randomNums )
+    {
+        m_randomNums[it] = num.second;
+        it++;
+    }
     // Invert vector to correctly order cubes
     std::reverse( m_stencilCubes.begin(), m_stencilCubes.end() );
+    std::reverse( m_randomNums.begin(), m_randomNums.end() );
 
     // Draw center stencil cube
     int stencilIdx = 0;
     for ( uint32_t i = 0; i < m_stencilCubes.size(); i++ )
     {
         std::queue<int> randomNums;
-        for ( uint32_t i = 0; i < m_randomNums.size(); i++ )
-            randomNums.push( m_randomNums.at( i ) );
+        for ( uint32_t j = 0; j < m_randomNums.at( i ).size(); j++ )
+            randomNums.push( m_randomNums.at( i ).at( j ) );
 
         for ( uint32_t j = 0u; j < 6u; j++ )
         {

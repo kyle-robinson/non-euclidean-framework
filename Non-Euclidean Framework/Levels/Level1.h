@@ -36,7 +36,7 @@ private:
 
 	enum GeometryType { Cylinder, Cone, Dodecahedron, Icosahedron, Octahedron, Teapot, Count };
 	std::map<GeometryType, Geometry> m_geometries;
-	std::vector<int> m_randomNums;
+	std::vector<std::vector<int>> m_randomNums;
 
 	ConstantBuffer<Matrices> m_cbMatrices;
 	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
