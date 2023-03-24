@@ -30,25 +30,3 @@ void MotionBlur::UpdateCB()
 	m_cbMotionBlur.data.MotionBlur = mbData;
     if ( !m_cbMotionBlur.ApplyChanges() ) return;
 }
-
-void MotionBlur::SpawnControlWindow( bool usingFXAA )
-{
-	ImGui::Begin( "Post-Processing", FALSE, ImGuiWindowFlags_AlwaysAutoResize );
-
-	static bool useMotionBlur = m_bUseMotionBlur;
-	if ( usingFXAA )
-	{
-		useMotionBlur = false;
-		m_bUseMotionBlur = useMotionBlur;
-		return;
-	}
-
-	ImGui::Checkbox( "Use Motion Blur?", &useMotionBlur );
-	m_bUseMotionBlur = useMotionBlur;
-
-	if ( m_bUseMotionBlur )
-	{
-		ImGui::Text( "No. Of Samples" );
-		ImGui::SliderInt( "##No. Of Samples", &m_numSamples, 1, 10 );
-	}
-}

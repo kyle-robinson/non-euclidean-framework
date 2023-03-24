@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "ImGuiManager.h"
+#include "FXAA.h"
+#include "MotionBlur.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx11.h"
 #include "imgui/imgui_impl_win32.h"
@@ -41,7 +43,7 @@ void ImGuiManager::EndRender() const noexcept
     ImGui_ImplDX11_RenderDrawData( ImGui::GetDrawData() );
 }
 
-void ImGuiManager::SceneWindow( UINT width, UINT height, ID3D11ShaderResourceView* pTexture, Input* pInput )
+void ImGuiManager::SceneWindow( UINT width, UINT height, ID3D11ShaderResourceView* pTexture ) noexcept
 {
     ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
     if ( ImGui::Begin( "Scene Window", FALSE ) )
@@ -125,6 +127,64 @@ void ImGuiManager::InstructionWindow() const noexcept
         countdown--;
         ImGui::Text( std::string( "FPS: " ).append( std::to_string( fpsSpaced ) ).c_str() );
 	}
+    ImGui::End();
+}
+
+void ImGuiManager::PostProcessingWindow( FXAA* pFxaa, MotionBlur* pMotionBlur ) noexcept
+{
+    if ( ImGui::Begin( "Post-Processing", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    {
+        static bool useMotionBlur = pMotionBlur->IsActive();
+        static bool useFXAA = pFxaa->IsActive();
+
+        // Motion blur
+        if ( pFxaa->IsActive() )
+        {
+            useMotionBlur = false;
+            pMotionBlur->SetUseMotionBlur( false );
+        }
+
+        ImGui::Checkbox( "Use Motion Blur?", &useMotionBlur );
+        pMotionBlur->SetUseMotionBlur( useMotionBlur );
+
+        if ( useMotionBlur )
+        {
+            ImGui::Text( "No. Of Samples" );
+            static int numSamples = pMotionBlur->GetNumSamples();
+            if ( ImGui::SliderInt( "##No. Of Samples", &numSamples, 1, 10 ) )
+                pMotionBlur->SetNumSamples( numSamples );
+        }
+
+        ImGui::SameLine();
+
+        // FXAA
+        if ( useMotionBlur )
+        {
+            useFXAA = false;
+            pFxaa->SetUseFXAA( false );
+        }
+
+        ImGui::Checkbox( "Use FXAA?", &useFXAA );
+        pFxaa->SetUseFXAA( useFXAA );
+
+        if ( useFXAA )
+        {
+            ImGui::Text( "Max Span" );
+            static float spanMax = pFxaa->GetSpanMax();
+            if ( ImGui::SliderFloat( "##Max Span", &spanMax, 4.0f, 12.0f, "%1.f" ) )
+                pFxaa->SetSpanMax( spanMax );
+
+            ImGui::Text( "Min Reduce ( 1.0f / [value] )" );
+            static float reduceMinDenom = 128.0f;
+            if ( ImGui::SliderFloat( "##Min Reduce", &reduceMinDenom, 64.0f, 128.0f, "%1.f" ) )
+                pFxaa->SetReduceMin( 1.0f / reduceMinDenom );
+
+            ImGui::Text( "Mul Reduce ( 1.0f / [value] )" );
+            static float reduceMulDenom = 8.0f;
+            ImGui::SliderFloat( "##Mul Reduce", &reduceMulDenom, 4.0f, 12.0f, "%1.f" );
+                pFxaa->SetReduceMul( 1.0f / reduceMulDenom );
+        }
+    }
     ImGui::End();
 }
 

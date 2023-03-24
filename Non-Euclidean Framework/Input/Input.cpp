@@ -16,7 +16,7 @@ void Input::Update( float dt )
 {
     UpdateMouse( dt );
     UpdateKeyboard( dt );
-    if ( m_bCollisions )
+    if ( m_pCamera->CanCollide() )
         UpdateCameraCollisions();
 }
 

@@ -591,28 +591,31 @@ void Level2::SpawnWindows()
 {
     if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
-        ImGui::Text( "Room Type: " );
-        ImGui::SameLine();
-        static int roomGroup = 0;
-        if ( ImGui::RadioButton( "RTT##Room", &roomGroup, 0 ) )
+        static int activeRoomType = 0;
+        static bool selectedRoomType[3];
+        static std::string previewValueRoomType = "RTT";
+        static const char* roomTypeList[]{ "RTT", "Stencil + RTT", "Stencil Masking" };
+        ImGui::Text( "Room Type" );
+        if ( ImGui::BeginCombo( "##Room Type", previewValueRoomType.c_str() ) )
         {
-            m_bRTTRoom = true;
-            m_bStencilRoom = false;
-            m_bStencilRTTRoom = false;
-        }
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "Stencil RTT##Room", &roomGroup, 1 ) )
-        {
-            m_bRTTRoom = false;
-            m_bStencilRoom = false;
-            m_bStencilRTTRoom = true;
-        }
-        ImGui::SameLine();
-        if ( ImGui::RadioButton( "Stencil##Room", &roomGroup, 2 ) )
-        {
-            m_bRTTRoom = false;
-            m_bStencilRoom = true;
-            m_bStencilRTTRoom = false;
+            for ( uint32_t i = 0; i < IM_ARRAYSIZE( roomTypeList ); i++ )
+            {
+                const bool isSelected = i == activeRoomType;
+                if ( ImGui::Selectable( roomTypeList[i], isSelected ) )
+                {
+                    activeRoomType = i;
+                    previewValueRoomType = roomTypeList[i];
+                }
+            }
+
+            switch ( activeRoomType )
+            {
+            case 0: m_bRTTRoom = true; m_bStencilRTTRoom = false; m_bStencilRoom = false; break;
+            case 1: m_bRTTRoom = false; m_bStencilRTTRoom = true; m_bStencilRoom = false; break;
+            case 2: m_bRTTRoom = false; m_bStencilRTTRoom = false; m_bStencilRoom = true; break;
+            }
+
+            ImGui::EndCombo();
         }
 
         ImGui::Text( "Render Depth" );
@@ -627,17 +630,17 @@ void Level2::SpawnWindows()
     }
     ImGui::End();
 
-    if ( ImGui::Begin( "Camera Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    if ( ImGui::Begin( "Stencil Cameras", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         static bool useStaticCamera = m_bStaticCamera;
         ImGui::Checkbox( "Static Camera?", &useStaticCamera );
         m_bStaticCamera = useStaticCamera;
 
-        //static bool useCollisions = m_input.IsCollisionsActive();
-        //ImGui::Checkbox( "World Collisions?", &useCollisions );
-        //useCollisions ?
-        //    m_input.EnableCollisions() :
-        //    m_input.DisableCollisions();
+        static bool useCollisions = m_camera->CanCollide();
+        ImGui::Checkbox( "World Collisions?", &useCollisions );
+        useCollisions ?
+            m_camera->EnableCollisions() :
+            m_camera->DisableCollisions();
 
         static bool updateCamera = false;
         static float fov = m_fStencilFov;

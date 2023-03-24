@@ -10,9 +10,13 @@ class MotionBlur
 public:
 	bool Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext );
 	void UpdateCB();
-	void SpawnControlWindow( bool usingFXAA );
 
 	inline bool IsActive() const noexcept { return m_bUseMotionBlur; }
+	inline void SetUseMotionBlur( bool useMotionBlur ) noexcept { m_bUseMotionBlur = useMotionBlur; }
+
+	inline int GetNumSamples() const noexcept { return m_numSamples; }
+	inline void SetNumSamples( int numSamples ) noexcept { m_numSamples = numSamples; }
+
 	inline ID3D11Buffer* const* GetCB() const noexcept { return m_cbMotionBlur.GetAddressOf(); }
 	inline void SetViewProjInv( const XMMATRIX& matrix ) noexcept { XMStoreFloat4x4( &m_ViewProjInv, matrix ); }
 	inline void SetPrevViewProj( const XMMATRIX& matrix ) noexcept { XMStoreFloat4x4( &m_PrevViewProj, matrix ); }

@@ -65,6 +65,10 @@ public:
 	void MoveUp( FLOAT dt ) noexcept;
 	void MoveDown( FLOAT dt ) noexcept;
 
+	inline bool CanCollide() const noexcept { return m_bCollisions; }
+	inline void EnableCollisions() noexcept { m_bCollisions = true; }
+	inline void DisableCollisions() noexcept { m_bCollisions = false; }
+
 private:
 	void UpdateProjectionValues();
 	void UpdateDirectionVectors();
@@ -77,6 +81,7 @@ private:
 	XMVECTOR vec_forward, vec_left, vec_right, vec_backward;
 	XMVECTOR vec_forward_noY, vec_left_noY, vec_right_noY, vec_backward_noY;
 
+	bool m_bCollisions = true;
 	XMMATRIX view, projection;
 	XMVECTOR posVector, rotVector;
 	XMFLOAT3 position, rotation, cameraTarget;

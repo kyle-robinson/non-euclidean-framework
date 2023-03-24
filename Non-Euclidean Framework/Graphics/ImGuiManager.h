@@ -2,7 +2,8 @@
 #ifndef IMGUIMANAGER_H
 #define IMGUIMANAGER_H
 
-class Input;
+class FXAA;
+class MotionBlur;
 
 /// <summary>
 /// The main manager class for setting up ImGui components.
@@ -16,8 +17,10 @@ public:
 	bool Initialize( HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context ) const noexcept;
 	void BeginRender() const noexcept;
 	void EndRender() const noexcept;
-	void SceneWindow( UINT width, UINT height, ID3D11ShaderResourceView* pTexture, Input* pInput );
+
+	void SceneWindow( UINT width, UINT height, ID3D11ShaderResourceView* pTexture ) noexcept;
 	void InstructionWindow() const noexcept;
+	void PostProcessingWindow( FXAA* pFxaa, MotionBlur* pMotionBlur ) noexcept;
 private:
 	void SetBlackGoldStyle();
 	void SetCustomStyle();

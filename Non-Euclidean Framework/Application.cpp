@@ -112,10 +112,6 @@ void Application::Render()
 
     // Render scene to texture
     graphics.BeginRenderSceneToTexture();
-    //( m_motionBlur.IsActive() || m_fxaa.IsActive() ) ?
-    //    graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB() ) :
-    //    m_postProcessing.Bind( graphics.GetContext(), graphics.GetRenderTarget() );
-
     graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB() );
 
     // Render imgui windows
@@ -123,14 +119,10 @@ void Application::Render()
     {
         m_imgui.BeginRender();
         m_imgui.InstructionWindow();
-        m_imgui.SceneWindow( graphics.GetWidth(), graphics.GetHeight(), graphics.GetRenderTarget()->GetShaderResourceView(), &m_input );
-        SpawnLevelChangerWindow();
+        m_imgui.PostProcessingWindow( &m_fxaa, &m_motionBlur );
+        m_imgui.SceneWindow( graphics.GetWidth(), graphics.GetHeight(), graphics.GetRenderTarget()->GetShaderResourceView() );
         m_stateMachine.SpawnWindows();
-        //m_motionBlur.SpawnControlWindow( m_fxaa.IsActive() );
-        //m_fxaa.SpawnControlWindow( m_motionBlur.IsActive() );
-        //m_postProcessing.SpawnControlWindow(
-        //    m_motionBlur.IsActive(),
-        //    m_fxaa.IsActive() );
+        SpawnLevelChangerWindow();
         m_imgui.EndRender();
     }
 
