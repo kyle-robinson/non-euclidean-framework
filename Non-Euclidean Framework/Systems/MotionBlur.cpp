@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "MotionBlur.h"
-#include <imgui/imgui.h>
 
 bool MotionBlur::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {

@@ -167,3 +167,8 @@ void Level1::Update( const float dt )
     for ( uint32_t i = 0; i < GeometryType::Count; i++ )
         m_geometries[(GeometryType)i].Update( dt );
 }
+
+void Level1::SpawnWindows()
+{
+
+}

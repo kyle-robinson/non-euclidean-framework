@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Mapping.h"
-#include <imgui/imgui.h>
 
 bool Mapping::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
@@ -35,10 +34,10 @@ void Mapping::UpdateCB()
 
 void Mapping::SpawnControlWindow()
 {
-	if ( ImGui::Begin( "Texture Mapping", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+	if ( ImGui::Begin( "Texture", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
 	{
 		// normal & parallax mapping
-		static int activeMappingTechnique = 2;
+		static int activeMappingTechnique = 1;
 		static bool selectedMappingTechnique[3];
 		static std::string previewValueMappingTechnique = "Normal + Parallax Mapping";
 		static const char* mappingList[]{ "None", "Normal Mapping", "Normal + Parallax Mapping" };
@@ -71,6 +70,8 @@ void Mapping::SpawnControlWindow()
 			// parallax depth scale
 			ImGui::NewLine();
 			ImGui::Text( "Height Scale" );
+			ImGui::SameLine();
+			HelpMarker( SLIDER_HINT_TEXT );
 			ImGui::SliderFloat( "##Height Scale", &m_fHeightScale, 0.0f, 1.0f, "%.1f" );
 
 			ImGui::NewLine();

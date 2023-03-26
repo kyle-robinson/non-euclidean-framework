@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "FXAA.h"
-#include <imgui/imgui.h>
 
 bool FXAA::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {

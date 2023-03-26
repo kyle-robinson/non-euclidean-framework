@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Cube.h"
 #include "Camera.h"
-#include <imgui/imgui.h>
 
 Vertex vertices[] =
 {
@@ -162,25 +161,43 @@ void Cube::DrawRTT( ID3D11DeviceContext* pContext )
 
 void Cube::SpawnControlWindow()
 {
-	if ( ImGui::Begin( "Material Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+	if ( ImGui::Begin( "Material", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
 	{
 		ImGui::Text( "Emission Color" );
-		ImGui::SliderFloat4( "##Emission", &m_fEmissive.x, 0.0f, 1.0f, "%.1f" );
+		ImGui::SameLine();
+		HelpMarker( COLOR_PICKER_HINT_TEXT );
+		float emissive[] = { m_fEmissive.x , m_fEmissive.y, m_fEmissive.z, m_fEmissive.w };
+		if ( ImGui::ColorEdit4( "##Emissive", emissive, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
+			m_fEmissive = { emissive[0], emissive[1], emissive[2], emissive[3] };
 		ImGui::NewLine();
 
 		ImGui::Text( "Ambient Color" );
-		ImGui::SliderFloat4( "##Ambient", &m_fAmbient.x, 0.0f, 1.0f, "%.1f" );
+		ImGui::SameLine();
+		HelpMarker( COLOR_PICKER_HINT_TEXT );
+		float ambient[] = { m_fAmbient.x , m_fAmbient.y, m_fAmbient.z, m_fAmbient.w };
+		if ( ImGui::ColorEdit4( "##Ambient", ambient, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
+			m_fAmbient = { ambient[0], ambient[1], ambient[2], ambient[3] };
 		ImGui::NewLine();
 
 		ImGui::Text( "Diffuse Color" );
-		ImGui::SliderFloat4( "##Diffuse", &m_fDiffuse.x, 0.0f, 1.0f, "%.1f" );
+		ImGui::SameLine();
+		HelpMarker( COLOR_PICKER_HINT_TEXT );
+		float diffuse[] = { m_fDiffuse.x , m_fDiffuse.y, m_fDiffuse.z, m_fDiffuse.w };
+		if ( ImGui::ColorEdit4( "##Diffuse", diffuse, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
+			m_fAmbient = { diffuse[0], diffuse[1], diffuse[2], diffuse[3] };
 		ImGui::NewLine();
 
 		ImGui::Text( "Specular Color" );
-		ImGui::SliderFloat4( "##Specular", &m_fSpecular.x, 0.0f, 1.0f, "%.1f" );
+		ImGui::SameLine();
+		HelpMarker( COLOR_PICKER_HINT_TEXT );
+		float specular[] = { m_fSpecular.x , m_fSpecular.y, m_fSpecular.z, m_fSpecular.w };
+		if ( ImGui::ColorEdit4( "##Specular", specular, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
+			m_fAmbient = { specular[0], specular[1], specular[2], specular[3] };
 		ImGui::NewLine();
 
 		ImGui::Text( "Specular Power" );
+		ImGui::SameLine();
+		HelpMarker( SLIDER_HINT_TEXT );
 		ImGui::SliderFloat( "##Spec Power", &m_fSpecularPower, 0.0f, 256.0f, "%1.f" );
 		ImGui::NewLine();
 

@@ -3,6 +3,7 @@
 #define IMGUIMANAGER_H
 
 class FXAA;
+class Camera;
 class MotionBlur;
 
 /// <summary>
@@ -19,10 +20,9 @@ public:
 	void EndRender() const noexcept;
 
 	void SceneWindow( UINT width, UINT height, ID3D11ShaderResourceView* pTexture ) noexcept;
-	void InstructionWindow() const noexcept;
+	void CameraWindow( Camera* pCamera ) const noexcept;
 	void PostProcessingWindow( FXAA* pFxaa, MotionBlur* pMotionBlur ) noexcept;
 private:
-	void SetBlackGoldStyle();
 	void SetCustomStyle();
 };
 

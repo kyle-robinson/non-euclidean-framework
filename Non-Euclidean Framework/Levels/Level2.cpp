@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Level2.h"
-#include <imgui/imgui.h>
 #include <DDSTextureLoader.h>
 #include <dxtk/WICTextureLoader.h>
 
@@ -82,28 +81,10 @@ void Level2::OnCreate()
             m_pColorTextures.emplace( (Color)i, std::move( textureView ) );
         }
 
-        for ( uint32_t i = 0u; i < 6u; i++ )
-        {
-            std::wstring texPath = L"Resources\\Textures\\";
-            switch ( (Side)i )
-            {
-            case Side::FRONT: texPath += L"crate.dds"; break;
-            case Side::BACK: texPath += L"darkdirt.dds"; break;
-            case Side::LEFT: texPath += L"lightdirt.dds"; break;
-            case Side::RIGHT: texPath += L"stone.dds"; break;
-            case Side::TOP: texPath += L"grass.dds"; break;
-            case Side::BOTTOM: texPath += L"snow.dds"; break;
-            }
-            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
-            hr = CreateDDSTextureFromFile( m_gfx->GetDevice(), texPath.c_str(), nullptr, textureView.GetAddressOf() );
-            COM_ERROR_IF_FAILED( hr, "Failed to create 'wall' texture!" );
-            m_pWallTextures.emplace( (Side)i, std::move( textureView ) );
-        }
-
         RENDER_DEPTH = 0u;
 
         // Initialize models
-        if ( !m_objSkysphere.Initialize( "Resources\\Models\\sphere.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) ) return;
+        if ( !m_objSkysphere.Initialize( "Resources\\Models\\light.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) ) return;
         m_objSkysphere.SetInitialScale( 50.0f, 50.0f, 50.0f );
 	}
 	catch ( COMException& exception )
@@ -140,7 +121,7 @@ void Level2::BeginFrame()
 
             // Render RTT room face
             m_gfx->BeginFrameCubeInv( (Side)i_inv, j );
-            Camera camera = m_bStaticCamera ? m_stencilCameras.at( (Side)i_inv ) : *m_camera;
+            Camera camera = m_stencilCameras.at( (Side)i_inv );
 
             m_gfx->UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
@@ -164,7 +145,7 @@ void Level2::BeginFrame()
 
             // Render RTT room face
             m_gfx->BeginFrameCubeInvRecursive( i, j, (Side)k_inv );
-            Camera camera = m_bStaticCamera ? m_stencilCameras.at( (Side)k_inv ) : *m_camera;
+            Camera camera = m_stencilCameras.at( (Side)k_inv );
 
             m_gfx->UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
@@ -418,7 +399,6 @@ void Level2::RenderFrame()
                 if ( m_bUpdateDepth ) return;
 
                 // Recursive stencil walls
-                //for ( uint32_t j = RENDER_DEPTH; j > 0; j-- )
                 for ( uint32_t j = 0u; j < RENDER_DEPTH; j++ )
                 {
                     m_gfx->GetStencilState( (Side)j, Bind::Stencil::Type::MASK )->Bind( context );
@@ -487,7 +467,7 @@ void Level2::RenderFrame()
                             case Side::TOP:    depthCopy.y += 5.0f; rotation.x = -XM_PIDIV2; break;
                             case Side::BOTTOM: depthCopy.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
                             }
-                            context->PSSetShaderResources( 0u, 1u, m_pWallTextures[(Side)l].GetAddressOf() );
+                            context->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
                             m_face.SetPosition( depthCopy );
                             m_face.SetRotation( rotation );
                             m_face.Draw( m_cbMatrices, *m_camera );
@@ -589,7 +569,7 @@ void Level2::Update( const float dt )
 
 void Level2::SpawnWindows()
 {
-    if ( ImGui::Begin( "Rendering Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    if ( ImGui::Begin( "Room Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         static int activeRoomType = 0;
         static bool selectedRoomType[3];
@@ -619,45 +599,38 @@ void Level2::SpawnWindows()
         }
 
         ImGui::Text( "Render Depth" );
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
         static int renderDepth = (int)RENDER_DEPTH;
         ImGui::SliderInt( "##Render Depth", &renderDepth, 0, 5 );
         RENDER_DEPTH = (uint32_t)renderDepth;
 
         ImGui::Text( "Texture Border" );
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
         static float textureBorder = m_fTextureBorder;
         ImGui::SliderFloat( "##Texture Border", &textureBorder, 0.00f, 0.10f, "%.2f" );
         m_fTextureBorder = textureBorder;
     }
     ImGui::End();
 
-    if ( ImGui::Begin( "Stencil Cameras", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    if ( ImGui::Begin( "Stencil Camera", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
-        static bool useStaticCamera = m_bStaticCamera;
-        ImGui::Checkbox( "Static Camera?", &useStaticCamera );
-        m_bStaticCamera = useStaticCamera;
-
-        static bool useCollisions = m_camera->CanCollide();
-        ImGui::Checkbox( "World Collisions?", &useCollisions );
-        useCollisions ?
-            m_camera->EnableCollisions() :
-            m_camera->DisableCollisions();
-
         static bool updateCamera = false;
         static float fov = m_fStencilFov;
         static XMFLOAT2 aspectRatio = m_fStencilAspect;
 
         ImGui::Text( "FOV" );
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
         if ( ImGui::SliderFloat( "##Fov", &fov, 75.0f, 120.0f, "%1.f" ) )
             updateCamera = true;
 
         ImGui::Text( "Aspect Ratio" );
-        ImGui::PushItemWidth( 100.0f );
-        if ( ImGui::SliderFloat( "##Aspect Ratio X", &aspectRatio.x, 1.0f, 16.0f, "%1.f" ) )
-            updateCamera = true;
         ImGui::SameLine();
-        if ( ImGui::SliderFloat( "##Aspect Ratio Y", &aspectRatio.y, 1.0f, 16.0f, "%1.f" ) )
+        HelpMarker( SLIDER_HINT_TEXT );
+        if ( ImGui::SliderFloat2( "##Aspect Ratio", &aspectRatio.x, 1.0f, 16.0f, "%1.f" ) )
             updateCamera = true;
-        ImGui::PopItemWidth();
 
         if ( updateCamera )
         {

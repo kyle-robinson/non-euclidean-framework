@@ -33,21 +33,27 @@ IDI_TUTORIAL1       ICON         "directx.ico"
 // Cursor
 //
 
-IDC_CURSOR1          CURSOR                      "Cursors\\cur116.cur"
+IDC_CURSOR1          CURSOR                      "Cursors\\Sci-Fi\\Ion Normal select.cur"
 
-IDC_CURSOR2          CURSOR                      "Cursors\\cur117.cur"
+IDC_CURSOR2          CURSOR                      "Cursors\\Sci-Fi\\Ion Link select.ani"
 
-IDC_CURSOR3          CURSOR                      "Cursors\\cur118.cur"
+IDC_CURSOR3          CURSOR                      "Cursors\\Sci-Fi\\Ion Alternate select.ani"
 
-IDC_CURSOR4          CURSOR                      "Cursors\\cur119.cur"
+IDC_CURSOR4          CURSOR                      "Cursors\\Sci-Fi\\Ion Precision select.ani"
 
-IDC_CURSOR5          CURSOR                      "Cursors\\cur220.cur"
+IDC_CURSOR5          CURSOR                      "Cursors\\Sci-Fi\\Ion Move.ani"
 
-IDC_CURSOR6          CURSOR                      "Cursors\\cur221.cur"
+IDC_CURSOR6          CURSOR                      "Cursors\\Sci-Fi\\Ion Horizontal resize.ani"
 
-IDC_CURSOR7          CURSOR                      "Cursors\\cur222.cur"
+IDC_CURSOR7          CURSOR                      "Cursors\\Sci-Fi\\Ion Vertical resize.ani"
 
-IDC_CURSOR8          CURSOR                      "Cursors\\cur223.cur"
+IDC_CURSOR8          CURSOR                      "Cursors\\Sci-Fi\\Ion Help select.ani"
+
+IDC_CURSOR9          CURSOR                      "Cursors\\Sci-Fi\\Ion Text select.ani"
+
+IDC_CURSOR10         CURSOR                      "Cursors\\Sci-Fi\\Ion Working in background.ani"
+
+IDC_CURSOR11         CURSOR                      "Cursors\\Sci-Fi\\Ion Unavailable.ani"
 
 
 /////////////////////////////////////////////////////////////////////////////

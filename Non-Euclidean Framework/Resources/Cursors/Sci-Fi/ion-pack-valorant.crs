@@ -1,0 +1,48 @@
+﻿[Arrow]
+Path=Ion Normal select.cur
+
+[Help]
+Path=Ion Help select.ani
+
+[AppStarting]
+Path=Ion Working in background.ani
+
+[Wait]
+Path=Ion Busy.ani
+
+[IBeam]
+Path=Ion Text select.ani
+
+[NWPen]
+Path=Ion Handwriting.ani
+
+[No]
+Path=Ion Unavailable.ani
+
+[SizeNS]
+Path=Ion Vertical resize.ani
+
+[SizeWE]
+Path=Ion Horizontal resize.ani
+
+[SizeNWSE]
+Path=Ion Diagonal resize 1.ani
+
+[SizeNESW]
+Path=Ion Diagonal resize 2.ani
+
+[SizeAll]
+Path=Ion Move.ani
+
+[UpArrow]
+Path=Ion Alternate select.ani
+
+[Hand]
+Path=Ion Link select.ani
+
+[Pin]
+Path=Ion Location select.ani
+
+[Person]
+Path=Ion Person select.ani
+

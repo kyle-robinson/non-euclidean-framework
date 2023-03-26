@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <imgui/imgui.h>
 #include "WindowContainer.h"
 
 WindowContainer::WindowContainer()
@@ -28,10 +27,12 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
 {
     ImGui_ImplWin32_WndProcHandler( hWnd, uMsg, wParam, lParam );
     const auto& imio = ImGui::GetIO();
+    static bool lButtonDown = false;
 
     switch( uMsg )
     {
     case WM_ACTIVATE:
+    {
 		if ( !cursorEnabled )
 		{
 			if ( wParam & WA_ACTIVE )
@@ -40,10 +41,13 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
 				EnableCursor();
 		}
         break;
+    }
 
     case WM_DESTROY:
+    {
         PostQuitMessage( 0 );
         break;
+    }
 
     // Keyboard Events
     case WM_KEYDOWN:
@@ -97,6 +101,8 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
     // Mouse Events
     case WM_MOUSEMOVE:
     {
+        if ( !lButtonDown )
+            SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::NORMAL ) );
         int x = LOWORD( lParam );
 		int y = HIWORD( lParam );
 		const POINTS pt = MAKEPOINTS( lParam );
@@ -137,8 +143,9 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
     }
     case WM_LBUTTONDOWN:
     {
+        lButtonDown = true;
+        SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::LINK ) );
         SetForegroundWindow( renderWindow.GetHWND() );
-		SetCursor( renderWindow.GetCursor( RenderWindow::Color::ORANGE ) );
 		if ( imio.WantCaptureMouse )
 			return 0;
 
@@ -155,7 +162,8 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
     }
     case WM_LBUTTONUP:
     {
-        SetCursor( renderWindow.GetCursor( RenderWindow::Color::BLUE ) );
+        lButtonDown = false;
+        SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::NORMAL ) );
 		if ( imio.WantCaptureMouse )
 			return 0;
 
@@ -245,7 +253,52 @@ LRESULT CALLBACK WindowContainer::WindowProc( HWND hWnd, UINT uMsg, WPARAM wPara
         return DefWindowProc( hWnd, uMsg, wParam, lParam );
     }
     default:
-        return DefWindowProc( hWnd, uMsg, wParam, lParam );
+    {
+        LRESULT result = DefWindowProc( hWnd, uMsg, wParam, lParam );
+        if ( !lButtonDown )
+        {
+            switch ( result )
+            {
+            case HTTOP:
+            case HTBOTTOM:
+            case HTVSCROLL:
+            {
+                SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::VMOVE ) );
+                break;
+            }
+            case HTLEFT:
+            case HTRIGHT:
+            case HTHSCROLL:
+            {
+                SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::HMOVE ) );
+                break;
+            }
+            case HTMINBUTTON:
+            case HTMAXBUTTON:
+            case HTCLOSE:
+            case HTSYSMENU:
+            {
+			    SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::LINK ) );
+			    break;
+		    }
+            case HTSIZE:
+            case HTTOPLEFT:
+            case HTTOPRIGHT:
+            case HTBOTTOMLEFT:
+            case HTBOTTOMRIGHT:
+            {
+                SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::MOVE ) );
+                break;
+            }
+            case HTHELP:
+            {
+                SetCursor( renderWindow.GetCursor( RenderWindow::CursorType::HELP ) );
+                break;
+            }
+            }
+        }
+        return result;
+    }
     }
 
     return 0;

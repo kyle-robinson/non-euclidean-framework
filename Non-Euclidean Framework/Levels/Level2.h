@@ -46,7 +46,6 @@ private:
 	float m_fTextureBorder = 0.05f;
 
 	bool m_bRTTRoom = true;
-	bool m_bStaticCamera = true;
 	bool m_bStencilRoom = false;
 	bool m_bStencilRTTRoom = false;
 	bool m_bUpdateDepth = false;
@@ -58,7 +57,6 @@ private:
 	// Textures
 	enum class Color { Red, Orange, Yellow, Green, Blue, Purple, Count };
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
-	std::map<Side, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_pWallTextures;
 	std::map<Color, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_pColorTextures;
 };
 

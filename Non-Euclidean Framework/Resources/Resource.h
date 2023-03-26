@@ -21,10 +21,13 @@
 #define IDC_CURSOR6				115
 #define IDC_CURSOR7				116
 #define IDC_CURSOR8				117
+#define IDC_CURSOR9				118
+#define IDC_CURSOR10			119
+#define IDC_CURSOR11			120
 #define IDC_MYICON              2
 #define IDC_STATIC              -1
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 

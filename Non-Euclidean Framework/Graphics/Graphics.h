@@ -20,7 +20,6 @@ class Graphics
 public:
 	bool Initialize( HWND hWnd, UINT width, UINT height );
 	void BeginFrame();
-	void BeginFrameCube( Side side, uint32_t index );
 	void BeginFrameCubeInv( Side side, uint32_t index );
 	void BeginFrameCubeInvRecursive( uint32_t depth, uint32_t camera, Side side );
 
@@ -34,7 +33,8 @@ public:
 	void BindRenderTarget();
 	void RenderSceneToTexture(
 		ID3D11Buffer* const* cbMotionBlur,
-		ID3D11Buffer* const* cbFXAA );
+		ID3D11Buffer* const* cbFXAA,
+		bool usingImGui );
 	void EndFrame();
 
 	inline UINT GetWidth() const noexcept { return m_viewWidth; }

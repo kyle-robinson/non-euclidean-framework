@@ -36,6 +36,16 @@ void Input::UpdateMouse( float dt )
                     0.0f
                 );
             }
+
+            HideCursor();
+            DisableImGuiMouse();
+            m_bMovingCursor = true;
+        }
+        else if ( m_bMovingCursor )
+        {
+            ShowCursor();
+            EnableImGuiMouse();
+            m_bMovingCursor = false;
         }
     }
 }
@@ -53,18 +63,12 @@ void Input::UpdateKeyboard( float dt )
 			EnableCursor();
 		else if ( keycode == VK_END )
 			DisableCursor();
+
+        if ( keycode == VK_F1 )
+            m_bEnableImGui = true;
+        else if ( keycode == VK_F2 )
+            m_bEnableImGui = false;
 	}
-
-    // Normalize diagonal movement speed
-	if ( keyboard.KeyIsPressed( 'W' ) && ( keyboard.KeyIsPressed( 'A' ) || keyboard.KeyIsPressed( 'S' ) ) )
-		m_pCamera->SetCameraSpeed( 2.0f );
-	if ( keyboard.KeyIsPressed( 'S' ) && ( keyboard.KeyIsPressed( 'A' ) || keyboard.KeyIsPressed( 'S' ) ) )
-        m_pCamera->SetCameraSpeed( 2.0f );
-
-	if ( keyboard.KeyIsPressed( 'W' ) && ( keyboard.KeyIsPressed( 'D' ) || keyboard.KeyIsPressed( 'S' ) ) )
-        m_pCamera->SetCameraSpeed( 2.0f );
-	if ( keyboard.KeyIsPressed( 'S' ) && ( keyboard.KeyIsPressed( 'D' ) || keyboard.KeyIsPressed( 'S' ) ) )
-        m_pCamera->SetCameraSpeed( 2.0f );
 
     // Camera movement
     if ( keyboard.KeyIsPressed( 'W' ) ) m_pCamera->MoveForward( dt, TRUE );
@@ -73,9 +77,6 @@ void Input::UpdateKeyboard( float dt )
     if ( keyboard.KeyIsPressed( 'D' ) ) m_pCamera->MoveRight( dt, TRUE );
     if ( keyboard.KeyIsPressed( VK_SPACE ) ) m_pCamera->MoveUp( dt );
     if ( keyboard.KeyIsPressed( VK_CONTROL ) ) m_pCamera->MoveDown( dt );
-
-    // Camera speed
-    m_pCamera->SetCameraSpeed( 2.5f );
 }
 
 void Input::UpdateCameraCollisions()

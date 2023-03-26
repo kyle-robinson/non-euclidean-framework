@@ -13,14 +13,17 @@ bool RenderWindow::Initialize( WindowContainer* pWindowContainer, HINSTANCE hIns
 	this->windowClass = windowClass;
 	windowClass_Wide = StringConverter::StringToWide( windowClass );
 
-	cursors.emplace( Color::BLUE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR1 ) );
-	cursors.emplace( Color::RED, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR2 ) );
-	cursors.emplace( Color::GRAY, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR3 ) );
-	cursors.emplace( Color::PURPLE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR4 ) );
-	cursors.emplace( Color::ORANGE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR5 ) );
-	cursors.emplace( Color::YELLOW, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR6 ) );
-	cursors.emplace( Color::GREEN, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR7 ) );
-	cursors.emplace( Color::PINK, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR8 ) );
+	cursors.emplace( CursorType::NORMAL, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR1 ) );
+	cursors.emplace( CursorType::LINK, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR2 ) );
+	cursors.emplace( CursorType::UPARROW, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR3 ) );
+	cursors.emplace( CursorType::PRECISION, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR4 ) );
+	cursors.emplace( CursorType::MOVE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR5 ) );
+	cursors.emplace( CursorType::HMOVE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR6 ) );
+	cursors.emplace( CursorType::VMOVE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR7 ) );
+	cursors.emplace( CursorType::HELP, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR8 ) );
+	cursors.emplace( CursorType::TEXT, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR9 ) );
+	cursors.emplace( CursorType::WAIT, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR10 ) );
+	cursors.emplace( CursorType::UNAVAILABLE, LoadCursor( hInstance, (LPCWSTR)IDC_CURSOR11 ) );
 
 	RegisterWindowClass();
 
@@ -144,8 +147,8 @@ void RenderWindow::RegisterWindowClass() noexcept
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance;
 	wc.hIcon = static_cast<HICON>( LoadImage( hInstance, MAKEINTRESOURCE( IDI_TUTORIAL1 ), IMAGE_ICON, 32, 32, 0 ) );
-    wc.hCursor = cursors[Color::BLUE];
-    wc.hbrBackground = (HBRUSH)( COLOR_WINDOW + 1 );
+    wc.hCursor = cursors[CursorType::NORMAL];
+	wc.hbrBackground = (HBRUSH)( COLOR_WINDOW + 1 );
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = windowClass_Wide.c_str();
 	wc.hIconSm = static_cast< HICON >( LoadImage( hInstance, MAKEINTRESOURCE( IDI_TUTORIAL1 ), IMAGE_ICON, 16, 16, 0 ) );

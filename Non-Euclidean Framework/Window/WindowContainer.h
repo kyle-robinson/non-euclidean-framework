@@ -25,8 +25,8 @@ protected:
 	void EnableImGuiMouse() noexcept;
 	void DisableImGuiMouse() noexcept;
 
-	bool cursorEnabled = true;
 	XMFLOAT2 windowSize;
+	bool cursorEnabled = true;
 
 	RenderWindow renderWindow;
 	Graphics graphics;

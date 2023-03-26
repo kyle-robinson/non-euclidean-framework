@@ -240,7 +240,7 @@ void Graphics::BindRenderTarget()
 	m_pRenderTarget->Bind( m_pContext.Get(), m_pDepthStencil.get(), m_clearColor );
 }
 
-void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA )
+void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Buffer* const* cbFXAA, bool usingImGui )
 {
 	// Render fullscreen texture to new render target
 	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderPP, m_pixelShaderPP );
@@ -249,7 +249,8 @@ void Graphics::RenderSceneToTexture( ID3D11Buffer* const* cbMotionBlur, ID3D11Bu
 	m_quad.SetupBuffers( m_pContext.Get() );
 	m_pContext->PSSetShaderResources( 0u, 1u, m_pRenderTarget->GetShaderResourceViewPtr() );
 	m_pContext->PSSetShaderResources( 1u, 1u, m_pDepthStencil->GetShaderResourceViewPtr() );
-	//Bind::Rasterizer::DrawSolid( m_pContext.Get(), m_quad.GetIndexBuffer().IndexCount() ); // always draw as solid
+	if ( !usingImGui )
+		Bind::Rasterizer::DrawSolid( m_pContext.Get(), m_quad.GetIndexBuffer().IndexCount() ); // always draw as solid
 }
 
 void Graphics::EndFrame()

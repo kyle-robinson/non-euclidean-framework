@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Geometry.h"
 #include "Camera.h"
-#include <imgui/imgui.h>
 #include <dxtk/WICTextureLoader.h>
 
 bool Geometry::CreateCylinder( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )

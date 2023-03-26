@@ -2,7 +2,6 @@
 #include "DepthStencil.h"
 #include "RenderTarget.h"
 #include "PostProcessing.h"
-#include <imgui/imgui.h>
 
 void PostProcessing::Initialize( ID3D11Device* pDevice )
 {
@@ -117,14 +116,26 @@ void PostProcessing::SpawnControlWindow( bool usingMotionBlur, bool usingFXAA )
 				if ( ImGui::RadioButton( "Vertical", &bloomBlurGroup, 1 ) )
 					bloomBlurHorizontal = false;
 
+				ImGui::SameLine();
+				HelpMarker( SLIDER_HINT_TEXT );
 				ImGui::SliderFloat( "Bloom Threshold", &bloomThreshold, 0.0f, 5.0f, "%.1f" );
+
+				ImGui::SameLine();
+				HelpMarker( SLIDER_HINT_TEXT );
 				ImGui::SliderFloat( "Bloom Blur Size", &bloomBlurSize, 0.0f, 5.0f, "%.1f" );
+
+				ImGui::SameLine();
+				HelpMarker( SLIDER_HINT_TEXT );
 				ImGui::SliderFloat( "Bloom Blur Brightness", &bloomBlurBrightness, 0.0f, 5.0f, "%.1f" );
 			}
 
 			// Allow modification of additional parameters when gaussian blur is enabled
 			if ( basicEffect == BasicPostProcess::Effect::GaussianBlur_5x5 )
+			{
+				ImGui::SameLine();
+				HelpMarker( SLIDER_HINT_TEXT );
 				ImGui::SliderFloat( "Gaussian Multiplier", &gaussianMultiplier, 0.0f, 5.0f, "%.1f" );
+			}
 		}
 		else
 		{

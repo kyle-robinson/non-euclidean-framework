@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Application.h"
-#include <imgui/imgui.h>
 
 #include "Level1.h"
 #include "Level2.h"
@@ -112,14 +111,14 @@ void Application::Render()
 
     // Render scene to texture
     graphics.BeginRenderSceneToTexture();
-    graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB() );
+    graphics.RenderSceneToTexture( m_motionBlur.GetCB(), m_fxaa.GetCB(), m_input.IsImGuiEnabled() );
 
     // Render imgui windows
-    if ( m_input.IsCursorEnabled() )
+    if ( m_input.IsImGuiEnabled() )
     {
         m_imgui.BeginRender();
-        m_imgui.InstructionWindow();
-        m_imgui.PostProcessingWindow( &m_fxaa, &m_motionBlur );
+        m_imgui.CameraWindow( &m_camera );
+        //m_imgui.PostProcessingWindow( &m_fxaa, &m_motionBlur );
         m_imgui.SceneWindow( graphics.GetWidth(), graphics.GetHeight(), graphics.GetRenderTarget()->GetShaderResourceView() );
         m_stateMachine.SpawnWindows();
         SpawnLevelChangerWindow();
@@ -140,8 +139,13 @@ void Application::SpawnLevelChangerWindow()
 {
     // Level Editor
     static bool shouldSwitchLevel = false;
-    if ( ImGui::Begin( "Level Editor", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    if ( ImGui::Begin( "Levels", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
+        ImGui::Text( "Active Level: " );
+        ImGui::SameLine();
+        ImGui::TextColored( ImVec4( 1.0f, 0.0f, 0.0f, 1.0f ), m_stateMachine.GetCurrentLevel()->GetLevelName().c_str() );
+        ImGui::NewLine();
+
         static int levelIndex = 0;
         ImGui::Text( "Level List" );
         if ( ImGui::BeginListBox( "##Level List", ImVec2( -FLT_MIN, m_pLevels.size() * ImGui::GetTextLineHeightWithSpacing() * 1.1f ) ) )
@@ -168,11 +172,6 @@ void Application::SpawnLevelChangerWindow()
             }
             ImGui::EndListBox();
         }
-
-        ImGui::NewLine();
-        ImGui::Text( "Active Level: " );
-        ImGui::SameLine();
-        ImGui::TextColored( ImVec4( 1.0f, 0.0f, 0.0f, 1.0f ), m_stateMachine.GetCurrentLevel()->GetLevelName().c_str() );
 
         // Handle level switching
         if ( ImGui::Button( "Switch To" ) && shouldSwitchLevel )

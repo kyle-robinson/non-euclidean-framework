@@ -7,12 +7,14 @@ void Camera::Initialize( const XMFLOAT3& initialPosition, int width, int height 
 	posVector = XMLoadFloat3( &position );
 	rotation = { 0.0f, 0.0f, 0.0f };
 	rotVector = XMLoadFloat3( &rotation );
+	cameraSpeed = 2.5f;
 	UpdateMatrix();
 	SetProjectionValues( 75.0f, static_cast<float>( width ) / static_cast<float>( height ), 0.01f, 100.0f );
 }
 
 void Camera::SetProjectionValues( FLOAT fovDegrees, FLOAT aspectRatio, FLOAT nearZ, FLOAT farZ )
 {
+	this->aspectRatio = aspectRatio;
 	this->fovDegrees = fovDegrees;
 	this->nearZ = nearZ;
 	this->farZ = farZ;
@@ -55,32 +57,32 @@ const XMVECTOR& Camera::GetUpVector() noexcept
 // CAMERA MOVEMENT
 void Camera::MoveForward( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetForwardVector( omitY ) * GetCameraSpeed() * dt );
+	AdjustPosition( GetForwardVector( omitY ) * GetSpeed() * dt );
 }
 
 void Camera::MoveBackward( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetBackwardVector( omitY ) * GetCameraSpeed() * dt );
+	AdjustPosition( GetBackwardVector( omitY ) * GetSpeed() * dt );
 }
 
 void Camera::MoveLeft( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetLeftVector( omitY ) * GetCameraSpeed() * dt );
+	AdjustPosition( GetLeftVector( omitY ) * GetSpeed() * dt );
 }
 
 void Camera::MoveRight( FLOAT dt, BOOL omitY ) noexcept
 {
-	AdjustPosition( GetRightVector( omitY ) * GetCameraSpeed() * dt );
+	AdjustPosition( GetRightVector( omitY ) * GetSpeed() * dt );
 }
 
 void Camera::MoveUp( FLOAT dt ) noexcept
 {
-	AdjustPosition( 0.0f, GetCameraSpeed() * dt, 0.0f );
+	AdjustPosition( 0.0f, GetSpeed() * dt, 0.0f );
 }
 
 void Camera::MoveDown( FLOAT dt ) noexcept
 {
-	AdjustPosition( 0.0f, -GetCameraSpeed() * dt, 0.0f );
+	AdjustPosition( 0.0f, -GetSpeed() * dt, 0.0f );
 }
 
 // CAMERA POSITION

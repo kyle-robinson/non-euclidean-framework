@@ -6,16 +6,19 @@ class WindowContainer;
 class RenderWindow
 {
 public:
-	enum class Color
+	enum class CursorType
 	{
-		BLUE,
-		RED,
-		GRAY,
-		PURPLE,
-		ORANGE,
-		YELLOW,
-		GREEN,
-		PINK
+		NORMAL,
+		LINK,
+		UPARROW,
+		PRECISION,
+		MOVE,
+		HMOVE,
+		VMOVE,
+		HELP,
+		TEXT,
+		WAIT,
+		UNAVAILABLE
 	};
 	bool Initialize(
 		WindowContainer* windowContainer,
@@ -29,7 +32,7 @@ public:
 	HWND GetHWND() const noexcept;
 	~RenderWindow() noexcept;
 
-	inline HCURSOR GetCursor( Color color ) noexcept { return cursors[color]; }
+	inline HCURSOR GetCursor( CursorType type ) noexcept { return cursors[type]; }
 
 private:
 	void RegisterWindowClass() noexcept;
@@ -40,7 +43,7 @@ private:
 	std::string windowClass = "";
 	std::wstring windowClass_Wide = L"";
 	int width, height;
-	std::unordered_map<Color, HCURSOR> cursors;
+	std::unordered_map<CursorType, HCURSOR> cursors;
 };
 
 #endif

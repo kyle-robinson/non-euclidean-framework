@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Light.h"
 #include "Camera.h"
-#include <imgui/imgui.h>
 
 bool Light::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_vertexshader )
 {

@@ -42,7 +42,7 @@ public:
 	void AdjustRotation( FLOAT x, FLOAT y, FLOAT z ) noexcept;
 
 	inline const float& GetAspectRatio() const noexcept { return aspectRatio; }
-	inline const float& GetFoVDegrees() const noexcept { return fovDegrees; }
+	inline const float& GetFovDegrees() const noexcept { return fovDegrees; }
 	inline const float& GetNearZ() const noexcept { return nearZ; }
 	inline const float& GetFarZ() const noexcept { return farZ; }
 
@@ -54,9 +54,9 @@ public:
 	void UpdateMatrix();
 
 	// CAMERA MOVEMENT
-	inline const FLOAT& GetCameraSpeed() const noexcept { return cameraSpeed; };
-	inline void SetCameraSpeed( FLOAT newSpeed ) noexcept { cameraSpeed = newSpeed; };
-	inline void UpdateCameraSpeed( FLOAT updateSpeed ) noexcept { cameraSpeed += updateSpeed; };
+	inline const FLOAT& GetSpeed() const noexcept { return cameraSpeed; };
+	inline void SetSpeed( FLOAT newSpeed ) noexcept { cameraSpeed = newSpeed; };
+	inline void UpdateSpeed( FLOAT updateSpeed ) noexcept { cameraSpeed += updateSpeed; };
 
 	void MoveForward( FLOAT dt, BOOL omitY = true ) noexcept;
 	void MoveBackward( FLOAT dt, BOOL omitY = true ) noexcept;

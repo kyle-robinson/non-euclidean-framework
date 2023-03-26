@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "NonEuclidean.h"
-#include <imgui/imgui.h>
 
 bool NonEuclidean::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
@@ -49,6 +48,8 @@ void NonEuclidean::SpawnControlWindow()
 		if ( m_bUseHyperbolic || m_bUseElliptic )
 		{
 			ImGui::Text( "Curve Scale" );
+			ImGui::SameLine();
+			HelpMarker( SLIDER_HINT_TEXT );
 			ImGui::SliderFloat( "##Curve Scale", &m_fCurveScale, 1.0f, 2.0f, "%.1f" );
 		}
 	}

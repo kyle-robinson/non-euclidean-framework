@@ -23,7 +23,7 @@ public:
 	void OnSwitch() override;
 	void BeginFrame() override {}
 	void RenderFrame() override;
-	void SpawnWindows() override {}
+	void SpawnWindows() override;
 	void Update( const float dt ) override;
 	void CleanUp() override {}
 
