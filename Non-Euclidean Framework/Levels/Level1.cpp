@@ -58,12 +58,12 @@ void Level1::OnCreate()
         {
             switch ( (GeometryType)i )
             {
-            case GeometryType::Cylinder: hr = m_geometries[(GeometryType)i].CreateCylinder( m_gfx->GetDevice(), m_gfx->GetContext() );  break;
-            case GeometryType::Cone: hr = m_geometries[(GeometryType)i].CreateCone( m_gfx->GetDevice(), m_gfx->GetContext() );  break;
-            case GeometryType::Dodecahedron: hr = m_geometries[(GeometryType)i].CreateDodecahedron( m_gfx->GetDevice(), m_gfx->GetContext() );  break;
-            case GeometryType::Icosahedron: hr = m_geometries[(GeometryType)i].CreateIcosahedron( m_gfx->GetDevice(), m_gfx->GetContext() );  break;
-            case GeometryType::Octahedron: hr = m_geometries[(GeometryType)i].CreateOctahedron( m_gfx->GetDevice(), m_gfx->GetContext() );  break;
-            case GeometryType::Teapot: hr = m_geometries[(GeometryType)i].CreateTeapot( m_gfx->GetDevice(), m_gfx->GetContext() );  break;
+            case GeometryType::Cylinder: hr = m_geometries[(GeometryType)i].CreateCylinder( m_gfx->GetDevice(), m_gfx->GetContext() ); break;
+            case GeometryType::Cone: hr = m_geometries[(GeometryType)i].CreateCone( m_gfx->GetDevice(), m_gfx->GetContext() ); break;
+            case GeometryType::Dodecahedron: hr = m_geometries[(GeometryType)i].CreateDodecahedron( m_gfx->GetDevice(), m_gfx->GetContext() ); break;
+            case GeometryType::Icosahedron: hr = m_geometries[(GeometryType)i].CreateIcosahedron( m_gfx->GetDevice(), m_gfx->GetContext() ); break;
+            case GeometryType::Octahedron: hr = m_geometries[(GeometryType)i].CreateOctahedron( m_gfx->GetDevice(), m_gfx->GetContext() ); break;
+            case GeometryType::Teapot: hr = m_geometries[(GeometryType)i].CreateTeapot( m_gfx->GetDevice(), m_gfx->GetContext() ); break;
             }
 			COM_ERROR_IF_FAILED( hr, "Failed to create 'geometry' object!" );
 		}
@@ -99,30 +99,33 @@ void Level1::RenderFrame()
     m_stencilCubeInv.Draw( context, m_cbMatrices, *m_camera );
     m_gfx->GetRasterizerState( Bind::Rasterizer::Type::SOLID )->Bind( context );
 
-    // Order cubes based on distance from camera for rendering
-    std::multimap<float, StencilCube> stencilCubesMap;
-    std::multimap<float, std::vector<int>> randomNums;
-    for ( int i = 0; i < m_stencilCubes.size(); i++ )
+    if ( m_bDrawInOrder )
     {
-        float distToCam = Distance( m_camera->GetPositionFloat3(), m_stencilCubes[i].GetPosition() );
-        stencilCubesMap.emplace( distToCam, m_stencilCubes[i] );
-        randomNums.emplace( distToCam, m_randomNums[i] );
+        // Order cubes based on distance from camera for rendering
+        std::multimap<float, StencilCube> stencilCubesMap;
+        std::multimap<float, std::vector<int>> randomNums;
+        for ( int i = 0; i < m_stencilCubes.size(); i++ )
+        {
+            float distToCam = Distance( m_camera->GetPositionFloat3(), m_stencilCubes[i].GetPosition() );
+            stencilCubesMap.emplace( distToCam, m_stencilCubes[i] );
+            randomNums.emplace( distToCam, m_randomNums[i] );
+        }
+        int it = 0;
+        for ( const auto& cube : stencilCubesMap )
+        {
+            m_stencilCubes[it] = cube.second;
+            it++;
+        }
+        it = 0;
+        for ( const auto& num : randomNums )
+        {
+            m_randomNums[it] = num.second;
+            it++;
+        }
+        // Invert vector to correctly order cubes
+        std::reverse( m_stencilCubes.begin(), m_stencilCubes.end() );
+        std::reverse( m_randomNums.begin(), m_randomNums.end() );
     }
-    int it = 0;
-    for ( const auto& cube : stencilCubesMap )
-    {
-        m_stencilCubes[it] = cube.second;
-        it++;
-    }
-    it = 0;
-    for ( const auto& num : randomNums )
-    {
-        m_randomNums[it] = num.second;
-        it++;
-    }
-    // Invert vector to correctly order cubes
-    std::reverse( m_stencilCubes.begin(), m_stencilCubes.end() );
-    std::reverse( m_randomNums.begin(), m_randomNums.end() );
 
     // Draw center stencil cube
     int stencilIdx = 0;
@@ -170,5 +173,35 @@ void Level1::Update( const float dt )
 
 void Level1::SpawnWindows()
 {
+    if ( ImGui::Begin( "Cubes", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    {
+        ImGui::Checkbox( "Draw in order", &m_bDrawInOrder );
+        if ( !m_bDrawInOrder )
+        {
+            if ( ImGui::TreeNode( "Cube Data" ) )
+            {
+                // Display data on each cube
+                for ( uint32_t i = 0; i < m_stencilCubes.size(); i++ )
+                {
+                    ImGui::Text( "Cube %i Position", i );
+                    ImGui::SameLine();
+                    HelpMarker( SLIDER_HINT_TEXT );
+                    XMFLOAT3 position = m_stencilCubes.at( i ).GetPosition();
+                    if ( ImGui::SliderFloat3( std::string( "##Position" ).append( std::to_string( i ) ).c_str(), &position.x, -4.5f, 4.5f ) )
+                        m_stencilCubes.at( i ).SetPosition( position.x, position.y, position.z );
+                    if ( i != m_stencilCubes.size() - 1 )
+                        ImGui::Separator();
+                }
+                ImGui::TreePop();
+            }
+        }
 
+        ImGui::Text( "Texture Border" );
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
+        static float textureBorder = m_fTextureBorder;
+        ImGui::SliderFloat( "##Texture Border", &textureBorder, 0.00f, 0.10f, "%.2f" );
+        m_fTextureBorder = textureBorder;
+    }
+    ImGui::End();
 }

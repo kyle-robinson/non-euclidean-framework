@@ -33,6 +33,7 @@ private:
 	std::vector<StencilCube> m_stencilCubes;
 	StencilCubeInv m_stencilCubeInv;
 	float m_fTextureBorder = 0.05f;
+	bool m_bDrawInOrder = true;
 
 	enum GeometryType { Cylinder, Cone, Dodecahedron, Icosahedron, Octahedron, Teapot, Count };
 	std::map<GeometryType, Geometry> m_geometries;
