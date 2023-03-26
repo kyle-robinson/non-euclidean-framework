@@ -17,6 +17,8 @@ void Level3::OnCreate()
         COM_ERROR_IF_FAILED( hr, "Failed to create 'light' object!" );
         hr = m_cube.InitializeMesh( m_gfx->GetDevice(), m_gfx->GetContext() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'cube' object!" );
+        hr = m_stencilCubeInv.Initialize( m_gfx->GetContext(), m_gfx->GetDevice() );
+        COM_ERROR_IF_FAILED( hr, "Failed to create 'stencil cube inverse' object!" );
 
         // Initialize systems
         hr = m_mapping.Initialize( m_gfx->GetDevice(), m_gfx->GetContext() );
@@ -27,6 +29,8 @@ void Level3::OnCreate()
         // Initialize textures
         hr = CreateWICTextureFromFile( m_gfx->GetDevice(), L"Resources\\Textures\\light_TEX.jpg", nullptr, m_pTexture.GetAddressOf() );
         COM_ERROR_IF_FAILED( hr, "Failed to create 'diffuse' texture!" );
+        for ( uint32_t i = 0u; i < 6u; i++ )
+            m_stencilCubeInv.SetTexture( (Side)i, m_pTexture.Get() );
 	}
 	catch ( COMException& exception )
 	{
@@ -47,6 +51,11 @@ void Level3::RenderFrame()
     tbData.TextureBorder = m_fTextureBorder;
     m_cbTextureBorder.data = tbData;
     if ( !m_cbTextureBorder.ApplyChanges() ) return;
+
+    m_gfx->UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
+    m_gfx->GetRasterizerState( Bind::Rasterizer::Type::SKYSPHERE )->Bind( context );
+    m_stencilCubeInv.Draw( context, m_cbMatrices, *m_camera );
+    m_gfx->GetRasterizerState( Bind::Rasterizer::Type::SOLID )->Bind( context );
 
     // Update constant buffers
     m_light.UpdateCB( *m_camera );

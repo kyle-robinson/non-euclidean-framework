@@ -7,6 +7,7 @@
 #include "Mapping.h"
 #include "NonEuclidean.h"
 #include "LevelContainer.h"
+#include "StencilCubeInv.h"
 
 /// <summary>
 /// Inherits from Level to render/update objects used in each level.
@@ -35,6 +36,8 @@ private:
 	Light m_light;
 	Mapping m_mapping;
 	NonEuclidean m_nonEuclidean;
+	StencilCubeInv m_stencilCubeInv;
+
 	float m_fTextureBorder = 0.05f;
 	ConstantBuffer<Matrices> m_cbMatrices;
 	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
