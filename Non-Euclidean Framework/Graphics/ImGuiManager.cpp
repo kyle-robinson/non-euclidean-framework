@@ -149,6 +149,7 @@ void ImGuiManager::CameraWindow( Camera* pCamera ) const noexcept
             ImGui::TreePop();
         }
 
+        ImGui::SetNextItemOpen( true, ImGuiCond_Once );
         if ( ImGui::TreeNode( "Controls" ) )
         {
             static bool useCollisions = pCamera->CanCollide();
@@ -166,7 +167,7 @@ void ImGuiManager::CameraWindow( Camera* pCamera ) const noexcept
             ImGui::Text( "Far Plane" );
             ImGui::SameLine();
             HelpMarker( DRAG_HINT_TEXT );
-            if ( ImGui::DragFloat( "##Far Plane", &farPlane, 0.1f, 100.0f, 200.0f ) )
+            if ( ImGui::DragFloat( "##Far Plane", &farPlane, 0.1f, 100.0f, 1000.0f ) )
                 pCamera->SetFarZ( farPlane );
 
             ImGui::Text( "Field of View" );

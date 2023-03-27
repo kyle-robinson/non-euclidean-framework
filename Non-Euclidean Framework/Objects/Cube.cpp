@@ -62,6 +62,7 @@ bool Cube::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pContext 
 	{
 		// Set position to world origin
 		XMStoreFloat4x4( &m_World, XMMatrixIdentity() );
+		m_position = XMFLOAT3( 0.0f, 0.0f, 0.0f );
 
 		// Create vertex buffer
 		HRESULT hr = m_vertexBuffer.Initialize( pDevice, vertices, ARRAYSIZE( vertices ) );
@@ -169,7 +170,6 @@ void Cube::SpawnControlWindow()
 		float emissive[] = { m_fEmissive.x , m_fEmissive.y, m_fEmissive.z, m_fEmissive.w };
 		if ( ImGui::ColorEdit4( "##Emissive", emissive, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
 			m_fEmissive = { emissive[0], emissive[1], emissive[2], emissive[3] };
-		ImGui::NewLine();
 
 		ImGui::Text( "Ambient Color" );
 		ImGui::SameLine();
@@ -177,29 +177,25 @@ void Cube::SpawnControlWindow()
 		float ambient[] = { m_fAmbient.x , m_fAmbient.y, m_fAmbient.z, m_fAmbient.w };
 		if ( ImGui::ColorEdit4( "##Ambient", ambient, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
 			m_fAmbient = { ambient[0], ambient[1], ambient[2], ambient[3] };
-		ImGui::NewLine();
 
 		ImGui::Text( "Diffuse Color" );
 		ImGui::SameLine();
 		HelpMarker( COLOR_PICKER_HINT_TEXT );
 		float diffuse[] = { m_fDiffuse.x , m_fDiffuse.y, m_fDiffuse.z, m_fDiffuse.w };
 		if ( ImGui::ColorEdit4( "##Diffuse", diffuse, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
-			m_fAmbient = { diffuse[0], diffuse[1], diffuse[2], diffuse[3] };
-		ImGui::NewLine();
+			m_fDiffuse = { diffuse[0], diffuse[1], diffuse[2], diffuse[3] };
 
 		ImGui::Text( "Specular Color" );
 		ImGui::SameLine();
 		HelpMarker( COLOR_PICKER_HINT_TEXT );
 		float specular[] = { m_fSpecular.x , m_fSpecular.y, m_fSpecular.z, m_fSpecular.w };
 		if ( ImGui::ColorEdit4( "##Specular", specular, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB ) )
-			m_fAmbient = { specular[0], specular[1], specular[2], specular[3] };
-		ImGui::NewLine();
+			m_fSpecular = { specular[0], specular[1], specular[2], specular[3] };
 
 		ImGui::Text( "Specular Power" );
 		ImGui::SameLine();
 		HelpMarker( SLIDER_HINT_TEXT );
 		ImGui::SliderFloat( "##Spec Power", &m_fSpecularPower, 0.0f, 256.0f, "%1.f" );
-		ImGui::NewLine();
 
 		static bool useTexture = m_bUseTexture;
 		ImGui::Checkbox( "Use Texture?", &useTexture );

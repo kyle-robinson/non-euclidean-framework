@@ -112,6 +112,8 @@ bool Graphics::InitializeShaders()
 		COM_ERROR_IF_FAILED( hr, "Failed to create object vertex shader!" );
 		hr = m_pixelShaderOBJ.Initialize( m_pDevice, L"Resources\\Shaders\\shaderOBJ_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create object pixel shader!" );
+		hr = m_vertexShaderBD.Initialize( m_pDevice, L"Resources\\Shaders\\shaderBD_VS.hlsl", layoutOBJ, ARRAYSIZE( layoutOBJ ) );
+		COM_ERROR_IF_FAILED( hr, "Failed to create object vertex shader!" );
 		hr = m_pixelShaderBD.Initialize( m_pDevice, L"Resources\\Shaders\\shaderBD_PS.hlsl" );
 		COM_ERROR_IF_FAILED( hr, "Failed to create object border pixel shader!" );
 
@@ -197,7 +199,7 @@ void Graphics::UpdateRenderStateSkysphere()
 {
 	// Set render state for skysphere
     m_pRasterizerStates[Bind::Rasterizer::Type::SKYSPHERE]->Bind( m_pContext.Get() );
-	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderOBJ );
+	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderTEX, m_pixelShaderTEX );
 }
 
 void Graphics::UpdateRenderStateCube()
@@ -211,7 +213,7 @@ void Graphics::UpdateRenderStateObject( ID3D11Buffer* const* cbBorder )
 {
 	// Set default render state for objects
     m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
-    Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderBD );
+    Shaders::BindShaders( m_pContext.Get(), m_vertexShaderBD, m_pixelShaderBD );
 	m_pContext->PSSetConstantBuffers( 0u, 1u, cbBorder );
 }
 
@@ -227,6 +229,13 @@ void Graphics::UpdateRenderStateTexture()
 	// Set default render state for objects
     m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
     Shaders::BindShaders( m_pContext.Get(), m_vertexShaderTEX, m_pixelShaderTEX );
+}
+
+void Graphics::UpdateRenderStateModel()
+{
+	// Set default render state for objects
+	m_pRasterizerStates[Bind::Rasterizer::Type::SOLID]->Bind( m_pContext.Get() );
+	Shaders::BindShaders( m_pContext.Get(), m_vertexShaderOBJ, m_pixelShaderOBJ );
 }
 
 void Graphics::BeginRenderSceneToTexture()

@@ -502,5 +502,8 @@
     <FxCompile Include="Resources\Shaders\shaderOBJ_VS_Inv.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\shaderBD_VS.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

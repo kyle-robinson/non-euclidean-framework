@@ -78,35 +78,40 @@ void Light::SpawnControlWindow()
     if ( ImGui::Begin( "Light Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         ImGui::Checkbox( "Attached To Camera?", &m_bAttachedToCamera );
-        ImGui::NewLine();
 
         if ( !m_bAttachedToCamera )
         {
             ImGui::Text( "Position" );
-		    ImGui::SliderFloat4( "##Position", &m_fPosition.x, -10.0f, 10.0f, "%.1f" );
-		    ImGui::NewLine();
+            ImGui::SameLine();
+            HelpMarker( SLIDER_HINT_TEXT );
+		    ImGui::DragFloat4( "##Position", &m_fPosition.x, 0.1f, -10.0f, 10.0f, "%.1f" );
             ImGui::Separator();
-            ImGui::NewLine();
         }
 
         ImGui::Text( "Color" );
-		ImGui::SliderFloat4( "##Color", &m_fColor.x, 0.0f, 1.0f, "%.1f" );
-		ImGui::NewLine();
+        ImGui::SameLine();
+        HelpMarker( COLOR_PICKER_HINT_TEXT );
+		ImGui::ColorEdit4( "##Color", &m_fColor.x, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB );
 
         ImGui::Text( "Constant Attenuation" );
-		ImGui::SliderFloat( "##Constant", &m_fConstantAttenuation, 0.0f, 1.0f, "%.1f" );
-		ImGui::NewLine();
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
+		ImGui::DragFloat( "##Constant", &m_fConstantAttenuation, 0.001f, 0.0f, 1.0f );
 
         ImGui::Text( "Linear Attenuation" );
-		ImGui::SliderFloat( "##Linear", &m_fLinearAttenuation, 0.0f, 1.0f, "%.1f" );
-		ImGui::NewLine();
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
+		ImGui::DragFloat( "##Linear", &m_fLinearAttenuation, 0.001f, 0.0f, 1.0f );
 
         ImGui::Text( "Quadratic Attenuation" );
-		ImGui::SliderFloat( "##Quadratic", &m_fQuadraticAttenuation, 0.0f, 1.0f, "%.1f" );
-		ImGui::NewLine();
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
+		ImGui::DragFloat( "##Quadratic", &m_fQuadraticAttenuation, 0.01f, 0.0f, 1.0f );
 
         ImGui::Text( "Intensity" );
-		ImGui::SliderFloat( "##Intensity", &m_fIntensity, 1.0f, 10.0f, "%1.f" );
+        ImGui::SameLine();
+        HelpMarker( SLIDER_HINT_TEXT );
+		ImGui::DragFloat( "##Intensity", &m_fIntensity, 0.1f, 1.0f, 10.0f );
     }
     ImGui::End();
 }

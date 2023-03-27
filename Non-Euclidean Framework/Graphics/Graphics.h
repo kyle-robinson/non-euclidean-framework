@@ -28,6 +28,7 @@ public:
 	void UpdateRenderStateObject( ID3D11Buffer* const* cbBorder );
 	void UpdateRenderStateObjectInverse();
 	void UpdateRenderStateTexture();
+	void UpdateRenderStateModel();
 
 	void BeginRenderSceneToTexture();
 	void BindRenderTarget();
@@ -77,6 +78,7 @@ private:
 	PixelShader m_pixelShaderOBJ;
 	VertexShader m_vertexShaderOBJInv;
 	PixelShader m_pixelShaderOBJInv;
+	VertexShader m_vertexShaderBD;
 	PixelShader m_pixelShaderBD;
 
 	// Pipeline components

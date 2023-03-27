@@ -50,7 +50,7 @@ void NonEuclidean::SpawnControlWindow()
 			ImGui::Text( "Curve Scale" );
 			ImGui::SameLine();
 			HelpMarker( SLIDER_HINT_TEXT );
-			ImGui::SliderFloat( "##Curve Scale", &m_fCurveScale, 1.0f, 2.0f, "%.1f" );
+			ImGui::DragFloat( "##Curve Scale", &m_fCurveScale, 0.001f, -1.0f, 1.0f );
 		}
 	}
 	ImGui::End();

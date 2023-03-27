@@ -36,6 +36,7 @@ public:
 	inline void SetTexture( ID3D11ShaderResourceView* texture ) noexcept { m_pTextureRTT = texture; }
 	inline ID3D11Buffer* const* GetCB() const noexcept { return m_cbMaterial.GetAddressOf(); }
 	inline void SetPosition( DirectX::XMFLOAT3 position ) noexcept { m_position = position; }
+	inline DirectX::XMFLOAT3 GetPosition() const noexcept { return m_position; }
 	inline XMFLOAT4X4* GetTransform() noexcept { return &m_World; }
 
 private:

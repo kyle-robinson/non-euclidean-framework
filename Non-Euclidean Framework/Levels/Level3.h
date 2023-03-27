@@ -37,8 +37,13 @@ private:
 	Mapping m_mapping;
 	NonEuclidean m_nonEuclidean;
 	StencilCubeInv m_stencilCubeInv;
+	RenderableGameObject m_nanosuit;
 
+	bool m_bUpdatePos = true;
+	bool m_bDrawCube = true;
+	bool m_bDrawNanosuit = false;
 	float m_fTextureBorder = 0.05f;
+
 	ConstantBuffer<Matrices> m_cbMatrices;
 	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
