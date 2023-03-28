@@ -132,7 +132,7 @@ void Level3::SpawnWindows()
             {
                 ImGui::Text( "Position" );
                 ImGui::SameLine();
-                HelpMarker( SLIDER_HINT_TEXT );
+                HelpMarker( DRAG_HINT_TEXT );
                 static XMFLOAT3 cubePosition = m_cube.GetPosition();
                 if ( ImGui::DragFloat3( "##Cube Position", &cubePosition.x, 0.01f, -4.5f, 4.5f ) )
                     m_cube.SetPosition( cubePosition );
@@ -148,21 +148,21 @@ void Level3::SpawnWindows()
             {
                 ImGui::Text( "Position" );
                 ImGui::SameLine();
-                HelpMarker( SLIDER_HINT_TEXT );
+                HelpMarker( DRAG_HINT_TEXT );
                 XMFLOAT3 nanosuitPosition = m_nanosuit.GetPositionFloat3();
                 if ( ImGui::DragFloat3( "##Nanosuit Position", &nanosuitPosition.x, 0.01f, -4.5f, 4.5f ) )
                     m_nanosuit.SetPosition( nanosuitPosition );
 
                 ImGui::Text( "Rotation" );
                 ImGui::SameLine();
-                HelpMarker( SLIDER_HINT_TEXT );
+                HelpMarker( DRAG_HINT_TEXT );
                 XMFLOAT3 nanosuitRotation = m_nanosuit.GetRotationFloat3();
                 if ( ImGui::DragFloat3( "##Nanosuit Rotation", &nanosuitRotation.x, 1.0f, -180.0f, 180.0f ) )
                     m_nanosuit.SetRotation( nanosuitRotation );
 
                 ImGui::Text( "Scale" );
                 ImGui::SameLine();
-                HelpMarker( SLIDER_HINT_TEXT );
+                HelpMarker( DRAG_HINT_TEXT );
                 XMFLOAT3 nanosuitScale = m_nanosuit.GetScaleFloat3();
                 if ( ImGui::DragFloat3( "##Nanosuit Scale", &nanosuitScale.x, 0.01f, 0.1f, 1.0f ) )
                     m_nanosuit.SetScale( nanosuitScale.x, nanosuitScale.y );

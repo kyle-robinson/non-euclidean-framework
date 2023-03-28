@@ -83,7 +83,7 @@ void Light::SpawnControlWindow()
         {
             ImGui::Text( "Position" );
             ImGui::SameLine();
-            HelpMarker( SLIDER_HINT_TEXT );
+            HelpMarker( DRAG_HINT_TEXT );
 		    ImGui::DragFloat4( "##Position", &m_fPosition.x, 0.1f, -10.0f, 10.0f, "%.1f" );
             ImGui::Separator();
         }
@@ -95,22 +95,22 @@ void Light::SpawnControlWindow()
 
         ImGui::Text( "Constant Attenuation" );
         ImGui::SameLine();
-        HelpMarker( SLIDER_HINT_TEXT );
+        HelpMarker( DRAG_HINT_TEXT );
 		ImGui::DragFloat( "##Constant", &m_fConstantAttenuation, 0.001f, 0.0f, 1.0f );
 
         ImGui::Text( "Linear Attenuation" );
         ImGui::SameLine();
-        HelpMarker( SLIDER_HINT_TEXT );
+        HelpMarker( DRAG_HINT_TEXT );
 		ImGui::DragFloat( "##Linear", &m_fLinearAttenuation, 0.001f, 0.0f, 1.0f );
 
         ImGui::Text( "Quadratic Attenuation" );
         ImGui::SameLine();
-        HelpMarker( SLIDER_HINT_TEXT );
+        HelpMarker( DRAG_HINT_TEXT );
 		ImGui::DragFloat( "##Quadratic", &m_fQuadraticAttenuation, 0.01f, 0.0f, 1.0f );
 
         ImGui::Text( "Intensity" );
         ImGui::SameLine();
-        HelpMarker( SLIDER_HINT_TEXT );
+        HelpMarker( DRAG_HINT_TEXT );
 		ImGui::DragFloat( "##Intensity", &m_fIntensity, 0.1f, 1.0f, 10.0f );
     }
     ImGui::End();
