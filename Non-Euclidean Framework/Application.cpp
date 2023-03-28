@@ -4,6 +4,7 @@
 #include "Level1.h"
 #include "Level2.h"
 #include "Level3.h"
+#include "Level4.h"
 
 bool Application::Initialize( HINSTANCE hInstance, int width, int height )
 {
@@ -45,6 +46,11 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
         level3->Initialize( &graphics, &m_imgui, &m_camera );
         m_pLevels.push_back( std::move( level3 ) );
         m_sLevelNames.push_back( m_stateMachine.Add( m_pLevels[2] ) );
+
+        std::shared_ptr<Level4> level4 = std::make_shared<Level4>( "Non-Euclidean Arch" );
+        level4->Initialize( &graphics, &m_imgui, &m_camera );
+        m_pLevels.push_back( std::move( level4 ) );
+        m_sLevelNames.push_back( m_stateMachine.Add( m_pLevels[3] ) );
 
         m_stateMachine.SwitchTo( "Non-Euclidean Cube" );
     }
@@ -144,7 +150,6 @@ void Application::SpawnLevelChangerWindow()
         ImGui::Text( "Active Level: " );
         ImGui::SameLine();
         ImGui::TextColored( ImVec4( 1.0f, 0.0f, 0.0f, 1.0f ), m_stateMachine.GetCurrentLevel()->GetLevelName().c_str() );
-        ImGui::NewLine();
 
         static int levelIndex = 0;
         ImGui::Text( "Level List" );

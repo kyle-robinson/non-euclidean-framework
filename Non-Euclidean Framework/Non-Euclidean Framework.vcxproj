@@ -227,6 +227,7 @@
     <ClInclude Include="Levels\Level1.h" />
     <ClInclude Include="Levels\Level2.h" />
     <ClInclude Include="Levels\Level3.h" />
+    <ClInclude Include="Levels\Level4.h" />
     <ClInclude Include="Levels\LevelContainer.h" />
     <ClInclude Include="Levels\LevelStateMachine.h" />
     <ClInclude Include="Model\Colour.h" />
@@ -313,6 +314,7 @@
     <ClCompile Include="Levels\Level1.cpp" />
     <ClCompile Include="Levels\Level2.cpp" />
     <ClCompile Include="Levels\Level3.cpp" />
+    <ClCompile Include="Levels\Level4.cpp" />
     <ClCompile Include="Levels\LevelStateMachine.cpp" />
     <ClCompile Include="Objects\Geometry.cpp" />
     <ClCompile Include="Objects\StencilCube.cpp" />

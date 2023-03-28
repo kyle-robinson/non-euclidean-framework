@@ -270,6 +270,9 @@
     <ClInclude Include="Levels\Level3.h">
       <Filter>Header Files\Levels</Filter>
     </ClInclude>
+    <ClInclude Include="Levels\Level4.h">
+      <Filter>Header Files\Levels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics\Shaders.cpp">
@@ -415,6 +418,9 @@
     </ClCompile>
     <ClCompile Include="..\External\imgui\imgui_tables.cpp">
       <Filter>Resource Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Levels\Level4.cpp">
+      <Filter>Source Files\Levels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
