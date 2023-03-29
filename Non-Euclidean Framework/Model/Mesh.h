@@ -26,8 +26,8 @@ public:
 		std::vector<VertexOBJ>& vertices,
 		std::vector<WORD>& indices,
 		std::vector<Texture>& textures,
-		const DirectX::XMMATRIX& transformMatrix );
-	const DirectX::XMMATRIX& GetTransformMatrix();
+		const XMMATRIX& transformMatrix );
+	const XMMATRIX& GetTransformMatrix();
 	Mesh( const Mesh& mesh );
 	void Draw();
 private:
@@ -35,7 +35,7 @@ private:
 	IndexBuffer indexBuffer;
 	ID3D11DeviceContext* context;
 	std::vector<Texture> textures;
-	DirectX::XMMATRIX transformMatrix;
+	XMMATRIX transformMatrix;
 };
 
 #endif

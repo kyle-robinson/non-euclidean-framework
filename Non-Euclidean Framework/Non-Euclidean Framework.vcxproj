@@ -223,7 +223,6 @@
     <ClInclude Include="Input\Input.h" />
     <ClInclude Include="Input\Keyboard.h" />
     <ClInclude Include="Input\Mouse.h" />
-    <ClInclude Include="Input\MousePicking.h" />
     <ClInclude Include="Levels\Level1.h" />
     <ClInclude Include="Levels\Level2.h" />
     <ClInclude Include="Levels\Level3.h" />
@@ -249,6 +248,7 @@
     <ClInclude Include="Systems\FXAA.h" />
     <ClInclude Include="Systems\Mapping.h" />
     <ClInclude Include="Systems\MotionBlur.h" />
+    <ClInclude Include="Systems\MousePicking.h" />
     <ClInclude Include="Systems\NonEuclidean.h" />
     <ClInclude Include="Systems\PostProcessing.h" />
     <ClInclude Include="Utility\COMException.h" />
@@ -310,7 +310,6 @@
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
-    <ClCompile Include="Input\MousePicking.cpp" />
     <ClCompile Include="Levels\Level1.cpp" />
     <ClCompile Include="Levels\Level2.cpp" />
     <ClCompile Include="Levels\Level3.cpp" />
@@ -322,6 +321,7 @@
     <ClCompile Include="Systems\FXAA.cpp" />
     <ClCompile Include="Systems\Mapping.cpp" />
     <ClCompile Include="Systems\MotionBlur.cpp" />
+    <ClCompile Include="Systems\MousePicking.cpp" />
     <ClCompile Include="Systems\NonEuclidean.cpp" />
     <ClCompile Include="Systems\PostProcessing.cpp" />
     <ClCompile Include="Utility\ThreadManager.cpp" />

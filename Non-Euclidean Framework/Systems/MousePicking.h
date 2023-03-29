@@ -22,7 +22,7 @@ public:
 	bool TestIntersection( int mouseX, int mouseY, GameObject3D object );
 	inline void SetWidthHight( int Width, int Hight ) { width = Width; height = Hight; }
 private:
-	DirectX::XMMATRIX viewMatrix, projectionMatrix;
+	XMMATRIX viewMatrix, projectionMatrix;
 	int width, height;
 };
 

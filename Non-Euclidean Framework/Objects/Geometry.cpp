@@ -66,7 +66,7 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 		COM_ERROR_IF_FAILED( hr, "Failed to create object index buffer!" );
 
 		// Load and setup textures
-		hr = DirectX::CreateWICTextureFromFile( pDevice, texPath.c_str(), nullptr, m_pTexture.GetAddressOf() );
+		hr = CreateWICTextureFromFile( pDevice, texPath.c_str(), nullptr, m_pTexture.GetAddressOf() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'diffuse' texture!" );
 
 		// Setup constant buffer

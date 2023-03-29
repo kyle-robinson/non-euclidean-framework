@@ -12,7 +12,7 @@ bool StencilCube::Initialize( ID3D11DeviceContext* pContext, ID3D11Device* pDevi
             std::shared_ptr<Face> face = std::make_shared<Face>();
 		    if ( !face->Initialize( pContext, pDevice ) )
                 return false;
-		    face->SetInitialScale( 1.0f, 1.0f, 0.0f );
+		    face->SetInitialScale( 1.0f, 1.0f, 1.0f );
 		    m_pFaces.emplace( (Side)i, std::move( face ) );
             m_pTextures.emplace( (Side)i, nullptr );
         }
@@ -55,12 +55,12 @@ void StencilCube::SetPosition( float x, float y, float z ) noexcept
     {
         switch ( (Side)i )
         {
-        case Side::FRONT: m_pFaces.at( (Side)i )->SetPosition( x, y, z - 1.0f ); break;
-        case Side::BACK: m_pFaces.at( (Side)i )->SetPosition( x, y, z + 1.0f ); break;
-        case Side::LEFT: m_pFaces.at( (Side)i )->SetPosition( x + 1.0f, y, z ); break;
-        case Side::RIGHT: m_pFaces.at( (Side)i )->SetPosition( x - 1.0f, y, z ); break;
-		case Side::TOP: m_pFaces.at( (Side)i )->SetPosition( x, y + 1.0f, z ); break;
-		case Side::BOTTOM: m_pFaces.at( (Side)i )->SetPosition( x, y - 1.0f, z ); break;
+        case Side::FRONT: m_pFaces.at( (Side)i )->SetPosition( x, y, z - m_pFaces.at( (Side)i )->GetScaleFloat3().z ); break;
+        case Side::BACK: m_pFaces.at( (Side)i )->SetPosition( x, y, z + m_pFaces.at( (Side)i )->GetScaleFloat3().z ); break;
+        case Side::LEFT: m_pFaces.at( (Side)i )->SetPosition( x + m_pFaces.at( (Side)i )->GetScaleFloat3().x, y, z); break;
+        case Side::RIGHT: m_pFaces.at( (Side)i )->SetPosition( x - m_pFaces.at( (Side)i )->GetScaleFloat3().x, y, z ); break;
+		case Side::TOP: m_pFaces.at( (Side)i )->SetPosition( x, y + m_pFaces.at( (Side)i )->GetScaleFloat3().y, z ); break;
+		case Side::BOTTOM: m_pFaces.at( (Side)i )->SetPosition( x, y - m_pFaces.at( (Side)i )->GetScaleFloat3().y, z ); break;
         }
     }
 }

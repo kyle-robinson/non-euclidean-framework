@@ -6,7 +6,7 @@ Mesh::Mesh( ID3D11Device* device,
 	std::vector<VertexOBJ>& vertices,
 	std::vector<WORD>& indices,
 	std::vector<Texture>& textures,
-	const DirectX::XMMATRIX& transformMatrix )
+	const XMMATRIX& transformMatrix )
 {
 	try
 	{
@@ -27,7 +27,7 @@ Mesh::Mesh( ID3D11Device* device,
 	}
 }
 
-const DirectX::XMMATRIX& Mesh::GetTransformMatrix()
+const XMMATRIX& Mesh::GetTransformMatrix()
 {
 	return transformMatrix;
 }

@@ -31,10 +31,14 @@ public:
 private:
 	float m_fRoomDepth = 5.0f;
 	float m_fTextureBorder = 0.05f;
+
+	std::vector<StencilCube> m_archCubes;
 	StencilCube m_stencilCube;
 	StencilCubeInv m_stencilCubeInv;
+
 	ConstantBuffer<Matrices> m_cbMatrices;
 	ConstantBuffer<TextureBorder_CB> m_cbTextureBorder;
+
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pWallTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_pArchTexture;

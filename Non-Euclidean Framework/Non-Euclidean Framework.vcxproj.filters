@@ -150,9 +150,6 @@
     <ClInclude Include="Input\Mouse.h">
       <Filter>Header Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Input\MousePicking.h">
-      <Filter>Header Files\Input</Filter>
-    </ClInclude>
     <ClInclude Include="Model\Colour.h">
       <Filter>Header Files\Model</Filter>
     </ClInclude>
@@ -273,6 +270,9 @@
     <ClInclude Include="Levels\Level4.h">
       <Filter>Header Files\Levels</Filter>
     </ClInclude>
+    <ClInclude Include="Systems\MousePicking.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graphics\Shaders.cpp">
@@ -309,9 +309,6 @@
       <Filter>Source Files\Input</Filter>
     </ClCompile>
     <ClCompile Include="Input\Mouse.cpp">
-      <Filter>Source Files\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Input\MousePicking.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
     <ClCompile Include="Model\Colour.cpp">
@@ -421,6 +418,9 @@
     </ClCompile>
     <ClCompile Include="Levels\Level4.cpp">
       <Filter>Source Files\Levels</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\MousePicking.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

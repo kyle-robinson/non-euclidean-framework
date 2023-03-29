@@ -19,7 +19,7 @@ public:
 	inline ID3D11Buffer* const* GetCB() const noexcept { return m_cbLight.GetAddressOf(); }
 private:
 	XMFLOAT4 m_fPosition = { 0.0f, 0.0f, 0.0f, 1.0f };
-	XMFLOAT4 m_fColor = XMFLOAT4( DirectX::Colors::White );
+	XMFLOAT4 m_fColor = XMFLOAT4( Colors::White );
 
 	FLOAT m_fSpotAngle = 45.0f;
 	FLOAT m_fConstantAttenuation = 1.0f;

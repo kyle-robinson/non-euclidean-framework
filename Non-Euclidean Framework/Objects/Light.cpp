@@ -44,7 +44,7 @@ void Light::UpdateCB( Camera& camera )
     light.Enabled = TRUE;
     light.LightType = PointLight;
     light.Color = m_fColor;
-    light.SpotAngle = DirectX::XMConvertToRadians( m_fSpotAngle );
+    light.SpotAngle = XMConvertToRadians( m_fSpotAngle );
     light.ConstantAttenuation = m_fConstantAttenuation;
     light.LinearAttenuation = m_fLinearAttenuation;
     light.QuadraticAttenuation = m_fQuadraticAttenuation;
@@ -58,14 +58,14 @@ void Light::UpdateCB( Camera& camera )
     // Update model position
     m_objLight.SetPosition( XMFLOAT3( m_fPosition.x, m_fPosition.y, m_fPosition.z ) );
 
-    DirectX::XMVECTOR lightDirection = DirectX::XMVectorSet(
+    XMVECTOR lightDirection = XMVectorSet(
         camera.GetCameraTarget().x - m_fPosition.x,
         camera.GetCameraTarget().y - m_fPosition.y,
         camera.GetCameraTarget().z - m_fPosition.z,
         0.0f
     );
-    lightDirection = DirectX::XMVector3Normalize( lightDirection );
-    DirectX::XMStoreFloat4( &light.Direction, lightDirection );
+    lightDirection = XMVector3Normalize( lightDirection );
+    XMStoreFloat4( &light.Direction, lightDirection );
 
     // Add to constant buffer
     m_cbLight.data.EyePosition = cameraPosition;
@@ -75,7 +75,7 @@ void Light::UpdateCB( Camera& camera )
 
 void Light::SpawnControlWindow()
 {
-    if ( ImGui::Begin( "Light Data", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
+    if ( ImGui::Begin( "Light", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
         ImGui::Checkbox( "Attached To Camera?", &m_bAttachedToCamera );
 
