@@ -49,6 +49,7 @@ private:
 	bool m_bStencilRoom = false;
 	bool m_bStencilRTTRoom = false;
 	bool m_bUpdateDepth = false;
+	bool m_bUpdateRoom = false;
 
 	// Constant Buffers
 	ConstantBuffer<Matrices> m_cbMatrices;

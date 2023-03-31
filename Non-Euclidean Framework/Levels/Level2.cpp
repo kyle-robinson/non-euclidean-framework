@@ -160,7 +160,7 @@ void Level2::BeginFrame()
 #pragma endregion
 
 #pragma region RTT_GENERATION
-    if ( !m_bStencilRoom )
+    if ( !m_bStencilRoom && !m_bUpdateRoom )
     {
         // Generate inverse cube geometry and render targets
         for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
@@ -175,6 +175,7 @@ void Level2::BeginFrame()
                     for ( uint32_t k = 0u; k < 6u; ++k ) // determine cube side
                         RenderCubeInvRecursiveStencils( i, j, k );
         }
+        m_bUpdateRoom = true;
     }
 #pragma endregion
 }
@@ -590,8 +591,8 @@ void Level2::SpawnWindows()
 
             switch ( activeRoomType )
             {
-            case 0: m_bRTTRoom = true; m_bStencilRTTRoom = false; m_bStencilRoom = false; break;
-            case 1: m_bRTTRoom = false; m_bStencilRTTRoom = true; m_bStencilRoom = false; break;
+            case 0: m_bRTTRoom = true; m_bStencilRTTRoom = false; m_bStencilRoom = false; m_bUpdateRoom = false; break;
+            case 1: m_bRTTRoom = false; m_bStencilRTTRoom = true; m_bStencilRoom = false; m_bUpdateRoom = false; break;
             case 2: m_bRTTRoom = false; m_bStencilRTTRoom = false; m_bStencilRoom = true; break;
             }
 
@@ -602,7 +603,8 @@ void Level2::SpawnWindows()
         ImGui::SameLine();
         HelpMarker( SLIDER_HINT_TEXT );
         static int renderDepth = (int)RENDER_DEPTH;
-        ImGui::SliderInt( "##Render Depth", &renderDepth, 0, 5 );
+        if ( ImGui::SliderInt( "##Render Depth", &renderDepth, 0, 5 ) )
+            m_bUpdateRoom = false;
         RENDER_DEPTH = (uint32_t)renderDepth;
 
         ImGui::Text( "Texture Border" );
