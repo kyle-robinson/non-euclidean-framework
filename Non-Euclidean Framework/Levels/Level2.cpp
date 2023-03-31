@@ -160,7 +160,9 @@ void Level2::BeginFrame()
 #pragma endregion
 
 #pragma region RTT_GENERATION
-    if ( !m_bStencilRoom && !m_bUpdateRoom )
+    static int frameCount = 0;
+    static bool firstTime = true;
+    if ( ( !m_bStencilRoom && !m_bUpdateRoom ) || firstTime )
     {
         // Generate inverse cube geometry and render targets
         for ( uint32_t i = 0u; i < CAMERA_COUNT; ++i )
@@ -176,6 +178,12 @@ void Level2::BeginFrame()
                         RenderCubeInvRecursiveStencils( i, j, k );
         }
         m_bUpdateRoom = true;
+        
+        // Hack: Need 2 frames to pass to properly render colour cubes on 1st load of the scene
+        if ( firstTime )
+            frameCount++;
+        if ( frameCount == 2 )
+            firstTime = false;
     }
 #pragma endregion
 }
