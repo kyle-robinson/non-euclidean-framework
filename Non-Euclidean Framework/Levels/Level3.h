@@ -38,9 +38,11 @@ private:
 	NonEuclidean m_nonEuclidean;
 	StencilCubeInv m_stencilCubeInv;
 	RenderableGameObject m_nanosuit;
+	RenderableGameObject m_goblin;
 
 	bool m_bUpdatePos = true;
 	bool m_bDrawCube = true;
+	bool m_bDrawGoblin = false;
 	bool m_bDrawNanosuit = false;
 	float m_fTextureBorder = 0.05f;
 

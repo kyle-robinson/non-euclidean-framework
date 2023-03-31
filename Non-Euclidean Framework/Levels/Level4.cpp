@@ -174,10 +174,10 @@ void Level4::SpawnWindows()
 {
     if ( ImGui::Begin( "Arch", FALSE, ImGuiWindowFlags_AlwaysAutoResize ) )
     {
-         ImGui::Text( "Room Depth" );
+        ImGui::Text( "Room Depth" );
         ImGui::SameLine();
         HelpMarker( DRAG_HINT_TEXT );
-        ImGui::DragFloat( "##Room Depth", &m_fRoomDepth, 0.1f, 5.0f, 20.0f );
+        ImGui::DragFloat( "##Room Depth", &m_fRoomDepth, 0.1f, 5.0f, 50.0f );
     }
     ImGui::End();
 }

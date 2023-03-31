@@ -35,8 +35,11 @@ void Level3::OnCreate()
         // Initialize models
         if ( !m_nanosuit.Initialize( "Resources\\Models\\Nanosuit\\nanosuit.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) )
             return;
-        m_nanosuit.SetInitialPosition( 0.0f, -4.5f, 0.0f );
-        m_nanosuit.SetInitialScale( 0.5f, 0.5f, 0.5f );
+        m_nanosuit.SetInitialPosition( 0.0f, -2.25f, 0.0f );
+        m_nanosuit.SetInitialScale( 0.25f, 0.25f, 0.25f );
+        if ( !m_goblin.Initialize( "Resources\\Models\\Goblin\\GoblinX.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) )
+            return;
+        m_goblin.SetInitialScale( 1.0f, 1.0f, 1.0f );
 	}
 	catch ( COMException& exception )
 	{
@@ -82,14 +85,17 @@ void Level3::RenderFrame()
         context->PSSetConstantBuffers( 3u, 1u, m_nonEuclidean.GetCB() );
         m_cube.Draw( context );
     }
-    if ( m_bDrawNanosuit )
+    if ( m_bDrawNanosuit || m_bDrawGoblin )
     {
         m_gfx->UpdateRenderStateModel();
         context->VSSetConstantBuffers( 1u, 1u, m_nonEuclidean.GetCB() );
         context->PSSetConstantBuffers( 0u, 1u, m_cube.GetCB() );
         context->PSSetConstantBuffers( 1u, 1u, m_light.GetCB() );
         context->PSSetConstantBuffers( 3u, 1u, m_nonEuclidean.GetCB() );
-        m_nanosuit.Draw( m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix() );
+        if ( m_bDrawNanosuit )
+            m_nanosuit.Draw( m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix() );
+        if ( m_bDrawGoblin )
+            m_goblin.Draw( m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix() );
     }
 
     m_gfx->UpdateRenderStateTexture();
@@ -166,6 +172,36 @@ void Level3::SpawnWindows()
                 XMFLOAT3 nanosuitScale = m_nanosuit.GetScaleFloat3();
                 if ( ImGui::DragFloat3( "##Nanosuit Scale", &nanosuitScale.x, 0.01f, 0.1f, 1.0f ) )
                     m_nanosuit.SetScale( nanosuitScale.x, nanosuitScale.y );
+
+                ImGui::TreePop();
+            }
+        }
+
+        ImGui::Checkbox( "Spawn Goblin?", &m_bDrawGoblin );
+        if ( m_bDrawGoblin )
+        {
+            if ( ImGui::TreeNode( "Goblin Data" ) )
+            {
+                ImGui::Text( "Position" );
+                ImGui::SameLine();
+                HelpMarker( DRAG_HINT_TEXT );
+                XMFLOAT3 goblinPosition = m_goblin.GetPositionFloat3();
+                if ( ImGui::DragFloat3( "##Goblin Position", &goblinPosition.x, 0.01f, -4.5f, 4.5f ) )
+                    m_goblin.SetPosition( goblinPosition );
+
+                ImGui::Text( "Rotation" );
+                ImGui::SameLine();
+                HelpMarker( DRAG_HINT_TEXT );
+                XMFLOAT3 goblinRotation = m_goblin.GetRotationFloat3();
+                if ( ImGui::DragFloat3( "##Goblin Rotation", &goblinRotation.x, 1.0f, -180.0f, 180.0f ) )
+                    m_goblin.SetRotation( goblinRotation );
+
+                ImGui::Text( "Scale" );
+                ImGui::SameLine();
+                HelpMarker( DRAG_HINT_TEXT );
+                XMFLOAT3 goblinScale = m_goblin.GetScaleFloat3();
+                if ( ImGui::DragFloat3( "##Goblin Scale", &goblinScale.x, 0.01f, 0.1f, 1.0f ) )
+                    m_goblin.SetScale( goblinScale.x, goblinScale.y );
 
                 ImGui::TreePop();
             }
