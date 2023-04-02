@@ -8,10 +8,15 @@ class Camera;
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "ConstantBuffer.h"
+#if _x64
 #include "RenderableGameObject.h"
+#endif
 #include <dxtk/GeometricPrimitive.h>
 
-class Geometry : public RenderableGameObject
+class Geometry
+#if _x64
+	: public RenderableGameObject
+#endif
 {
 public:
 	bool CreateCylinder( ID3D11Device* pDevice, ID3D11DeviceContext* pContext );

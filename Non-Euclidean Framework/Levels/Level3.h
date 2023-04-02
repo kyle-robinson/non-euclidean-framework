@@ -37,13 +37,17 @@ private:
 	Mapping m_mapping;
 	NonEuclidean m_nonEuclidean;
 	StencilCubeInv m_stencilCubeInv;
+#if _x64
 	RenderableGameObject m_nanosuit;
 	RenderableGameObject m_goblin;
+#endif
 
 	bool m_bUpdatePos = true;
 	bool m_bDrawCube = true;
+#if _x64
 	bool m_bDrawGoblin = false;
 	bool m_bDrawNanosuit = false;
+#endif
 	float m_fTextureBorder = 0.05f;
 
 	ConstantBuffer<Matrices> m_cbMatrices;

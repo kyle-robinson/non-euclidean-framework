@@ -82,6 +82,7 @@ void Level4::RenderFrame()
     m_cbTextureBorder.data = tbData;
     if ( !m_cbTextureBorder.ApplyChanges() ) return;
 
+#if _x64
     // Reset stencil inverse room properties
     m_stencilCubeInv.GetFaces().at( Side::FRONT )->SetPosition( 0.0f, 0.0f, 5.0f );
     m_stencilCubeInv.GetFaces().at( Side::BACK )->SetPosition( 0.0f, 0.0f, -5.0f );
@@ -89,6 +90,7 @@ void Level4::RenderFrame()
     m_stencilCubeInv.GetFaces().at( Side::RIGHT )->SetScale( 5.0f, 5.0f, 1.0f );
     m_stencilCubeInv.GetFaces().at( Side::TOP )->SetScale( 5.0f, 5.0f, 1.0f );
     m_stencilCubeInv.GetFaces().at( Side::BOTTOM )->SetScale( 5.0f, 5.0f, 1.0f );
+#endif
 
     // Draw stencil inverse cube
     m_gfx->UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
@@ -108,6 +110,7 @@ void Level4::RenderFrame()
         m_archCubes.at( i ).Draw( context, m_cbMatrices, *m_camera );
     }
 
+#if _x64
     // Reset cube properties
     m_stencilCube.GetFace( Side::FRONT )->SetScale( 1.0f, 2.5f, 1.0f );
     m_stencilCube.GetFace( Side::FRONT )->SetPosition( 0.0f, 0.0f, -0.5f );
@@ -119,6 +122,7 @@ void Level4::RenderFrame()
     m_stencilCube.GetFace( Side::TOP )->SetPosition( 0.0f, 2.5f, 0.0f );
     m_stencilCube.GetFace( Side::BOTTOM )->SetScale( 1.0f, 0.5f, 1.0f );
     m_stencilCube.GetFace( Side::BOTTOM )->SetPosition( 0.0f, -2.5f, 0.0f );
+#endif
 
     // Draw arch walls
     for ( uint32_t i = 0u; i < 6u; i++ )
@@ -146,12 +150,14 @@ void Level4::RenderFrame()
             // Draw room
             m_gfx->GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Bind( context );
             context->PSSetShaderResources( 0u, 1u, m_pWallTexture.GetAddressOf() );
+#if _x64
             m_stencilCubeInv.GetFaces().at( Side::FRONT )->SetPosition( 0.0f, 0.0f, m_fRoomDepth );
             m_stencilCubeInv.GetFaces().at( Side::BACK )->SetPosition( 0.0f, 0.0f, -m_fRoomDepth );
             m_stencilCubeInv.GetFaces().at( Side::LEFT )->SetScale( m_fRoomDepth, 5.0f, 1.0f );
             m_stencilCubeInv.GetFaces().at( Side::RIGHT )->SetScale( m_fRoomDepth, 5.0f, 1.0f );
             m_stencilCubeInv.GetFaces().at( Side::TOP )->SetScale( 5.0f, m_fRoomDepth, 1.0f );
             m_stencilCubeInv.GetFaces().at( Side::BOTTOM )->SetScale( 5.0f, m_fRoomDepth, 1.0f );
+#endif
             for ( uint32_t j = 0u; j < 6u; j++ )
                 m_stencilCubeInv.SetTexture( (Side)j, m_pWallTexture.Get() );
             m_stencilCubeInv.Draw( context, m_cbMatrices, *m_camera );

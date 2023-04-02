@@ -25,6 +25,9 @@ bool Application::Initialize( HINSTANCE hInstance, int width, int height )
             return false;
 
         // Initialize systems
+#ifndef _x64
+        m_textRenderer.Initialize( graphics.GetDevice(), graphics.GetContext() );
+#endif
         m_postProcessing.Initialize( graphics.GetDevice() );
         HRESULT hr = m_motionBlur.Initialize( graphics.GetDevice(), graphics.GetContext() );
 	    COM_ERROR_IF_FAILED( hr, "Failed to create 'motion blur' system!" );
@@ -103,6 +106,12 @@ void Application::Render()
 
     // Render current level
     m_stateMachine.Render();
+
+#ifndef _x64
+    // Render text
+    m_textRenderer.RenderString( "[x86 ERROR] Assimp lib only available in x64!",
+        XMFLOAT2( graphics.GetWidth() / 3.0f, graphics.GetHeight() / 2.0f ), Colors::Red, true );
+#endif
 
 #pragma region POST-PROCESSING
     // Setup motion blur

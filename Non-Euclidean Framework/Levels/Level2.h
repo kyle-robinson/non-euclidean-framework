@@ -7,7 +7,9 @@
 #include "StencilCube.h"
 #include "StencilCubeInv.h"
 #include "LevelContainer.h"
+#if _x64
 #include "RenderableGameObject.h"
+#endif
 
 /// <summary>
 /// Inherits from Level to render/update objects used in each level.
@@ -38,7 +40,9 @@ private:
 	StencilCubeInv m_stencilCubeInv; // inner room views
 	std::unordered_map<Side, Camera> m_stencilCameras; // camera views
 	std::vector<StencilCubeInv> m_stencilCubesInvRecursive; // room recursions
+#if _x64
 	RenderableGameObject m_objSkysphere;
+#endif
 
 	// Scene Data
 	XMFLOAT2 m_fStencilAspect;

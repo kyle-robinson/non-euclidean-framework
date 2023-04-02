@@ -5,14 +5,16 @@
 class Camera;
 #include "structures.h"
 #include "ConstantBuffer.h"
+#if _x64
 #include "RenderableGameObject.h"
+#endif
 
 class Light
 {
 public:
 	bool Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_vertexshader );
 	void Draw( const XMMATRIX& view, const XMMATRIX& projection );
-	
+
 	void UpdateCB( Camera& camera );
 	void SpawnControlWindow();
 
@@ -27,7 +29,9 @@ private:
 	FLOAT m_fQuadraticAttenuation = 1.0f;
 	FLOAT m_fIntensity = 4.0f;
 
+#if _x64
 	RenderableGameObject m_objLight;
+#endif
 	bool m_bAttachedToCamera = true;
 	ConstantBuffer<Light_CB> m_cbLight;
 };

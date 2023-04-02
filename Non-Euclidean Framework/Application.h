@@ -15,6 +15,9 @@
 #include "PostProcessing.h"
 #include "WindowContainer.h"
 #include "LevelStateMachine.h"
+#ifndef _x64
+#include "TextRenderer.h"
+#endif
 
 class Application : public WindowContainer
 {
@@ -31,6 +34,9 @@ private:
 	// Scene
 	Camera m_camera;
 	ImGuiManager m_imgui;
+#ifndef _x64
+	TextRenderer m_textRenderer;
+#endif
 
 	// Levels
 	int m_iActiveLevelIdx = 0;

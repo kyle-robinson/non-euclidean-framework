@@ -6,7 +6,9 @@
 bool Geometry::CreateCylinder( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
 	// Create geometry
+#if _x64
 	SetPosition( XMFLOAT3( 0.0f, 0.0f, 5.0f ) );
+#endif
 	GeometricPrimitive::CreateCylinder( vertices, indices );
 	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\red.jpg" );
 }
@@ -14,7 +16,9 @@ bool Geometry::CreateCylinder( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 bool Geometry::CreateCone( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
 	// Create geometry
+#if _x64
 	SetPosition( XMFLOAT3( 0.0f, 0.0f, -5.0f ) );
+#endif
 	GeometricPrimitive::CreateCone( vertices, indices );
 	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\orange.png" );
 }
@@ -22,7 +26,9 @@ bool Geometry::CreateCone( ID3D11Device* pDevice, ID3D11DeviceContext* pContext 
 bool Geometry::CreateDodecahedron( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
 	// Create geometry
+#if _x64
 	SetPosition( XMFLOAT3( -5.0f, 0.0f, 0.0f ) );
+#endif
 	GeometricPrimitive::CreateDodecahedron( vertices, indices );
 	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\yellow.png" );
 }
@@ -30,7 +36,9 @@ bool Geometry::CreateDodecahedron( ID3D11Device* pDevice, ID3D11DeviceContext* p
 bool Geometry::CreateIcosahedron( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
 	// Create geometry
+#if _x64
 	SetPosition( XMFLOAT3( 5.0f, 0.0f, 0.0f ) );
+#endif
 	GeometricPrimitive::CreateIcosahedron( vertices, indices );
 	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\green.png" );
 }
@@ -38,7 +46,9 @@ bool Geometry::CreateIcosahedron( ID3D11Device* pDevice, ID3D11DeviceContext* pC
 bool Geometry::CreateOctahedron( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
 	// Create geometry
+#if _x64
 	SetPosition( XMFLOAT3( 0.0f, -5.0f, 0.0f ) );
+#endif
 	GeometricPrimitive::CreateOctahedron( vertices, indices );
 	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\blue.png" );
 }
@@ -46,7 +56,9 @@ bool Geometry::CreateOctahedron( ID3D11Device* pDevice, ID3D11DeviceContext* pCo
 bool Geometry::CreateTeapot( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
 	// Create geometry
+#if _x64
 	SetPosition( XMFLOAT3( 0.0f, 5.0f, 0.0f ) );
+#endif
 	GeometricPrimitive::CreateTeapot( vertices, indices );
 	return InitializeMesh( pDevice, pContext, L"Resources\\Textures\\purple.jpg" );
 }
@@ -57,7 +69,9 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 	{
 		// Set position to world origin
 		//XMStoreFloat4x4( &m_World, XMMatrixIdentity() );
+#if _x64
 		worldMatrix = XMMatrixIdentity();
+#endif
 
 		HRESULT hr = m_vertexBuffer.Initialize( pDevice, &vertices[0], vertices.size() );
 		COM_ERROR_IF_FAILED( hr, "Failed to create object vertex buffer!" );
@@ -73,10 +87,12 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 		hr = m_cbMaterial.Initialize( pDevice, pContext );
 		COM_ERROR_IF_FAILED( hr, "Failed to create 'Material' constant buffer!" );
 
+#if _x64
 		SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
 		SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
 		SetScale( 1.0f, 1.0f );
 		UpdateMatrix();
+#endif
 	}
 	catch ( COMException& exception )
 	{
@@ -89,12 +105,16 @@ bool Geometry::InitializeMesh( ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 
 void Geometry::Update( float dt )
 {
+#if _x64
 	AdjustRotation( dt, 0.0f, dt );
+#endif
 }
 
 void Geometry::UpdateBuffers( ID3D11DeviceContext* pContext, ConstantBuffer<Matrices>& cb_vs_matrices, Camera& pCamera )
 {
+#if _x64
 	cb_vs_matrices.data.mWorld = XMMatrixTranspose( worldMatrix );
+#endif
 	cb_vs_matrices.data.mView = XMMatrixTranspose( pCamera.GetViewMatrix() );
 	cb_vs_matrices.data.mProjection = XMMatrixTranspose( pCamera.GetProjectionMatrix() );
 	if ( !cb_vs_matrices.ApplyChanges() ) return;

@@ -147,7 +147,9 @@ void Level1::RenderFrame()
             m_gfx->UpdateRenderStateObjectInverse();
             int random = randomNums.front();
             randomNums.pop();
+#if _x64
             m_geometries[(GeometryType)random].SetPosition( m_stencilCubes[i].GetPosition() );
+#endif
             m_geometries[(GeometryType)random].UpdateBuffers( context, m_cbMatrices, *m_camera );
             m_geometries[(GeometryType)random].Draw( context );
 

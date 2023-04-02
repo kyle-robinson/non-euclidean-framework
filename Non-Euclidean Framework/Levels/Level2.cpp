@@ -83,9 +83,11 @@ void Level2::OnCreate()
 
         RENDER_DEPTH = 0u;
 
+#if _x64
         // Initialize models
         if ( !m_objSkysphere.Initialize( "Resources\\Models\\light.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) ) return;
         m_objSkysphere.SetInitialScale( 50.0f, 50.0f, 50.0f );
+#endif
 	}
 	catch ( COMException& exception )
 	{
@@ -123,8 +125,10 @@ void Level2::BeginFrame()
             m_gfx->BeginFrameCubeInv( (Side)i_inv, j );
             Camera camera = m_stencilCameras.at( (Side)i_inv );
 
+#if _x64
             m_gfx->UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+#endif
 
             // Render RTT cube
             m_gfx->UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
@@ -147,8 +151,10 @@ void Level2::BeginFrame()
             m_gfx->BeginFrameCubeInvRecursive( i, j, (Side)k_inv );
             Camera camera = m_stencilCameras.at( (Side)k_inv );
 
+#if _x64
             m_gfx->UpdateRenderStateSkysphere();
             m_objSkysphere.Draw( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
+#endif
 
             // Render RTT cube
             m_gfx->UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
@@ -178,7 +184,7 @@ void Level2::BeginFrame()
                         RenderCubeInvRecursiveStencils( i, j, k );
         }
         m_bUpdateRoom = true;
-        
+
         // Hack: Need 2 frames to pass to properly render colour cubes on 1st load of the scene
         if ( firstTime )
             frameCount++;
@@ -197,8 +203,10 @@ void Level2::RenderFrame()
     m_cbTextureBorder.data = tbData;
     if ( !m_cbTextureBorder.ApplyChanges() ) return;
 
+#if _x64
     m_gfx->UpdateRenderStateSkysphere();
     m_objSkysphere.Draw( m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix() );
+#endif
 
 #pragma region TEXTURE_BINDING
     if ( !m_bStencilRoom )
@@ -238,9 +246,11 @@ void Level2::RenderFrame()
             m_gfx->GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( context, m_gfx->GetDepthStencil()->GetDepthStencilView() );
 
             m_stencilCube.SetPosition( 0.0f, 0.0f, 0.0f );
+#if _x64
             m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
             m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
             m_face.SetScale( 1.0f, 1.0f );
+#endif
 
             ID3D11ShaderResourceView* pTexture = nullptr;
             context->PSSetShaderResources( 0u, 1u, &pTexture );
@@ -263,9 +273,11 @@ void Level2::RenderFrame()
                 case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; break;
                 case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  break;
                 }
+#if _x64
                 m_face.SetScale( 5.0f, 5.0f );
                 m_face.SetPosition( position );
                 m_face.SetRotation( rotation );
+#endif
                 m_face.Draw( m_cbMatrices, *m_camera );
 
                 // Recenter to the middle of the room within the target stencil view
@@ -369,8 +381,10 @@ void Level2::RenderFrame()
                         context->PSSetShaderResources( 0u, 1u, m_stencilCubesInvRecursive[RENDER_DEPTH - 1u].GetTextures().at( textureSide ).GetAddressOf() );
                     }
 
+#if _x64
                     m_face.SetPosition( positionCopy );
                     m_face.SetRotation( rotationCopy );
+#endif
                     m_face.Draw( m_cbMatrices, *m_camera );
                 }
 
@@ -385,7 +399,9 @@ void Level2::RenderFrame()
             std::function<void()> CreateStencilRoom = [&]() -> void
             {
                 // Stencil Mask - stencil view
+#if _x64
                 m_face.SetScale( 5.0f, 5.0f );
+#endif
                 m_gfx->GetStencilState( (Side)i, Bind::Stencil::Type::MASK )->Bind( context );
                 m_gfx->UpdateRenderStateObject( m_cbTextureBorder.GetAddressOf() );
                 context->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
@@ -402,8 +418,10 @@ void Level2::RenderFrame()
                 case Side::TOP:    position.y = 5.0f;  rotation.x = -XM_PIDIV2; break;
                 case Side::BOTTOM: position.y = -5.0f; rotation.x = XM_PIDIV2;  break;
                 }
+#if _x64
                 m_face.SetPosition( position );
                 m_face.SetRotation( rotation );
+#endif
                 m_face.Draw( m_cbMatrices, *m_camera );
                 if ( m_bUpdateDepth ) return;
 
@@ -441,8 +459,10 @@ void Level2::RenderFrame()
                         case Side::TOP:    depthPos.y += 5.0f; rotation.x = -XM_PIDIV2; break;
                         case Side::BOTTOM: depthPos.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
                         }
+#if _x64
                         m_face.SetPosition( depthPos );
                         m_face.SetRotation( rotation );
+#endif
                         m_face.Draw( m_cbMatrices, *m_camera );
 
                         // For each face at that current render depth
@@ -477,8 +497,10 @@ void Level2::RenderFrame()
                             case Side::BOTTOM: depthCopy.y -= 5.0f; rotation.x = XM_PIDIV2;  break;
                             }
                             context->PSSetShaderResources( 0u, 1u, m_pTexture.GetAddressOf() );
+#if _x64
                             m_face.SetPosition( depthCopy );
                             m_face.SetRotation( rotation );
+#endif
                             m_face.Draw( m_cbMatrices, *m_camera );
                         }
                     }
@@ -549,9 +571,11 @@ void Level2::RenderFrame()
             m_gfx->GetStencilState( (Side)i, Bind::Stencil::Type::WRITE )->Clear( context, m_gfx->GetDepthStencil()->GetDepthStencilView() );
 
             m_stencilCube.SetPosition( 0.0f, 0.0f, 0.0f );
+#if _x64
             m_face.SetPosition( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
             m_face.SetRotation( XMFLOAT3( 0.0f, 0.0f, 0.0f ) );
             m_face.SetScale( 1.0f, 1.0f );
+#endif
             m_gfx->GetStencilState( (Side)i, Bind::Stencil::Type::OFF )->Bind( context );
         }
     }
@@ -572,8 +596,10 @@ void Level2::RenderFrame()
 
 void Level2::Update( const float dt )
 {
+#if _x64
     // Update skysphere position
     m_objSkysphere.SetPosition( m_camera->GetPositionFloat3() );
+#endif
 }
 
 void Level2::SpawnWindows()

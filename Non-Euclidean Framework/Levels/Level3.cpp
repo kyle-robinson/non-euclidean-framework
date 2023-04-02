@@ -32,6 +32,7 @@ void Level3::OnCreate()
         for ( uint32_t i = 0u; i < 6u; i++ )
             m_stencilCubeInv.SetTexture( (Side)i, m_pTexture.Get() );
 
+#if _x64
         // Initialize models
         if ( !m_nanosuit.Initialize( "Resources\\Models\\Nanosuit\\nanosuit.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) )
             return;
@@ -40,6 +41,7 @@ void Level3::OnCreate()
         if ( !m_goblin.Initialize( "Resources\\Models\\Goblin\\GoblinX.obj", m_gfx->GetDevice(), m_gfx->GetContext(), m_cbMatrices ) )
             return;
         m_goblin.SetInitialScale( 1.0f, 1.0f, 1.0f );
+#endif
 	}
 	catch ( COMException& exception )
 	{
@@ -85,6 +87,7 @@ void Level3::RenderFrame()
         context->PSSetConstantBuffers( 3u, 1u, m_nonEuclidean.GetCB() );
         m_cube.Draw( context );
     }
+#if _x64
     if ( m_bDrawNanosuit || m_bDrawGoblin )
     {
         m_gfx->UpdateRenderStateModel();
@@ -97,6 +100,7 @@ void Level3::RenderFrame()
         if ( m_bDrawGoblin )
             m_goblin.Draw( m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix() );
     }
+#endif
 
     m_gfx->UpdateRenderStateTexture();
     XMMATRIX view = m_camera->GetViewMatrix();
@@ -106,6 +110,7 @@ void Level3::RenderFrame()
 
 void Level3::Update( const float dt )
 {
+#if _x64
     if ( m_nonEuclidean.IsActive() && m_bUpdatePos )
     {
         m_nanosuit.SetPosition( 0.0f, 0.0f, 0.0f );
@@ -118,6 +123,7 @@ void Level3::Update( const float dt )
         m_nanosuit.ResetPosition();
         m_nanosuit.ResetScale();
     }
+#endif
     m_cube.Update( dt );
 }
 
@@ -147,6 +153,7 @@ void Level3::SpawnWindows()
             }
         }
 
+#if _x64
         ImGui::Checkbox( "Spawn Nanosuit?", &m_bDrawNanosuit );
         if ( m_bDrawNanosuit )
         {
@@ -206,6 +213,7 @@ void Level3::SpawnWindows()
                 ImGui::TreePop();
             }
         }
+#endif
     }
     ImGui::End();
 }
