@@ -12,6 +12,13 @@ A framework for creating various Non-Euclidean effects achieved using numerous a
 
 ![image](https://user-images.githubusercontent.com/39779606/232492839-2aac4f27-7faf-460a-904a-81c61a7428bd.png)
 
+## List of Features
+
+- [x] Stencil-Masked Geometry
+- [x] Render-To-Texture
+- [x] Recursive Scene Rendering
+- [x] Porting to Non-Euclidean Space
+
 ## Getting Started
 
 The Non-Euclidean framework provides numerous tools for interacting with the graphics features that have been implemented. Refer to the following information on how to install and use the application.
