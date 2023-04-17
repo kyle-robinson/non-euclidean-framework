@@ -17,11 +17,11 @@
 mono_crash.*
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
+Non-Euclidean Framework.tlog
+Non-Euclidean Framework/[Dd]ebug
+Non-Euclidean Framework/[Rr]elease
+Non-Euclidean Framework/x64
 [Rr]eleases/
-x64/
 x86/
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
