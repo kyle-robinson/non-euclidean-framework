@@ -36,10 +36,10 @@ void NonEuclidean::SpawnControlWindow()
 		static bool useHyperbolic = m_bUseHyperbolic;
 		static bool useElliptic = m_bUseElliptic;
 
-        if ( ImGui::Checkbox( "Hyperbolic?", &useHyperbolic ) )
+        if ( ImGui::Checkbox( "Elliptic?", &useHyperbolic ) )
 			useElliptic = FALSE;
 		ImGui::SameLine();
-        if ( ImGui::Checkbox( "Elliptic?", &useElliptic ) )
+        if ( ImGui::Checkbox( "Hyperbolic?", &useElliptic ) )
 			useHyperbolic = FALSE;
 
 		m_bUseHyperbolic = useHyperbolic;
